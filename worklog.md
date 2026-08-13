@@ -147,3 +147,125 @@
 ### Login Credentials (all passwords: demo123)
 - Farmer: vamsi@farm.ai | Consumer: priya@gmail.com
 - Collection Center: rajesh@greenagri.in | Expert: anitha@agri-expert.in | Admin: admin@krishiai.com
+
+---
+Task ID: 3a
+Agent: weather-market-agent
+Task: Enhance weather and market prices pages
+
+Work Log:
+- Read worklog.md and AgriculturePages.tsx to understand existing implementations
+- Added CalendarDays, Navigation2, Truck icons to lucide-react imports
+- Added Legend to recharts imports
+- Replaced WeatherPage function with enhanced version:
+  - Current Weather Hero with conditional gradient (green=sunny, blue=rainy, gray=cloudy), 8xl emoji, 6xl temperature
+  - 7-Day Forecast Strip with today's card highlighted with primary bg/fg, rain % on all cards
+  - Farming Impact Cards (4 cards: Irrigation Need, Pesticide Spray, Harvest Window, Soil Work) with severity colors (red/amber/green)
+  - Weather Alerts section with Heat Wave Warning (red) and Heavy Rain Expected (amber), icon containers, and timestamps
+- Replaced MarketPricesPage function with enhanced version:
+  - Market Overview Bar: horizontal ticker strip showing 5 crop prices with TrendingUp/TrendingDown icons
+  - Enhanced Price Chart: added dashed AI Predicted line (amber), MSP ReferenceLine (red dashed), Legend component, enhanced Tooltip showing both actual and predicted prices
+  - Price Comparison Table: 5 markets (Warangal, Hyderabad, Karimnagar, Nizamabad, Khammam) with today/yesterday prices, color-coded changes, trend icons
+  - Best Sell Recommendation Card: green gradient hero card with best market, price, transport info, View Directions button (Navigation2 icon)
+  - Preserved existing AI Market Prediction section
+- All existing exports (SoilHealthPage, CropRecommendationsPage, DiseaseDetectionPage, FertilizerPage, IrrigationPage) untouched
+- Ran lint: zero errors
+
+Stage Summary:
+- WeatherPage enhanced from ~110 lines to ~250 lines with 4 new sections
+- MarketPricesPage enhanced from ~160 lines to ~340 lines with 4 new sections
+- Total file grew from 1134 to 1420 lines
+- All animations use motion.div with fadeInUp/fadeIn/staggerContainer patterns
+- Lint passes clean, dev server returns 200
+---
+Task ID: 1
+Agent: Main Agent
+Task: Comprehensive QA testing and bug fixing across all features
+
+Work Log:
+- Read worklog.md to understand project state (5 roles, 41+ pages, Next.js 16 SPA)
+- Started dev server and opened agent-browser for automated testing
+- Tested Landing Page: Hero, Features, How It Works, Stats, Testimonials, FAQ accordion, Footer — ALL WORKING
+- Tested Registration: Multi-step form, role selection, form validation — FOUND BUG: email "(optional)" but required
+- Tested Login: Demo role buttons for all 5 roles (Farmer, Consumer, Expert, Collection Center, Admin) — ALL WORKING
+- Tested Farmer Dashboard: Welcome, Active Crops, Tasks, Quick Actions, Market Ticker — WORKING
+- Tested Farmer Sub-pages: My Farm, Soil Health, Crop Plans, Disease Scan, Irrigation, Weather, Market Prices, Orders — ALL WORKING
+- Tested Notifications Dropdown: 5 notifications with type-colored icons, mark all read — WORKING
+- Tested Command Palette: ⌘K button click — FOUND BUG: doesn't open; Escape — FOUND BUG: doesn't close
+- Tested Consumer Dashboard: Welcome, Categories, Order Tracking, Spending Overview — WORKING
+- Tested Marketplace: Product cards, Add to Cart buttons, Categories — WORKING
+- Tested Expert Dashboard: Performance stats, Weekly Activity chart, Disease cases — WORKING
+- Tested Collection Center Dashboard: Capacity, Schedule, QC Stats, Payouts — WORKING
+- Tested Admin Dashboard & Analytics: KPIs, Revenue, User Growth, Top Products, Platform Health — WORKING
+- Tested Settings Page: Profile, Notifications, Farm Settings, Appearance, Security tabs — WORKING
+- Tested Dark Mode Toggle: Light/Dark switching — WORKING
+- Found critical layout bug: DashboardLayout missing farmer navConfig, causing wrong nav for farmers on Settings page
+- Found notification onViewAll hardcoded to farmer/notifications for all roles
+- Found Settings "Farm Settings" tab shown for non-farmer roles
+- Found Sonner Toaster not mounted in layout (toasts from 'sonner' never appeared)
+- Found cart icon missing in DashboardLayout header for consumers
+
+Bugs Fixed (7 total):
+1. Registration form validation: Removed email.includes('@') from canProceedStep2 (line 932 AuthPages.tsx)
+2. Command Palette: Replaced DOM event dispatch with module-level callback references (_togglePalette, _closePalette)
+3. Command Palette Escape: Added Escape key handler in keyboard listener
+4. DashboardLayout navConfig: Added complete farmer navigation (14 items) with role colors and labels
+5. DashboardLayout notificationRouteMap: Dynamic onViewAll route per role instead of hardcoded farmer/notifications
+6. Settings Farm Settings tab: Conditionally rendered only when user.role === 'farmer'
+7. Toast notifications: Added Sonner Toaster component to layout.tsx alongside existing shadcn/ui Toaster
+8. Cart icon: Added CartButton component to DashboardLayout header, subscribes to cart items reactively
+
+Verification Results:
+- ✅ Registration Continue button enables without email (email truly optional now)
+- ✅ Command palette opens via ⌘K button click (module-level callback approach)
+- ✅ Command palette closes on Escape key
+- ✅ DashboardLayout shows farmer navigation (14 items with emojis) on Settings page
+- ✅ Admin Settings page hides Farm Settings tab (only 4 tabs: Profile, Notifications, Appearance, Security)
+- ✅ Sonner toasts appear when adding to cart (1 toast detected via DOM query)
+- ✅ Cart icon with badge count appears in consumer header when items > 0
+- ✅ Zero console errors across all tested pages and interactions
+- ✅ Lint passes clean (zero errors)
+
+Stage Summary:
+- All 7 bugs identified via agent-browser testing have been fixed and verified
+- Files modified: AuthPages.tsx, CommandPalette.tsx, DashboardLayout.tsx, SettingsPage.tsx, layout.tsx
+- No new files created
+- All 5 role dashboards, marketplace, settings, dark mode, notifications, command palette verified working
+---
+Task ID: 4a
+Agent: UI Enhancement Agent
+Task: Enhance Login Page with animated background, split layout, decorative panel, and visual polish
+
+Work Log:
+- Read AuthPages.tsx to understand existing LoginPage (lines 707-882): plain white background, basic logo, phone/email/password fields, Sign In button, 5 demo role buttons
+- Read globals.css to understand existing animations and utility classes
+- Added CSS keyframes to globals.css:
+  - `login-float-blob` — slow floating movement for background blobs (12s cycle)
+  - `login-float-emoji` — drift animation for decorative emojis with rotation (6s cycle)
+  - `login-card-glow` — pulsing green glow shadow on login card (3s cycle)
+  - `login-border-rotate` — gradient border rotation animation (4s cycle)
+- Added CSS utility classes:
+  - `animate-login-blob`, `animate-login-emoji`, `animate-login-card-glow`
+  - `login-card-glow-border` — pseudo-element-based animated gradient border with blur
+  - `login-demo-btn` — shimmer hover effect on demo buttons
+- Enhanced LoginPage component:
+  1. Split layout: left decorative panel (hidden on mobile) + right login card
+  2. Animated floating green gradient blobs as background (4 blobs with staggered delays)
+  3. Left panel: emerald/green gradient, "Empowering India's Farmers" heading, wheat/plant grid pattern overlay, 6 floating emojis (🌾🚜🌧️🌱🌻🍃), 3 trust indicators (Secure, 10K+ Farmers, 4.8 Rating) with glass-card icon containers
+  4. Right panel: login card with animated glow border and pulsing shadow
+  5. Logo bounces in using spring animation (stiffness: 260, damping: 20)
+  6. Card slides up with fade-in (duration: 0.6s, delay: 0.2s)
+  7. Demo buttons stagger in with scale+fade (0.08s stagger, scale 0.95→1)
+  8. Demo buttons enhanced with hover:scale-[1.05], active:scale-[0.98], shimmer hover effect
+  9. Added "Forgot Password?" link below email fields, right-aligned
+  10. Register link made more prominent: pill button with bg-primary/10, border dividers, arrow icon, hover scale
+  11. Left panel content animates in from left (opacity + x: -30)
+- All existing logic, imports, state management, and handlers preserved exactly
+- Lint passes clean: zero errors
+
+Stage Summary:
+- LoginPage enhanced from ~120 JSX lines to ~250 JSX lines with split-layout design
+- globals.css gained 5 keyframe animations and 5 utility classes
+- Visual enhancements: floating blobs, animated glow border, emoji drift, stagger animations, spring bounce logo, prominent register CTA
+- No functionality changed — all login/demo/register logic intact
+- Mobile responsive: left panel hidden on <lg, card centered on full width with gradient background blobs visible

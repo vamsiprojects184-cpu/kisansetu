@@ -601,6 +601,9 @@ function SecurityTab() {
 
 // ============== MAIN SETTINGS PAGE ==============
 export default function SettingsPage() {
+  const { user } = useAuthStore();
+  const isFarmer = user?.role === 'farmer';
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -627,10 +630,12 @@ export default function SettingsPage() {
             <Bell className="h-4 w-4 hidden sm:block" />
             Notifications
           </TabsTrigger>
-          <TabsTrigger value="farm" className="gap-1.5 text-xs sm:text-sm">
-            <Wheat className="h-4 w-4 hidden sm:block" />
-            Farm Settings
-          </TabsTrigger>
+          {isFarmer && (
+            <TabsTrigger value="farm" className="gap-1.5 text-xs sm:text-sm">
+              <Wheat className="h-4 w-4 hidden sm:block" />
+              Farm Settings
+            </TabsTrigger>
+          )}
           <TabsTrigger value="appearance" className="gap-1.5 text-xs sm:text-sm">
             <Sun className="h-4 w-4 hidden sm:block" />
             Appearance
@@ -647,9 +652,11 @@ export default function SettingsPage() {
         <TabsContent value="notifications">
           <NotificationsTab />
         </TabsContent>
-        <TabsContent value="farm">
-          <FarmSettingsTab />
-        </TabsContent>
+        {isFarmer && (
+          <TabsContent value="farm">
+            <FarmSettingsTab />
+          </TabsContent>
+        )}
         <TabsContent value="appearance">
           <AppearanceTab />
         </TabsContent>

@@ -7,12 +7,13 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, LogOut, Sun, Moon, Search, Settings } from 'lucide-react';
+import { Menu, LogOut, Sun, Moon, Search, Settings, ShoppingCart } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import NotificationDropdown from '@/components/shared/NotificationDropdown';
 import CommandPalette from '@/components/shared/CommandPalette';
 import { useCommandPaletteOpen } from '@/components/shared/CommandPalette';
+import { useCartStore } from '@/store/use-cart-store';
 import type { RoutePath, UserRole } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,7 +23,31 @@ interface NavItem {
   route: RoutePath;
 }
 
+const notificationRouteMap: Record<string, RoutePath> = {
+  farmer: 'farmer/notifications',
+  consumer: 'consumer/dashboard',
+  collection_center: 'collection-center/dashboard',
+  expert: 'expert/dashboard',
+  admin: 'admin/dashboard',
+};
+
 const navConfig: Record<string, NavItem[]> = {
+  farmer: [
+    { label: 'Dashboard', icon: <span className='text-lg'>🌾</span>, route: 'farmer/dashboard' },
+    { label: 'My Farm', icon: <span className='text-lg'>🌱</span>, route: 'farmer/my-farm' },
+    { label: 'Soil Health', icon: <span className='text-lg'>🧪</span>, route: 'farmer/soil-health' },
+    { label: 'Crop Plans', icon: <span className='text-lg'>🌿</span>, route: 'farmer/crop-recommendations' },
+    { label: 'Disease Scan', icon: <span className='text-lg'>🔬</span>, route: 'farmer/disease-detection' },
+    { label: 'Fertilizer', icon: <span className='text-lg'>💊</span>, route: 'farmer/fertilizer' },
+    { label: 'Irrigation', icon: <span className='text-lg'>💧</span>, route: 'farmer/irrigation' },
+    { label: 'Weather', icon: <span className='text-lg'>⛅</span>, route: 'farmer/weather' },
+    { label: 'Market Prices', icon: <span className='text-lg'>📊</span>, route: 'farmer/market-prices' },
+    { label: 'Sell Products', icon: <span className='text-lg'>🛒</span>, route: 'farmer/sell' },
+    { label: 'Marketplace', icon: <span className='text-lg'>🏪</span>, route: 'marketplace/home' },
+    { label: 'Orders', icon: <span className='text-lg'>📦</span>, route: 'farmer/orders' },
+    { label: 'Payments', icon: <span className='text-lg'>💰</span>, route: 'farmer/payments' },
+    { label: 'Settings', icon: <Settings size={20} />, route: 'settings' },
+  ],
   consumer: [
     { label: 'Dashboard', icon: <span className='text-lg'>🏠</span>, route: 'consumer/dashboard' },
     { label: 'Marketplace', icon: <span className='text-lg'>🛒</span>, route: 'marketplace/home' },
@@ -60,6 +85,21 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
+function CartButton({ role }: { role: string }) {
+  const items = useCartStore(s => s.items);
+  const { navigate } = useAppStore();
+  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  if ((role !== 'consumer' && role !== 'farmer') || itemCount === 0) return null;
+  return (
+    <button onClick={() => navigate('marketplace/cart' as RoutePath)} className='relative p-2 rounded-lg hover:bg-accent transition-colors'>
+      <ShoppingCart size={20} className='text-muted-foreground' />
+      <span className='absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-medium'>
+        {itemCount}
+      </span>
+    </button>
+  );
+}
+
 function SearchButton() {
   const { openPalette } = useCommandPaletteOpen();
   return (
@@ -89,6 +129,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const items = navConfig[role] || navConfig.consumer;
 
   const roleColors: Record<string, string> = {
+    farmer: 'from-emerald-600 to-green-500',
     consumer: 'from-orange-500 to-amber-500',
     collection_center: 'from-sky-500 to-cyan-500',
     expert: 'from-violet-500 to-purple-500',
@@ -96,6 +137,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const roleLabels: Record<string, string> = {
+    farmer: 'Farmer',
     consumer: 'Consumer',
     collection_center: 'Collection Center',
     expert: 'Agricultural Expert',
@@ -182,7 +224,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </button>
           </div>
           <div className='flex items-center gap-2'>
-            <NotificationDropdown onViewAll={() => navigate('farmer/notifications')} />
+            <NotificationDropdown onViewAll={() => navigate(notificationRouteMap[role] || 'farmer/notifications')} />
             <SearchButton />
             <Tooltip>
               <TooltipTrigger asChild>
@@ -195,6 +237,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </TooltipTrigger>
               <TooltipContent>{resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode'}</TooltipContent>
             </Tooltip>
+            <CartButton role={role} />
             <Avatar className='h-8 w-8'>
               <AvatarFallback className='bg-primary/10 text-primary text-xs font-semibold'>{user?.name?.charAt(0)}</AvatarFallback>
             </Avatar>

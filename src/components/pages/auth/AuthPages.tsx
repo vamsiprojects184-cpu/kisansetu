@@ -752,131 +752,257 @@ export function LoginPage() {
 
   const demoRoles: UserRole[] = ['farmer', 'consumer', 'collection_center', 'expert', 'admin'];
 
+  const staggerContainer = {
+    animate: { transition: { staggerChildren: 0.08 } },
+  };
+
+  const staggerItem = {
+    initial: { opacity: 0, y: 16, scale: 0.95 },
+    animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: 'easeOut' } },
+  };
+
+  const logoBounce = {
+    initial: { opacity: 0, scale: 0.3, y: 10 },
+    animate: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 20, delay: 0.1 } },
+  };
+
+  const cardSlideUp = {
+    initial: { opacity: 0, y: 40 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut', delay: 0.2 } },
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="size-14 rounded-2xl gradient-green flex items-center justify-center text-white font-bold text-2xl mb-4 shadow-lg animate-pulse-green">
-            K
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Welcome Back</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
-            Sign in to your KrishiAI account
-          </p>
+    <div className="min-h-screen flex bg-background relative overflow-hidden">
+      {/* Animated floating background blobs (visible on mobile too) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-emerald-500/10 animate-login-blob" style={{ animationDelay: '0s' }} />
+        <div className="absolute top-1/4 -right-16 w-56 h-56 rounded-full bg-green-400/8 animate-login-blob" style={{ animationDelay: '-3s' }} />
+        <div className="absolute -bottom-16 left-1/3 w-64 h-64 rounded-full bg-emerald-600/6 animate-login-blob" style={{ animationDelay: '-6s' }} />
+        <div className="absolute top-2/3 -left-10 w-48 h-48 rounded-full bg-green-500/10 animate-login-blob" style={{ animationDelay: '-9s' }} />
+      </div>
+
+      {/* Left Decorative Panel (hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden" style={{ background: 'linear-gradient(135deg, oklch(0.35 0.1 150) 0%, oklch(0.42 0.14 140) 40%, oklch(0.48 0.12 130) 100%)' }}>
+        {/* Wheat/plant pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 60px, oklch(1 0 0 / 0.5) 60px, oklch(1 0 0 / 0.5) 61px), repeating-linear-gradient(0deg, transparent, transparent 60px, oklch(1 0 0 / 0.5) 60px, oklch(1 0 0 / 0.5) 61px)' }} />
+
+        {/* Floating emojis */}
+        <div className="absolute inset-0 pointer-events-none">
+          <span className="absolute text-4xl animate-login-emoji" style={{ top: '12%', left: '15%', animationDelay: '0s' }}>🌾</span>
+          <span className="absolute text-3xl animate-login-emoji" style={{ top: '28%', right: '20%', animationDelay: '-1.5s' }}>🚜</span>
+          <span className="absolute text-5xl animate-login-emoji" style={{ top: '55%', left: '25%', animationDelay: '-3s' }}>🌧️</span>
+          <span className="absolute text-3xl animate-login-emoji" style={{ top: '72%', right: '15%', animationDelay: '-4.5s' }}>🌱</span>
+          <span className="absolute text-4xl animate-login-emoji" style={{ top: '40%', left: '60%', animationDelay: '-2s' }}>🌻</span>
+          <span className="absolute text-3xl animate-login-emoji" style={{ bottom: '18%', left: '45%', animationDelay: '-5s' }}>🍃</span>
         </div>
 
-        <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm">
-          <CardContent className="p-6 sm:p-8 space-y-5">
-            {/* Phone Input */}
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-sm font-medium">
-                Phone Number
-              </Label>
-              <div className="flex gap-2">
-                <div className="flex items-center gap-1.5 px-3 rounded-md border border-input bg-muted/50 text-sm text-muted-foreground whitespace-nowrap h-9">
-                  🇮🇳 +91
-                </div>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="Enter phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                  className="flex-1"
-                  onKeyDown={(e) => e.key === 'Enter' && handlePhoneLogin()}
-                />
-              </div>
-              <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handlePhoneLogin()} className="mt-2" />
-            </div>
-
-            {/* OR Divider */}
-            <div className="relative flex items-center gap-3">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground font-medium uppercase">or</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
-
-            {/* Email Input */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleEmailLogin()}
-              />
-              <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleEmailLogin()} className="mt-2" />
-            </div>
-
-            {/* Submit */}
-            <Button
-              className="w-full h-11 font-semibold rounded-xl"
-              disabled={isLoading || (phone.length < 10 && !email.includes('@'))}
-              onClick={phone.length >= 10 ? handlePhoneLogin : handleEmailLogin}
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing in...
-                </span>
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="size-4" />
-                </>
-              )}
-            </Button>
-            {loginError && <p className="text-sm text-destructive text-center -mt-2">{loginError}</p>}
-
-            {/* Demo Login Section */}
-            <div className="pt-2">
-              <div className="relative flex items-center gap-3 mb-4">
-                <div className="flex-1 h-px bg-border" />
-                <span className="text-xs text-muted-foreground font-medium">
-                  Demo Login
-                </span>
-                <div className="flex-1 h-px bg-border" />
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                {demoRoles.map((role) => (
-                  <Button
-                    key={role}
-                    variant="outline"
-                    className={`h-auto py-3 px-3 flex flex-col items-center gap-2 text-xs font-medium rounded-xl transition-all ${roleColors[role]}`}
-                    onClick={() => handleDemoLogin(role)}
-                    disabled={isLoading}
-                  >
-                    {roleIcons[role]}
-                    <span>{roleLabels[role]}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Register Link */}
-        <p className="text-center mt-6 text-sm text-muted-foreground">
-          Don&apos;t have an account?{' '}
-          <button
-            onClick={() => navigate('register')}
-            className="text-primary font-semibold hover:underline"
+        {/* Content */}
+        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="space-y-8"
           >
-            Create Account
-          </button>
-        </p>
-      </motion.div>
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/15">
+                <Sprout className="size-5 text-green-300" />
+                <span className="text-green-100 text-sm font-medium">KrishiAI Platform</span>
+              </div>
+              <h2 className="text-4xl xl:text-5xl font-bold text-white leading-tight tracking-tight">
+                Empowering India&apos;s{' '}
+                <span className="text-green-300">Farmers</span>
+              </h2>
+              <p className="text-lg text-green-100/80 max-w-md leading-relaxed">
+                AI-powered agriculture assistant for smarter farming, better yields, and a sustainable future.
+              </p>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="space-y-4 pt-4">
+              <div className="flex items-center gap-3 text-green-100/90">
+                <div className="size-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                  <ShieldCheck className="size-5 text-green-300" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Secure & Private</p>
+                  <p className="text-xs text-green-100/60">End-to-end encrypted data</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-green-100/90">
+                <div className="size-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                  <Users className="size-5 text-green-300" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">10,000+ Farmers</p>
+                  <p className="text-xs text-green-100/60">Trusted across rural India</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-green-100/90">
+                <div className="size-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                  <Star className="size-5 text-green-300" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">4.8 Rating</p>
+                  <p className="text-xs text-green-100/60">Highly rated on app stores</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Bottom decorative wave */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-emerald-900/30 to-transparent" />
+      </div>
+
+      {/* Right Side - Login Card */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative z-10">
+        <motion.div
+          {...cardSlideUp}
+          className="w-full max-w-md"
+        >
+          {/* Logo with bounce */}
+          <motion.div {...logoBounce} className="flex flex-col items-center mb-8">
+            <div className="size-16 rounded-2xl gradient-green flex items-center justify-center text-white font-bold text-3xl mb-4 shadow-lg animate-pulse-green">
+              K
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Welcome Back</h1>
+            <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
+              Sign in to your KrishiAI account
+            </p>
+          </motion.div>
+
+          {/* Login Card with glow border */}
+          <div className="login-card-glow-border animate-login-card-glow rounded-xl">
+            <Card className="shadow-xl border-0 bg-card/90 backdrop-blur-md">
+              <CardContent className="p-6 sm:p-8 space-y-5">
+                {/* Phone Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-sm font-medium">
+                    Phone Number
+                  </Label>
+                  <div className="flex gap-2">
+                    <div className="flex items-center gap-1.5 px-3 rounded-md border border-input bg-muted/50 text-sm text-muted-foreground whitespace-nowrap h-9">
+                      🇮🇳 +91
+                    </div>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="Enter phone number"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      className="flex-1"
+                      onKeyDown={(e) => e.key === 'Enter' && handlePhoneLogin()}
+                    />
+                  </div>
+                  <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handlePhoneLogin()} className="mt-2" />
+                </div>
+
+                {/* OR Divider */}
+                <div className="relative flex items-center gap-3">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-xs text-muted-foreground font-medium uppercase">or</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+
+                {/* Email Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email Address
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleEmailLogin()}
+                  />
+                  <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleEmailLogin()} className="mt-2" />
+                </div>
+
+                {/* Forgot Password Link */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => navigate('login')}
+                    className="text-xs text-primary/70 hover:text-primary font-medium transition-colors"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+
+                {/* Submit */}
+                <Button
+                  className="w-full h-11 font-semibold rounded-xl"
+                  disabled={isLoading || (phone.length < 10 && !email.includes('@'))}
+                  onClick={phone.length >= 10 ? handlePhoneLogin : handleEmailLogin}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Signing in...
+                    </span>
+                  ) : (
+                    <>
+                      Sign In
+                      <ArrowRight className="size-4" />
+                    </>
+                  )}
+                </Button>
+                {loginError && <p className="text-sm text-destructive text-center -mt-2">{loginError}</p>}
+
+                {/* Demo Login Section */}
+                <motion.div className="pt-2" {...staggerContainer} animate="animate">
+                  <div className="relative flex items-center gap-3 mb-4">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-xs text-muted-foreground font-medium">
+                      Demo Login
+                    </span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    {demoRoles.map((role) => (
+                      <motion.div key={role} {...staggerItem}>
+                        <Button
+                          variant="outline"
+                          className={`login-demo-btn h-auto py-3 px-3 flex flex-col items-center gap-2 text-xs font-medium rounded-xl transition-all duration-200 hover:scale-[1.05] hover:shadow-md active:scale-[0.98] ${roleColors[role]}`}
+                          onClick={() => handleDemoLogin(role)}
+                          disabled={isLoading}
+                        >
+                          {roleIcons[role]}
+                          <span>{roleLabels[role]}</span>
+                        </Button>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Register Link - More Prominent */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.8 }}
+            className="text-center mt-8 space-y-3"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">New to KrishiAI?</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <button
+              onClick={() => navigate('register')}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/15 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Create Account
+              <ArrowRight className="size-4" />
+            </button>
+          </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }
@@ -929,7 +1055,7 @@ export function RegisterPage() {
     }
   };
 
-  const canProceedStep2 = name.trim().length > 0 && phone.length >= 10 && email.includes('@') && password.length >= 4;
+  const canProceedStep2 = name.trim().length > 0 && phone.length >= 10 && password.length >= 4;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

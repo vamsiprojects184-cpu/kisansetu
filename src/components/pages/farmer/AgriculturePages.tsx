@@ -9,6 +9,7 @@ import {
   Scissors, Hourglass, AlertCircle, Info, Shield, Zap,
   ArrowRight, Check, X, Loader2, Eye, UploadCloud,
   Clock, MapPin, Gauge, Waves, Beaker, TestTubes,
+  CalendarDays, Navigation2, Truck,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,7 +34,7 @@ import type { CropRecommendation, DiseaseDetection, CropStage } from '@/types';
 import { cn } from '@/lib/utils';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine,
+  ResponsiveContainer, ReferenceLine, Legend,
 } from 'recharts';
 
 // ============================================================
@@ -825,43 +826,119 @@ export function WeatherPage() {
   const forecast = mockForecast;
   const alerts = forecast.filter(f => f.farmingAlert);
 
+  // Determine gradient based on weather condition
+  const getWeatherGradient = () => {
+    const cond = weather.condition.toLowerCase();
+    if (cond.includes('sunny')) return 'from-emerald-600 via-emerald-500 to-teal-500';
+    if (cond.includes('rain') || cond.includes('thunder')) return 'from-blue-600 via-blue-500 to-cyan-600';
+    if (cond.includes('cloud')) return 'from-slate-500 via-gray-400 to-slate-500';
+    return 'from-emerald-600 via-emerald-500 to-teal-500';
+  };
+
+  // Farming impact cards data
+  const farmingImpacts = [
+    {
+      title: 'Irrigation Need',
+      status: weather.temperature > 30 && weather.humidity < 60 ? 'High' : 'Moderate',
+      severity: weather.temperature > 30 && weather.humidity < 60 ? 'red' : 'green',
+      icon: Droplets,
+      message: weather.temperature > 30 && weather.humidity < 60
+        ? 'High evaporation rate detected. Water crops early morning or evening to minimize loss.'
+        : 'Normal conditions. Maintain regular watering schedule.',
+    },
+    {
+      title: 'Pesticide Spray',
+      status: weather.rainProbability > 50 ? 'Not Recommended' : 'Suitable',
+      severity: weather.rainProbability > 50 ? 'amber' : 'green',
+      icon: Shield,
+      message: weather.rainProbability > 50
+        ? 'Rain expected within 24hrs. Pesticides will be washed off crops.'
+        : 'Weather is suitable for pesticide application today.',
+    },
+    {
+      title: 'Harvest Window',
+      status: 'Good for next 3 days',
+      severity: 'green',
+      icon: CalendarDays,
+      message: 'Clear weather forecasted for next 3 days. Ideal for harvesting ready crops.',
+    },
+    {
+      title: 'Soil Work',
+      status: weather.rainProbability > 60 ? 'Avoid' : 'Good',
+      severity: weather.rainProbability > 60 ? 'red' : 'green',
+      icon: Sprout,
+      message: weather.rainProbability > 60
+        ? 'Soil too wet for plowing or transplanting. Wait 2-3 days.'
+        : 'Soil conditions favorable for field operations.',
+    },
+  ];
+
+  // Weather alerts data
+  const weatherAlerts = [
+    {
+      title: 'Heat Wave Warning',
+      message: 'Temperature may exceed 40\u00b0C in next 48 hours. Ensure adequate irrigation and provide shade for sensitive crops.',
+      severity: 'red' as const,
+      time: 'Valid: Jan 7 \u2013 Jan 9',
+      icon: Thermometer,
+    },
+    {
+      title: 'Heavy Rain Expected Thursday',
+      message: 'Heavy rainfall (80-90mm) expected. Avoid fertilizer application and postpone harvesting.',
+      severity: 'amber' as const,
+      time: 'Valid: Jan 8 \u2013 Jan 9',
+      icon: CloudRain,
+    },
+  ];
+
+  const severityStyles: Record<string, string> = {
+    red: 'bg-red-50 text-red-800 dark:bg-red-950/50 dark:text-red-300 border-red-200 dark:border-red-800',
+    amber: 'bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+    green: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+  };
+
+  const iconBgStyles: Record<string, string> = {
+    red: 'bg-red-200 dark:bg-red-900 text-red-600 dark:text-red-400',
+    amber: 'bg-amber-200 dark:bg-amber-900 text-amber-600 dark:text-amber-400',
+  };
+
   return (
     <div className='space-y-6'>
       <PageHeader title="Farming Weather" subtitle="Weather intelligence for better farming decisions" />
 
-      {/* Current Weather Card */}
+      {/* Current Weather Hero */}
       <motion.div {...fadeInUp}>
         <Card className='border-0 overflow-hidden'>
-          <div className='bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 text-white p-6'>
+          <div className={cn('bg-gradient-to-br text-white p-6', getWeatherGradient())}>
             <div className='flex items-center gap-2 text-white/70 text-sm mb-1'>
               <MapPin className='w-3.5 h-3.5' /> {weather.location}
             </div>
             <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
               <div className='flex items-center gap-4'>
-                <div className='text-7xl'>{weather.icon}</div>
+                <div className='text-8xl'>{weather.icon}</div>
                 <div>
-                  <p className='text-5xl font-bold'>{weather.temperature}°C</p>
-                  <p className='text-white/80 text-lg'>{weather.condition}</p>
-                  <p className='text-white/60 text-sm'>Feels like {weather.feelsLike}°C</p>
+                  <p className='text-6xl font-bold tracking-tight'>{weather.temperature}&deg;C</p>
+                  <p className='text-white/80 text-lg mt-1'>{weather.condition}</p>
+                  <p className='text-white/60 text-sm'>Feels like {weather.feelsLike}&deg;C</p>
                 </div>
               </div>
               <div className='grid grid-cols-2 gap-3 sm:gap-4'>
-                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px]'>
+                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px] backdrop-blur-sm'>
                   <Droplets className='w-5 h-5 mx-auto mb-1' />
                   <p className='text-lg font-bold'>{weather.humidity}%</p>
                   <p className='text-[10px] text-white/60'>Humidity</p>
                 </div>
-                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px]'>
+                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px] backdrop-blur-sm'>
                   <Wind className='w-5 h-5 mx-auto mb-1' />
                   <p className='text-lg font-bold'>{weather.windSpeed} km/h</p>
                   <p className='text-[10px] text-white/60'>Wind {weather.windDirection}</p>
                 </div>
-                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px]'>
+                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px] backdrop-blur-sm'>
                   <CloudRain className='w-5 h-5 mx-auto mb-1' />
                   <p className='text-lg font-bold'>{weather.rainProbability}%</p>
                   <p className='text-[10px] text-white/60'>Rain</p>
                 </div>
-                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px]'>
+                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px] backdrop-blur-sm'>
                   <Sun className='w-5 h-5 mx-auto mb-1' />
                   <p className='text-lg font-bold'>{weather.uvIndex}</p>
                   <p className='text-[10px] text-white/60'>UV Index</p>
@@ -872,25 +949,34 @@ export function WeatherPage() {
         </Card>
       </motion.div>
 
-      {/* 7-Day Forecast */}
+      {/* 7-Day Forecast Strip */}
       <SectionWrapper title="7-Day Forecast" subtitle="Plan your farming activities ahead">
         <div className='flex gap-3 overflow-x-auto pb-2 scrollbar-thin'>
           {forecast.map((day, i) => (
             <motion.div key={day.date} {...fadeIn} transition={{ delay: i * 0.05 }} className='shrink-0'>
               <Card className={cn(
-                'w-[100px] hover:shadow-md transition-shadow cursor-pointer',
-                i === 0 && 'border-primary bg-primary/[0.03]'
+                'w-[110px] hover:shadow-md transition-shadow cursor-pointer',
+                i === 0
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : ''
               )}>
                 <CardContent className='p-3 text-center'>
-                  <p className={cn('text-xs font-semibold', i === 0 ? 'text-primary' : 'text-muted-foreground')}>{day.day}</p>
-                  <div className='text-2xl my-2'>{day.icon}</div>
+                  <p className={cn('text-xs font-semibold', i === 0 ? 'text-primary-foreground' : 'text-muted-foreground')}>
+                    {day.day}
+                  </p>
+                  <div className='text-3xl my-2'>{day.icon}</div>
                   <div className='flex items-center justify-center gap-1'>
-                    <span className='text-sm font-bold'>{day.high}°</span>
-                    <span className='text-xs text-muted-foreground'>{day.low}°</span>
+                    <span className={cn('text-sm font-bold', i === 0 && 'text-primary-foreground')}>{day.high}&deg;</span>
+                    <span className={cn('text-xs', i === 0 ? 'text-primary-foreground/70' : 'text-muted-foreground')}>{day.low}&deg;</span>
                   </div>
-                  {day.rainProbability > 30 && (
-                    <p className='text-[10px] text-blue-500 mt-1.5'>🌧 {day.rainProbability}%</p>
-                  )}
+                  <p className={cn(
+                    'text-[10px] mt-1.5',
+                    day.rainProbability > 30
+                      ? (i === 0 ? 'text-primary-foreground/80' : 'text-blue-500')
+                      : (i === 0 ? 'text-primary-foreground/50' : 'text-muted-foreground')
+                  )}>
+                    &#x1F4A7; {day.rainProbability}%
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -898,36 +984,51 @@ export function WeatherPage() {
         </div>
       </SectionWrapper>
 
-      {/* Farming Intelligence Alerts */}
-      {alerts.length > 0 && (
-        <SectionWrapper title="Farming Intelligence" subtitle="Weather alerts affecting your farm">
-          <div className='space-y-3'>
-            {alerts.map((alert, i) => (
-              <motion.div key={alert.date} {...fadeIn} transition={{ delay: i * 0.1 }}>
-                <Card className='border-amber-200 dark:border-amber-800'>
-                  <CardContent className='p-4'>
-                    <div className='flex items-start gap-3'>
-                      <div className='p-2 rounded-lg bg-amber-100 dark:bg-amber-950 shrink-0'>
-                        <AlertTriangle className='w-4 h-4 text-amber-600 dark:text-amber-400' />
-                      </div>
-                      <div className='flex-1'>
-                        <div className='flex items-center gap-2 mb-1'>
-                          <span className='font-semibold text-sm'>{alert.day}, {alert.date}</span>
-                          <Badge className='bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 text-[10px]' variant='secondary'>
-                            {alert.condition}
-                          </Badge>
-                        </div>
-                        <p className='text-sm text-muted-foreground'>{alert.farmingAlert}</p>
-                      </div>
-                      <span className='text-2xl shrink-0'>{alert.icon}</span>
+      {/* Farming Impact Cards */}
+      <SectionWrapper title="Farming Impact" subtitle="How today's weather affects your farm operations">
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'>
+          {farmingImpacts.map((impact, i) => (
+            <motion.div key={impact.title} {...fadeInUp} transition={{ delay: i * 0.08 }}>
+              <Card className={cn('border', severityStyles[impact.severity])}>
+                <CardContent className='p-4'>
+                  <div className='flex items-center gap-2 mb-2'>
+                    <impact.icon className='w-4 h-4' />
+                    <span className='text-xs font-medium opacity-70'>{impact.title}</span>
+                  </div>
+                  <p className='font-bold text-sm'>{impact.status}</p>
+                  <p className='text-xs opacity-80 mt-1 leading-relaxed'>{impact.message}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </SectionWrapper>
+
+      {/* Weather Alerts */}
+      <SectionWrapper title="Weather Alerts" subtitle="Active warnings and advisories for your region">
+        <div className='space-y-3'>
+          {weatherAlerts.map((alert, i) => (
+            <motion.div key={alert.title} {...fadeInUp} transition={{ delay: i * 0.1 }}>
+              <Card className={cn('border', severityStyles[alert.severity])}>
+                <CardContent className='p-4'>
+                  <div className='flex items-start gap-3'>
+                    <div className={cn('p-2 rounded-lg shrink-0', iconBgStyles[alert.severity])}>
+                      <alert.icon className='w-5 h-5' />
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </SectionWrapper>
-      )}
+                    <div className='flex-1'>
+                      <p className='font-semibold text-sm mb-1'>{alert.title}</p>
+                      <p className='text-sm opacity-80 leading-relaxed'>{alert.message}</p>
+                      <p className='text-xs opacity-60 mt-1.5 flex items-center gap-1'>
+                        <Clock className='w-3 h-3' /> {alert.time}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </SectionWrapper>
     </div>
   );
 }
@@ -994,9 +1095,72 @@ export function MarketPricesPage() {
       ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
       : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';
 
+  // Enhanced chart data with prediction line
+  const trend = chartData.length >= 2
+    ? chartData[chartData.length - 1].price - chartData[chartData.length - 2].price
+    : 0;
+
+  const enhancedChartData = chartData.map((item, idx) => {
+    const remaining = chartData.length - 1 - idx;
+    if (remaining > 2) return { ...item, predicted: undefined as number | undefined };
+    const futureOffset = (3 - remaining) * 0.35;
+    return {
+      ...item,
+      predicted: +(Math.max(0, item.price + trend * futureOffset)).toFixed(1),
+    };
+  });
+
+  // MSP values per crop
+  const mspValues: Record<string, number> = {
+    tomato: 25, rice: 29, chilli: 150, onion: 32,
+    cotton: 7000, maize: 19, brinjal: 20, potato: 18,
+  };
+  const currentMsp = mspValues[cropKey];
+
+  // Market comparison data
+  const getMarketComparison = () => {
+    const basePrice = mockMarketPrices.find(mp => mp.crop === selectedCrop)?.price ?? 0;
+    const markets = [
+      { name: 'Warangal', offset: 0, delta: 2.5 },
+      { name: 'Hyderabad', offset: 2, delta: -1.8 },
+      { name: 'Karimnagar', offset: -2, delta: 1.5 },
+      { name: 'Nizamabad', offset: -1, delta: -0.5 },
+      { name: 'Khammam', offset: -3, delta: -1.2 },
+    ];
+    return markets.map(m => ({
+      market: m.name,
+      todayPrice: basePrice + m.offset,
+      yesterday: +(basePrice + m.offset - m.delta).toFixed(1),
+      change: m.delta,
+    }));
+  };
+
+  const marketComparison = getMarketComparison();
+  const bestMarket = marketComparison.reduce((best, m) => m.todayPrice > best.todayPrice ? m : best);
+
   return (
     <div className='space-y-6'>
       <PageHeader title="Market Prices" subtitle="Today's commodity prices and AI predictions" />
+
+      {/* Market Overview Bar */}
+      <motion.div {...fadeIn}>
+        <div className='flex gap-3 overflow-x-auto pb-2 scrollbar-thin'>
+          {mockMarketPrices.slice(0, 5).map(mp => {
+            const isUp = mp.change >= 0;
+            return (
+              <div key={mp.crop} className='flex items-center gap-2 bg-muted/50 border rounded-lg px-3 py-2 shrink-0 min-w-[150px]'>
+                <span className='text-xs text-muted-foreground font-medium'>{mp.crop}</span>
+                <span className='text-sm font-bold'>&#x20B9;{mp.price.toLocaleString('en-IN')}</span>
+                <span className='text-[10px] text-muted-foreground'>/{mp.unit}</span>
+                <div className={cn('flex items-center gap-0.5 text-xs font-semibold', isUp ? 'text-emerald-600' : 'text-red-600')}>
+                  {isUp ? <TrendingUp className='w-3 h-3' /> : <TrendingDown className='w-3 h-3' />}
+                  {isUp ? '+' : ''}{mp.changePercent}%
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
 
       {/* Crop Selector Row */}
       <motion.div {...fadeIn}>
@@ -1035,8 +1199,8 @@ export function MarketPricesPage() {
         ))}
       </motion.div>
 
-      {/* Price History Chart */}
-      <SectionWrapper title={`Price History - ${selectedCrop}`} subtitle='Track price trends over time'>
+      {/* Enhanced Price History Chart */}
+      <SectionWrapper title={`Price History - ${selectedCrop}`} subtitle='Track price trends with AI predictions'>
         <Card>
           <CardContent className='p-4'>
             <Tabs value={chartTab} onValueChange={(v) => setChartTab(v as 'weekly' | 'monthly')}>
@@ -1046,9 +1210,9 @@ export function MarketPricesPage() {
               </TabsList>
               <TabsContent value={chartTab} className='mt-0'>
                 {chartData.length > 0 ? (
-                  <div className='h-[250px] w-full'>
+                  <div className='h-[280px] w-full'>
                     <ResponsiveContainer width='100%' height='100%'>
-                      <LineChart data={chartData}>
+                      <LineChart data={enhancedChartData}>
                         <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
                         <XAxis
                           dataKey={xKey}
@@ -1058,7 +1222,7 @@ export function MarketPricesPage() {
                         <YAxis
                           tick={{ fontSize: 12 }}
                           className='text-muted-foreground'
-                          tickFormatter={(v) => `₹${v}`}
+                          tickFormatter={(v) => `\u20B9${v}`}
                         />
                         <Tooltip
                           contentStyle={{
@@ -1066,21 +1230,53 @@ export function MarketPricesPage() {
                             border: '1px solid var(--border)',
                             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                           }}
-                          formatter={(value: number) => [`₹${value.toLocaleString('en-IN')}`, 'Price']}
+                          formatter={(value: number, name: string) => [
+                            `\u20B9${value?.toLocaleString('en-IN')}`,
+                            name,
+                          ]}
                         />
+                        <Legend verticalAlign='top' height={36} iconType='line' />
+                        {/* MSP Reference Line */}
+                        {currentMsp && (
+                          <ReferenceLine
+                            y={currentMsp}
+                            stroke='#ef4444'
+                            strokeDasharray='5 5'
+                            strokeWidth={1.5}
+                            label={{
+                              value: 'MSP',
+                              fill: '#ef4444',
+                              fontSize: 11,
+                              position: 'right' as const,
+                            }}
+                          />
+                        )}
+                        {/* Actual Price Line */}
                         <Line
                           type='monotone'
                           dataKey='price'
+                          name='Actual Price'
                           stroke='#16a34a'
                           strokeWidth={2.5}
                           dot={{ r: 4, fill: '#16a34a' }}
                           activeDot={{ r: 6 }}
                         />
+                        {/* Predicted Price Line (dashed) */}
+                        <Line
+                          type='monotone'
+                          dataKey='predicted'
+                          name='AI Predicted'
+                          stroke='#f59e0b'
+                          strokeWidth={2}
+                          strokeDasharray='6 4'
+                          dot={{ r: 3, fill: '#f59e0b' }}
+                          connectNulls={false}
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div className='h-[250px] flex items-center justify-center'>
+                  <div className='h-[280px] flex items-center justify-center'>
                     <p className='text-sm text-muted-foreground'>No price history available for {selectedCrop}</p>
                   </div>
                 )}
@@ -1090,13 +1286,103 @@ export function MarketPricesPage() {
         </Card>
       </SectionWrapper>
 
+      {/* Price Comparison Table */}
+      <SectionWrapper title="Market Comparison" subtitle={`${selectedCrop} prices across major Telangana markets today`}>
+        <Card>
+          <CardContent className='p-0'>
+            <div className='overflow-x-auto'>
+              <table className='w-full text-sm'>
+                <thead>
+                  <tr className='border-b bg-muted/50'>
+                    <th className='text-left p-3 font-medium text-muted-foreground'>Market</th>
+                    <th className='text-right p-3 font-medium text-muted-foreground'>Today&apos;s Price</th>
+                    <th className='text-right p-3 font-medium text-muted-foreground'>Yesterday</th>
+                    <th className='text-right p-3 font-medium text-muted-foreground'>Change</th>
+                    <th className='text-right p-3 font-medium text-muted-foreground'>Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {marketComparison.map((row) => (
+                    <tr key={row.market} className='border-b last:border-0 hover:bg-muted/30 transition-colors'>
+                      <td className='p-3 font-medium'>{row.market}</td>
+                      <td className='text-right p-3 font-semibold'>&#x20B9;{row.todayPrice.toLocaleString('en-IN')}</td>
+                      <td className='text-right p-3 text-muted-foreground'>&#x20B9;{row.yesterday.toLocaleString('en-IN')}</td>
+                      <td className={cn('text-right p-3 font-medium', row.change >= 0 ? 'text-emerald-600' : 'text-red-600')}>
+                        {row.change >= 0 ? '+' : ''}&#x20B9;{row.change.toFixed(1)}
+                      </td>
+                      <td className='text-right p-3'>
+                        {row.change >= 0
+                          ? <TrendingUp className='w-4 h-4 text-emerald-600 inline' />
+                          : <TrendingDown className='w-4 h-4 text-red-600 inline' />
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </SectionWrapper>
+
+      {/* Best Sell Recommendation */}
+      <motion.div {...fadeInUp}>
+        <Card className='border-0 overflow-hidden'>
+          <div className='bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 text-white p-6'>
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+              <div>
+                <div className='flex items-center gap-2 mb-2'>
+                  <div className='p-1.5 bg-white/20 rounded-lg'>
+                    <TrendingUp className='w-5 h-5' />
+                  </div>
+                  <h3 className='text-lg font-bold'>Best Market to Sell Today</h3>
+                </div>
+                <p className='text-white/80 text-sm mb-3'>
+                  AI recommends selling your <span className='font-bold text-white'>{selectedCrop}</span> at:
+                </p>
+                <div className='flex items-baseline gap-2'>
+                  <span className='text-3xl font-bold'>
+                    &#x20B9;{bestMarket.todayPrice.toLocaleString('en-IN')}
+                  </span>
+                  <span className='text-white/60 text-sm'>per {mockMarketPrices.find(mp => mp.crop === selectedCrop)?.unit}</span>
+                </div>
+                <p className='text-white/80 text-sm mt-1'>
+                  at <span className='font-semibold'>{bestMarket.market} Market</span>
+                </p>
+                <div className='flex items-center gap-3 mt-3 text-sm'>
+                  <span className='flex items-center gap-1 text-white/70'>
+                    <Truck className='w-3.5 h-3.5' /> Est. transport: &#x20B9;150
+                  </span>
+                  <span className='flex items-center gap-1 text-white/70'>
+                    <MapPin className='w-3.5 h-3.5' /> 45 km away
+                  </span>
+                </div>
+              </div>
+              <div className='flex flex-col gap-2 sm:items-end'>
+                <Button
+                  variant='secondary'
+                  className='bg-white text-emerald-700 hover:bg-white/90 font-semibold'
+                  onClick={() => window.open('https://maps.google.com', '_blank')}
+                >
+                  <Navigation2 className='w-4 h-4 mr-2' />
+                  View Directions
+                </Button>
+                <p className='text-white/60 text-xs text-right'>
+                  Based on today&apos;s highest bid price
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
       {/* AI Market Prediction */}
       <SectionWrapper title="AI Market Prediction" subtitle='Machine learning-based price forecasts'>
         <Card className='border-amber-200 dark:border-amber-800'>
           <CardHeader className='pb-3'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
-                <span className='text-xl'>🤖</span>
+                <span className='text-xl'>&#x1F916;</span>
                 <CardTitle className='text-base'>Price Prediction - {selectedCrop}</CardTitle>
               </div>
               <div className='flex items-center gap-2'>
@@ -1122,7 +1408,7 @@ export function MarketPricesPage() {
             <div className='flex items-center gap-2 bg-amber-50 dark:bg-amber-950 rounded-lg p-3'>
               <AlertTriangle className='w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0' />
               <p className='text-xs text-amber-800 dark:text-amber-200'>
-                ⚠️ AI Prediction - Not guaranteed. Prices are influenced by many unpredictable factors.
+                &#x26A0;&#xFE0F; AI Prediction - Not guaranteed. Prices are influenced by many unpredictable factors.
               </p>
             </div>
           </CardContent>

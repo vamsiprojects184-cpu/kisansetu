@@ -1,0 +1,1134 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useEffect, useCallback } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import {
+     6→  Droplets, CloudRain, Thermometer, Sun, Wind, AlertTriangle,
+     7→  Upload, Camera, CheckCircle2, Circle, ChevronDown, ChevronRight,
+     8→  TrendingUp, TrendingDown, Minus, Leaf, Flower2, Sprout,
+     9→  Scissors, Hourglass, AlertCircle, Info, Shield, Zap,
+    10→  ArrowRight, Check, X, Loader2, Eye, UploadCloud,
+    11→  Clock, MapPin, Gauge, Waves, Beaker, TestTubes,
+    12→} from 'lucide-react';
+    13→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    14→import { Button } from '@/components/ui/button';
+    15→import { Badge } from '@/components/ui/badge';
+    16→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    17→import {
+    18→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    19→} from '@/components/ui/select';
+    20→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+    21→import { Separator } from '@/components/ui/separator';
+    22→import {
+    23→  PageHeader, CircularProgress, MarketPriceCard, AIInsightCard,
+    24→  SectionWrapper, fadeIn, fadeInUp, staggerContainer, scaleIn,
+    25→} from '@/components/shared/SharedComponents';
+    26→import { useAppStore } from '@/store/use-app-store';
+    27→import {
+    28→  mockSoilHealth, mockCropRecommendations, mockDiseaseResult,
+    29→  mockFertilizerRecs, mockIrrigationStatus, mockWeather,
+    30→  mockForecast, mockMarketPrices, mockMarketPrediction, priceHistory,
+    31→} from '@/data/mock-data';
+    32→import type { CropRecommendation, DiseaseDetection, CropStage } from '@/types';
+    33→import { cn } from '@/lib/utils';
+    34→import {
+    35→  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+    36→  ResponsiveContainer, ReferenceLine,
+    37→} from 'recharts';
+    38→
+    39→// ============================================================
+    40→// 1. SOIL HEALTH PAGE
+    41→// ============================================================
+    42→export function SoilHealthPage() {
+    43→  const [showUpload, setShowUpload] = useState(false);
+    44→  const soil = mockSoilHealth;
+    45→
+    46→  const nutrients = [
+    47→    { label: 'Nitrogen', value: '245 kg/ha', status: 'low' as const, statusLabel: 'LOW', icon: <Beaker className='w-4 h-4' /> },
+    48→    { label: 'Phosphorus', value: '32 kg/ha', status: 'optimal' as const, statusLabel: 'OPTIMAL', icon: <TestTubes className='w-4 h-4' /> },
+    49→    { label: 'Potassium', value: '380 kg/ha', status: 'optimal' as const, statusLabel: 'OPTIMAL', icon: <Gauge className='w-4 h-4' /> },
+    50→    { label: 'pH', value: '6.8', status: 'optimal' as const, statusLabel: 'OPTIMAL', icon: <Droplets className='w-4 h-4' /> },
+    51→    { label: 'Organic Carbon', value: '0.72%', status: 'optimal' as const, statusLabel: 'OPTIMAL', icon: <Leaf className='w-4 h-4' /> },
+    52→  ];
+    53→
+    54→  const statusBadgeColor = (status: string) => {
+    55→    switch (status) {
+    56→      case 'low': return 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';
+    57→      case 'optimal': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300';
+    58→      case 'high': return 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
+    59→      default: return 'bg-gray-100 text-gray-700';
+    60→    }
+    61→  };
+    62→
+    63→  return (
+    64→    <div className='space-y-6'>
+    65→      <PageHeader title="Soil Health Intelligence" subtitle="Monitor and improve your soil quality" />
+    66→
+    67→      {/* Hero Card with Circular Progress */}
+    68→      <motion.div {...fadeInUp}>
+    69→        <Card className='border-0 gradient-green text-white'>
+    70→          <CardContent className='p-6'>
+    71→            <div className='flex flex-col sm:flex-row items-center gap-6'>
+    72→              <CircularProgress value={soil.score} label={String(soil.score)} sublabel={soil.grade.toUpperCase()} color='#ffffff' />
+    73→              <div className='text-center sm:text-left'>
+    74→                <h2 className='text-xl font-bold'>Overall Soil Health</h2>
+    75→                <p className='text-white/80 mt-1 text-sm'>Last tested: {soil.lastTestDate}</p>
+    76→                <div className='flex flex-wrap gap-2 mt-3'>
+    77→                  {soil.suitableCrops.slice(0, 3).map(crop => (
+    78→                    <Badge key={crop} className='bg-white/20 text-white hover:bg-white/30 border-0'>{crop}</Badge>
+    79→                  ))}
+    80→                  {soil.suitableCrops.length > 3 && (
+    81→                    <Badge className='bg-white/20 text-white hover:bg-white/30 border-0'>+{soil.suitableCrops.length - 3} more</Badge>
+    82→                  )}
+    83→                </div>
+    84→              </div>
+    85→            </div>
+    86→          </CardContent>
+    87→        </Card>
+    88→      </motion.div>
+    89→
+    90→      {/* Nutrient Cards */}
+    91→      <SectionWrapper title="Nutrient Levels" subtitle="Detailed breakdown of soil nutrients">
+    92→        <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3'>
+    93→          {nutrients.map((n, i) => (
+    94→            <motion.div key={n.label} {...fadeIn} transition={{ delay: i * 0.08 }}>
+    95→              <Card className='hover:shadow-md transition-shadow'>
+    96→                <CardContent className='p-4'>
+    97→                  <div className='flex items-center gap-2 mb-2'>
+    98→                    <div className='p-1.5 rounded-lg bg-primary/10 text-primary'>{n.icon}</div>
+    99→                    <span className='text-xs text-muted-foreground font-medium'>{n.label}</span>
+   100→                  </div>
+   101→                  <p className='text-lg font-bold'>{n.value}</p>
+   102→                  <Badge className={cn('mt-2 text-[10px] px-1.5 py-0', statusBadgeColor(n.status))} variant='secondary'>
+   103→                    {n.statusLabel}
+   104→                  </Badge>
+   105→                </CardContent>
+   106→              </Card>
+   107→            </motion.div>
+   108→          ))}
+   109→        </div>
+   110→      </SectionWrapper>
+   111→
+   112→      {/* AI Analysis */}
+   113→      <AIInsightCard
+   114→        title="AI Soil Analysis"
+   115→        message="Your soil is suitable for vegetable cultivation, but nitrogen levels should be improved for optimal tomato growth."
+   116→        type='info'
+   117→      />
+   118→
+   119→      {/* Recommended Actions */}
+   120→      <SectionWrapper title="Recommended Actions" subtitle="Tasks to improve soil health">
+   121→        <div className='space-y-3'>
+   122→          {soil.recommendations.map((rec, i) => (
+   123→            <motion.div key={i} {...fadeIn} transition={{ delay: i * 0.08 }}>
+   124→              <Card className='hover:shadow-sm transition-shadow'>
+   125→                <CardContent className='p-4 flex items-start gap-3'>
+   126→                  <div className='mt-0.5'>
+   127→                    <Circle className='w-5 h-5 text-muted-foreground/40' />
+   128→                  </div>
+   129→                  <p className='text-sm leading-relaxed'>{rec}</p>
+   130→                </CardContent>
+   131→              </Card>
+   132→            </motion.div>
+   133→          ))}
+   134→        </div>
+   135→      </SectionWrapper>
+   136→
+   137→      {/* CTA Button */}
+   138→      <motion.div {...fadeIn} className='pb-4'>
+   139→        <Button
+   140→          onClick={() => setShowUpload(true)}
+   141→          className='w-full sm:w-auto gradient-green text-white hover:opacity-90'
+   142→          size='lg'
+   143→        >
+   144→          <UploadCloud className='w-4 h-4 mr-2' />
+   145→          Analyze New Soil Report
+   146→        </Button>
+   147→      </motion.div>
+   148→
+   149→      {/* Upload Dialog (visual only) */}
+   150→      <Dialog open={showUpload} onOpenChange={setShowUpload}>
+   151→        <DialogContent>
+   152→          <DialogHeader>
+   153→            <DialogTitle>Upload Soil Report</DialogTitle>
+   154→            <DialogDescription>Upload your soil test report for AI analysis</DialogDescription>
+   155→          </DialogHeader>
+   156→          <div className='border-2 border-dashed border-muted-foreground/30 rounded-xl p-8 text-center space-y-3 hover:border-primary/50 transition-colors cursor-pointer'>
+   157→            <Upload className='w-10 h-10 mx-auto text-muted-foreground' />
+   158→            <p className='text-sm text-muted-foreground'>Drag & drop your soil report here</p>
+   159→            <p className='text-xs text-muted-foreground'>PDF, JPG, PNG up to 10MB</p>
+   160→            <Button variant='outline' size='sm'>Browse Files</Button>
+   161→          </div>
+   162→        </DialogContent>
+   163→      </Dialog>
+   164→    </div>
+   165→  );
+   166→}
+   167→
+   168→// ============================================================
+   169→// 2. CROP RECOMMENDATIONS PAGE
+   170→// ============================================================
+   171→export function CropRecommendationsPage() {
+   172→  const [seasonFilter, setSeasonFilter] = useState('all');
+   173→  const [waterFilter, setWaterFilter] = useState('all');
+   174→  const [selectedRec, setSelectedRec] = useState<CropRecommendation | null>(null);
+   175→
+   176→  const filtered = mockCropRecommendations.filter(rec => {
+   177→    if (seasonFilter !== 'all' && rec.season !== seasonFilter) return false;
+   178→    if (waterFilter !== 'all' && rec.waterRequirement !== waterFilter) return false;
+   179→    return true;
+   180→  });
+   181→
+   182→  const riskColor = (risk: string) => {
+   183→    switch (risk) {
+   184→      case 'low': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300';
+   185→      case 'medium': return 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
+   186→      case 'high': return 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';
+   187→      default: return '';
+   188→    }
+   189→  };
+   190→
+   191→  const waterIcon = (w: string) => {
+   192→    switch (w) {
+   193→      case 'low': return <Droplets className='w-3 h-3' />;
+   194→      case 'medium': return <Waves className='w-3 h-3' />;
+   195→      case 'high': return <CloudRain className='w-3 h-3' />;
+   196→      default: return null;
+   197→    }
+   198→  };
+   199→
+   200→  return (
+   201→    <div className='space-y-6'>
+   202→      <PageHeader title="Crop Recommendations" subtitle="AI-powered crop suggestions for your farm" />
+   203→
+   204→      {/* Filters */}
+   205→      <motion.div {...fadeIn} className='flex flex-wrap gap-2'>
+   206→        <div className='flex items-center gap-1.5 mr-2'>
+   207→          <span className='text-xs text-muted-foreground font-medium'>Season:</span>
+   208→          {['all', 'kharif', 'rabi', 'zaid'].map(s => (
+   209→            <Button
+   210→              key={s}
+   211→              size='sm'
+   212→              variant={seasonFilter === s ? 'default' : 'outline'}
+   213→              onClick={() => setSeasonFilter(s)}
+   214→              className='text-xs h-8'
+   215→            >
+   216→              {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+   217→            </Button>
+   218→          ))}
+   219→        </div>
+   220→        <Separator orientation='vertical' className='h-8 hidden sm:block' />
+   221→        <div className='flex items-center gap-1.5'>
+   222→          <span className='text-xs text-muted-foreground font-medium'>Water:</span>
+   223→          {['all', 'low', 'medium', 'high'].map(w => (
+   224→            <Button
+   225→              key={w}
+   226→              size='sm'
+   227→              variant={waterFilter === w ? 'default' : 'outline'}
+   228→              onClick={() => setWaterFilter(w)}
+   229→              className='text-xs h-8'
+   230→            >
+   231→              {w === 'all' ? 'All' : w.charAt(0).toUpperCase() + w.slice(1)}
+   232→            </Button>
+   233→          ))}
+   234→        </div>
+   235→      </motion.div>
+   236→
+   237→      {/* Recommendation Grid */}
+   238→      <motion.div
+   239→        className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
+   240→        variants={staggerContainer}
+   241→        initial='initial'
+   242→        animate='animate'
+   243→      >
+   244→        {filtered.map((rec) => (
+   245→          <motion.div key={rec.id} {...scaleIn}>
+   246→            <Card className='hover:shadow-lg transition-all hover:-translate-y-0.5 cursor-pointer h-full'
+   247→              onClick={() => setSelectedRec(selectedRec?.id === rec.id ? null : rec)}
+   248→            >
+   249→              <CardContent className='p-4 space-y-3'>
+   250→                <div className='flex items-start gap-3'>
+   251→                  <div className='text-3xl'>{rec.icon}</div>
+   252→                  <div className='flex-1'>
+   253→                    <div className='flex items-center justify-between'>
+   254→                      <h3 className='font-semibold'>{rec.cropName}</h3>
+   255→                      <span className='text-2xl font-bold text-emerald-600'>{rec.suitability}%</span>
+   256→                    </div>
+   257→                    <p className='text-xs text-muted-foreground'>Suitability Score</p>
+   258→                  </div>
+   259→                </div>
+   260→                <div className='grid grid-cols-3 gap-2 text-center'>
+   261→                  <div className='bg-muted/50 rounded-lg p-2'>
+   262→                    <p className='text-xs text-muted-foreground'>Revenue</p>
+   263→                    <p className='text-sm font-semibold'>{rec.expectedRevenue}</p>
+   264→                  </div>
+   265→                  <div className='bg-muted/50 rounded-lg p-2'>
+   266→                    <p className='text-xs text-muted-foreground'>Water</p>
+   267→                    <p className='text-sm font-semibold flex items-center justify-center gap-1'>
+   268→                      {waterIcon(rec.waterRequirement)}
+   269→                      {rec.waterRequirement.charAt(0).toUpperCase() + rec.waterRequirement.slice(1)}
+   270→                    </p>
+   271→                  </div>
+   272→                  <div className='bg-muted/50 rounded-lg p-2'>
+   273→                    <p className='text-xs text-muted-foreground'>Risk</p>
+   274→                    <Badge className={cn('text-[10px]', riskColor(rec.risk))} variant='secondary'>
+   275→                      {rec.risk.charAt(0).toUpperCase() + rec.risk.slice(1)}
+   276→                    </Badge>
+   277→                  </div>
+   278→                </div>
+   279→                <Button
+   280→                  variant='outline'
+   281→                  size='sm'
+   282→                  className='w-full text-xs'
+   283→                  onClick={(e) => { e.stopPropagation(); setSelectedRec(selectedRec?.id === rec.id ? null : rec); }}
+   284→                >
+   285→                  <Eye className='w-3 h-3 mr-1' />
+   286→                  View Details
+   287→                </Button>
+   288→              </CardContent>
+   289→            </Card>
+   290→          </motion.div>
+   291→        ))}
+   292→      </motion.div>
+   293→
+   294→      {/* Detail Section */}
+   295→      <AnimatePresence>
+   296→        {selectedRec && (
+   297→          <motion.div
+   298→            initial={{ opacity: 0, height: 0 }}
+   299→            animate={{ opacity: 1, height: 'auto' }}
+   300→            exit={{ opacity: 0, height: 0 }}
+   301→            transition={{ duration: 0.3 }}
+   302→          >
+   303→            <Card className='border-primary/30 shadow-lg'>
+   304→              <CardHeader>
+   305→                <div className='flex items-center gap-3'>
+   306→                  <span className='text-3xl'>{selectedRec.icon}</span>
+   307→                  <div>
+   308→                    <CardTitle>{selectedRec.cropName} Details</CardTitle>
+   309→                    <p className='text-sm text-muted-foreground mt-1'>Growing Duration: {selectedRec.growingDuration}</p>
+   310→                  </div>
+   311→                </div>
+   312→              </CardHeader>
+   313→              <CardContent className='space-y-5'>
+   314→                <div>
+   315→                  <h4 className='font-semibold text-sm mb-2 flex items-center gap-2'>
+   316→                    <CheckCircle2 className='w-4 h-4 text-emerald-600' /> Why This Crop?
+   317→                  </h4>
+   318→                  <ul className='space-y-2'>
+   319→                    {selectedRec.reasons.map((r, i) => (
+   320→                      <li key={i} className='flex items-start gap-2 text-sm text-muted-foreground'>
+   321→                        <Check className='w-4 h-4 text-emerald-600 mt-0.5 shrink-0' />
+   322→                        <span>{r}</span>
+   323→                      </li>
+   324→                    ))}
+   325→                  </ul>
+   326→                </div>
+   327→                <Separator />
+   328→                <div>
+   329→                  <h4 className='font-semibold text-sm mb-2 flex items-center gap-2'>
+   330→                    <TrendingUp className='w-4 h-4 text-emerald-600' /> Market Opportunity
+   331→                  </h4>
+   332→                  <p className='text-sm text-muted-foreground'>{selectedRec.marketOpportunity}</p>
+   333→                </div>
+   334→                <Separator />
+   335→                <div className='grid grid-cols-2 gap-4'>
+   336→                  <div className='bg-muted/50 rounded-lg p-3'>
+   337→                    <p className='text-xs text-muted-foreground'>Investment</p>
+   338→                    <p className='font-semibold'>{selectedRec.investment}</p>
+   339→                  </div>
+   340→                  <div className='bg-muted/50 rounded-lg p-3'>
+   341→                    <p className='text-xs text-muted-foreground'>Expected Yield</p>
+   342→                    <p className='font-semibold'>{selectedRec.expectedYield}</p>
+   343→                  </div>
+   344→                </div>
+   345→                <Button className='w-full gradient-green text-white hover:opacity-90' size='lg'>
+   346→                  Select This Crop
+   347→                </Button>
+   348→              </CardContent>
+   349→            </Card>
+   350→          </motion.div>
+   351→        )}
+   352→      </AnimatePresence>
+   353→    </div>
+   354→  );
+   355→}
+   356→
+   357→// ============================================================
+   358→// 3. DISEASE DETECTION PAGE
+   359→// ============================================================
+   360→export function DiseaseDetectionPage() {
+   361→  const [analyzing, setAnalyzing] = useState(false);
+   362→  const [result, setResult] = useState<DiseaseDetection | null>(null);
+   363→  const { navigate } = useAppStore();
+   364→
+   365→  const handleScan = useCallback(() => {
+   366→    if (analyzing) return;
+   367→    setAnalyzing(true);
+   368→    setResult(null);
+   369→    setTimeout(() => {
+   370→      setAnalyzing(false);
+   371→      setResult(mockDiseaseResult);
+   372→    }, 2000);
+   373→  }, [analyzing]);
+   374→
+   375→  const severityColor = (s: string) => {
+   376→    switch (s) {
+   377→      case 'low': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300';
+   378→      case 'moderate': return 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
+   379→      case 'high': return 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300';
+   380→      case 'severe': return 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';
+   381→      default: return '';
+   382→    }
+   383→  };
+   384→
+   385→  return (
+   386→    <div className='space-y-6'>
+   387→      <PageHeader title="Disease Detection" subtitle="AI-powered crop disease identification" />
+   388→
+   389→      {/* Scan Area */}
+   390→      <motion.div {...fadeInUp}>
+   391→        <Card className='border-0 overflow-hidden'>
+   392→          <CardContent className='p-0'>
+   393→            <div
+   394→              className='border-2 border-dashed border-muted-foreground/30 rounded-2xl p-8 sm:p-12 text-center space-y-4 bg-muted/20 hover:border-primary/40 transition-colors cursor-pointer'
+   395→              onClick={handleScan}
+   396→            >
+   397→              {analyzing ? (
+   398→                <motion.div
+   399→                  initial={{ opacity: 0, scale: 0.8 }}
+   400→                  animate={{ opacity: 1, scale: 1 }}
+   401→                  className='space-y-4'
+   402→                >
+   403→                  <div className='relative inline-flex items-center justify-center'>
+   404→                    <div className='w-20 h-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin' />
+   405→                    <div className='absolute'>
+   406→                      <Loader2 className='w-8 h-8 text-primary animate-spin' />
+   407→                    </div>
+   408→                  </div>
+   409→                  <p className='text-lg font-semibold'>Analyzing with AI...</p>
+   410→                  <p className='text-sm text-muted-foreground'>Identifying diseases and providing recommendations</p>
+   411→                </motion.div>
+   412→              ) : (
+   413→                <>
+   414→                  <div className='text-6xl'>📷</div>
+   415→                  <div>
+   416→                    <h3 className='text-lg font-semibold'>Scan Your Crop</h3>
+   417→                    <p className='text-sm text-muted-foreground mt-1'>Take a photo or upload an image of the affected area</p>
+   418→                  </div>
+   419→                  <div className='flex items-center justify-center gap-3 pt-2'>
+   420→                    <Button className='gradient-green text-white hover:opacity-90'>
+   421→                      <Camera className='w-4 h-4 mr-2' />
+   422→                      Take Photo
+   423→                    </Button>
+   424→                    <Button variant='outline' onClick={(e) => { e.stopPropagation(); handleScan(); }}>
+   425→                      <Upload className='w-4 h-4 mr-2' />
+   426→                      Upload
+   427→                    </Button>
+   428→                  </div>
+   429→                </>
+   430→              )}
+   431→            </div>
+   432→          </CardContent>
+   433→        </Card>
+   434→      </motion.div>
+   435→
+   436→      {/* Disease Result */}
+   437→      <AnimatePresence>
+   438→        {result && (
+   439→          <motion.div
+   440→            initial={{ opacity: 0, y: 20 }}
+   441→            animate={{ opacity: 1, y: 0 }}
+   442→            exit={{ opacity: 0, y: -20 }}
+   443→            className='space-y-4'
+   444→          >
+   445→            {/* Disease Header Card */}
+   446→            <Card className='border-red-200 dark:border-red-800'>
+   447→              <CardContent className='p-4'>
+   448→                <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
+   449→                  <div className='flex items-center gap-3'>
+   450→                    <div className='p-2.5 rounded-xl bg-red-100 dark:bg-red-950'>
+   451→                      <AlertTriangle className='w-5 h-5 text-red-600 dark:text-red-400' />
+   452→                    </div>
+   453→                    <div>
+   454→                      <h3 className='font-bold text-lg'>{result.diseaseName}</h3>
+   455→                      <p className='text-sm text-muted-foreground'>Detected in {result.cropName}</p>
+   456→                    </div>
+   457→                  </div>
+   458→                  <div className='flex items-center gap-3'>
+   459→                    <div className='text-right'>
+   460→                      <p className='text-2xl font-bold text-red-600'>{result.confidence}%</p>
+   461→                      <p className='text-xs text-muted-foreground'>Confidence</p>
+   462→                    </div>
+   463→                    <Badge className={cn('text-xs', severityColor(result.severity))} variant='secondary'>
+   464→                      {result.severity.charAt(0).toUpperCase() + result.severity.slice(1)}
+   465→                    </Badge>
+   466→                  </div>
+   467→                </div>
+   468→              </CardContent>
+   469→            </Card>
+   470→
+   471→            {/* Description */}
+   472→            <Card>
+   473→              <CardContent className='p-4'>
+   474→                <h4 className='font-semibold text-sm mb-2 flex items-center gap-2'>
+   475→                  <Info className='w-4 h-4 text-blue-500' /> Description
+   476→                </h4>
+   477→                <p className='text-sm text-muted-foreground leading-relaxed'>{result.description}</p>
+   478→              </CardContent>
+   479→            </Card>
+   480→
+   481→            {/* Causes */}
+   482→            <Card>
+   483→              <CardContent className='p-4'>
+   484→                <h4 className='font-semibold text-sm mb-3 flex items-center gap-2'>
+   485→                  <AlertCircle className='w-4 h-4 text-amber-500' /> Causes
+   486→                </h4>
+   487→                <ul className='space-y-2'>
+   488→                  {result.causes.map((c, i) => (
+   489→                    <li key={i} className='flex items-start gap-2 text-sm text-muted-foreground'>
+   490→                      <ChevronRight className='w-4 h-4 text-amber-500 mt-0.5 shrink-0' />
+   491→                      <span>{c}</span>
+   492→                    </li>
+   493→                  ))}
+   494→                </ul>
+   495→              </CardContent>
+   496→            </Card>
+   497→
+   498→            {/* Recommended Actions */}
+   499→            <Card>
+   500→              <CardContent className='p-4'>
+   501→                <h4 className='font-semibold text-sm mb-3 flex items-center gap-2'>
+   502→                  <Zap className='w-4 h-4 text-emerald-500' /> Recommended Actions
+   503→                </h4>
+   504→                <ul className='space-y-2'>
+   505→                  {result.recommendedActions.map((a, i) => (
+   506→                    <li key={i} className='flex items-start gap-2 text-sm text-muted-foreground'>
+   507→                      <div className='w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center shrink-0 mt-0.5'>
+   508→                        <span className='text-[10px] font-bold text-emerald-700 dark:text-emerald-300'>{i + 1}</span>
+   509→                      </div>
+   510→                      <span>{a}</span>
+   511→                    </li>
+   512→                  ))}
+   513→                </ul>
+   514→              </CardContent>
+   515→            </Card>
+   516→
+   517→            {/* Prevention Tips */}
+   518→            <Card>
+   519→              <CardContent className='p-4'>
+   520→                <h4 className='font-semibold text-sm mb-3 flex items-center gap-2'>
+   521→                  <Shield className='w-4 h-4 text-blue-500' /> Prevention Tips
+   522→                </h4>
+   523→                <ul className='space-y-2'>
+   524→                  {result.preventionTips.map((t, i) => (
+   525→                    <li key={i} className='flex items-start gap-2 text-sm text-muted-foreground'>
+   526→                      <CheckCircle2 className='w-4 h-4 text-blue-500 mt-0.5 shrink-0' />
+   527→                      <span>{t}</span>
+   528→                    </li>
+   529→                  ))}
+   530→                </ul>
+   531→              </CardContent>
+   532→            </Card>
+   533→
+   534→            {/* Consult Expert Button */}
+   535→            <Button
+   536→              className='w-full gradient-green text-white hover:opacity-90'
+   537→              size='lg'
+   538→              onClick={() => navigate('expert/dashboard')}
+   539→            >
+   540→              Consult Expert
+   541→              <ArrowRight className='w-4 h-4 ml-2' />
+   542→            </Button>
+   543→          </motion.div>
+   544→        )}
+   545→      </AnimatePresence>
+   546→
+   547→      {/* Recent Scans - empty state */}
+   548→      {!result && !analyzing && (
+   549→        <SectionWrapper title="Recent Scans" subtitle="Your recent disease detection results">
+   550→          <Card>
+   551→            <CardContent className='p-8 text-center'>
+   552→              <div className='text-4xl mb-3'>🔍</div>
+   553→              <p className='text-sm text-muted-foreground'>No scans yet. Scan your crop to detect diseases.</p>
+   554→            </CardContent>
+   555→          </Card>
+   556→        </SectionWrapper>
+   557→      )}
+   558→    </div>
+   559→  );
+   560→}
+   561→
+   562→// ============================================================
+   563→// 4. FERTILIZER PAGE
+   564→// ============================================================
+   565→const STAGES: { key: CropStage; label: string; icon: React.ReactNode }[] = [
+   566→  { key: 'planting', label: 'Planting', icon: <Sprout className='w-4 h-4' /> },
+   567→  { key: 'vegetative', label: 'Vegetative', icon: <Leaf className='w-4 h-4' /> },
+   568→  { key: 'flowering', label: 'Flowering', icon: <Flower2 className='w-4 h-4' /> },
+   569→  { key: 'harvest', label: 'Harvest', icon: <Scissors className='w-4 h-4' /> },
+   570→];
+   571→
+   572→export function FertilizerPage() {
+   573→  const [farm, setFarm] = useState('farm1');
+   574→  const [crop, setCrop] = useState('tomato');
+   575→  const currentStage: CropStage = 'flowering';
+   576→  const currentStageIdx = STAGES.findIndex(s => s.key === currentStage);
+   577→
+   578→  const stageLabel = (stage: string) => {
+   579→    const s = STAGES.find(st => st.key === stage);
+   580→    return s ? s.label : stage;
+   581→  };
+   582→
+   583→  return (
+   584→    <div className='space-y-6'>
+   585→      <PageHeader title="Fertilizer Recommendations" subtitle="Crop-stage specific fertilizer guidance" />
+   586→
+   587→      {/* Selectors */}
+   588→      <motion.div {...fadeIn} className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+   589→        <div>
+   590→          <label className='text-xs text-muted-foreground font-medium mb-1.5 block'>Farm</label>
+   591→          <Select value={farm} onValueChange={setFarm}>
+   592→            <SelectTrigger><SelectValue /></SelectTrigger>
+   593→            <SelectContent>
+   594→              <SelectItem value='farm1'>Green Valley Farm</SelectItem>
+   595→              <SelectItem value='farm2'>Cherry Blossom Acres</SelectItem>
+   596→            </SelectContent>
+   597→          </Select>
+   598→        </div>
+   599→        <div>
+   600→          <label className='text-xs text-muted-foreground font-medium mb-1.5 block'>Crop</label>
+   601→          <Select value={crop} onValueChange={setCrop}>
+   602→            <SelectTrigger><SelectValue /></SelectTrigger>
+   603→            <SelectContent>
+   604→              <SelectItem value='tomato'>🍅 Tomato</SelectItem>
+   605→              <SelectItem value='rice'>🌾 Rice</SelectItem>
+   606→              <SelectItem value='chilli'>🌶️ Chilli</SelectItem>
+   607→            </SelectContent>
+   608→          </Select>
+   609→        </div>
+   610→      </motion.div>
+   611→
+   612→      {/* Growth Timeline */}
+   613→      <motion.div {...fadeInUp}>
+   614→        <Card>
+   615→          <CardContent className='p-4'>
+   616→            <div className='flex items-center justify-between relative'>
+   617→              {/* Progress line */}
+   618→              <div className='absolute top-5 left-8 right-8 h-0.5 bg-muted hidden sm:block'>
+   619→                <div
+   620→                  className='h-full bg-primary transition-all'
+   621→                  style={{ width: `${(currentStageIdx / (STAGES.length - 1)) * 100}%` }}
+   622→                />
+   623→              </div>
+   624→              {STAGES.map((stage, idx) => {
+   625→                const isCompleted = idx < currentStageIdx;
+   626→                const isCurrent = idx === currentStageIdx;
+   627→                return (
+   628→                  <div key={stage.key} className='flex flex-col items-center gap-2 relative z-10 flex-1'>
+   629→                    <div className={cn(
+   630→                      'w-10 h-10 rounded-full flex items-center justify-center transition-all',
+   631→                      isCurrent && 'bg-primary text-primary-foreground ring-4 ring-primary/20 animate-pulse-green',
+   632→                      isCompleted && 'bg-primary text-primary-foreground',
+   633→                      !isCurrent && !isCompleted && 'bg-muted text-muted-foreground'
+   634→                    )}>
+   635→                      {stage.icon}
+   636→                    </div>
+   637→                    <span className={cn(
+   638→                      'text-xs font-medium',
+   639→                      isCurrent && 'text-primary',
+   640→                      isCompleted && 'text-muted-foreground',
+   641→                      !isCurrent && !isCompleted && 'text-muted-foreground'
+   642→                    )}>
+   643→                      {stage.label}
+   644→                    </span>
+   645→                  </div>
+   646→                );
+   647→              })}
+   648→            </div>
+   649→          </CardContent>
+   650→        </Card>
+   651→      </motion.div>
+   652→
+   653→      {/* Fertilizer Recommendation Cards */}
+   654→      <SectionWrapper title="Fertilizer Schedule" subtitle="Stage-wise fertilizer recommendations">
+   655→        <div className='space-y-4'>
+   656→          {mockFertilizerRecs.map((rec, i) => {
+   657→            const isCurrent = rec.stage === currentStage;
+   658→            return (
+   659→              <motion.div key={rec.id} {...fadeIn} transition={{ delay: i * 0.08 }}>
+   660→                <Card className={cn(
+   661→                  'transition-all hover:shadow-md',
+   662→                  isCurrent && 'border-2 border-primary shadow-md bg-primary/[0.02]'
+   663→                )}>
+   664→                  <CardContent className='p-4'>
+   665→                    <div className='flex flex-col sm:flex-row sm:items-start gap-4'>
+   666→                      <div className='flex items-center gap-2 sm:flex-col sm:items-center sm:text-center sm:min-w-[100px]'>
+   667→                        <Badge className={cn(
+   668→                          'text-xs',
+   669→                          isCurrent
+   670→                            ? 'bg-primary text-primary-foreground'
+   671→                            : 'bg-muted text-muted-foreground'
+   672→                        )} variant={isCurrent ? 'default' : 'secondary'}>
+   673→                          {stageLabel(rec.stage)}
+   674→                        </Badge>
+   675→                        {isCurrent && (
+   676→                          <span className='text-[10px] text-primary font-medium'>CURRENT STAGE</span>
+   677→                        )}
+   678→                      </div>
+   679→                      <div className='flex-1 space-y-2'>
+   680→                        <div className='flex flex-wrap gap-x-4 gap-y-1 text-sm'>
+   681→                          <div>
+   682→                            <span className='text-muted-foreground text-xs'>Nutrient: </span>
+   683→                            <span className='font-medium'>{rec.nutrient}</span>
+   684→                          </div>
+   685→                          <div>
+   686→                            <span className='text-muted-foreground text-xs'>Quantity: </span>
+   687→                            <span className='font-medium'>{rec.quantity}</span>
+   688→                          </div>
+   689→                        </div>
+   690→                        <p className='text-xs text-muted-foreground'>
+   691→                          <span className='font-medium text-foreground/70'>Method:</span> {rec.applicationMethod}
+   692→                        </p>
+   693→                        <div className='flex flex-wrap gap-3 text-xs text-muted-foreground'>
+   694→                          <span className='flex items-center gap-1'>
+   695→                            <Clock className='w-3 h-3' /> {rec.timing}
+   696→                          </span>
+   697→                          <span className='flex items-center gap-1'>
+   698→                            <Leaf className='w-3 h-3' /> {rec.product}
+   699→                          </span>
+   700→                        </div>
+   701→                        {rec.warning && (
+   702→                          <div className='flex items-start gap-2 bg-amber-50 dark:bg-amber-950 rounded-lg p-2.5 text-xs text-amber-800 dark:text-amber-200'>
+   703→                            <AlertTriangle className='w-3.5 h-3.5 mt-0.5 shrink-0' />
+   704→                            <span>{rec.warning}</span>
+   705→                          </div>
+   706→                        )}
+   707→                      </div>
+   708→                    </div>
+   709→                  </CardContent>
+   710→                </Card>
+   711→              </motion.div>
+   712→            );
+   713→          })}
+   714→        </div>
+   715→      </SectionWrapper>
+   716→    </div>
+   717→  );
+   718→}
+   719→
+   720→// ============================================================
+   721→// 5. IRRIGATION PAGE
+   722→// ============================================================
+   723→export function IrrigationPage() {
+   724→  const status = mockIrrigationStatus;
+   725→
+   726→  const factorCardColor = (s: string) => {
+   727→    switch (s.toLowerCase()) {
+   728→      case 'low': return 'border-amber-300 dark:border-amber-700';
+   729→      case 'normal': return 'border-emerald-300 dark:border-emerald-700';
+   730→      case 'critical': return 'border-red-300 dark:border-red-700';
+   731→      default: return 'border-border';
+   732→    }
+   733→  };
+   734→
+   735→  const factorDotColor = (s: string) => {
+   736→    switch (s.toLowerCase()) {
+   737→      case 'low': return 'bg-amber-500';
+   738→      case 'normal': return 'bg-emerald-500';
+   739→      case 'critical': return 'bg-red-500';
+   740→      default: return 'bg-gray-400';
+   741→    }
+   742→  };
+   743→
+   744→  const factors = [
+   745→    { label: 'Soil Moisture', value: `${status.factors.soilMoisture.value}%`, status: status.factors.soilMoisture.status, icon: <Droplets className='w-5 h-5' /> },
+   746→    { label: 'Temperature', value: `${status.factors.temperature.value}°C`, status: status.factors.temperature.status, icon: <Thermometer className='w-5 h-5' /> },
+   747→    { label: 'Rain Probability', value: `${status.factors.rainProbability.value}%`, status: status.factors.rainProbability.status, icon: <CloudRain className='w-5 h-5' /> },
+   748→    { label: 'Crop Stage', value: status.factors.cropStage.value, status: status.factors.cropStage.status, icon: <Flower2 className='w-5 h-5' /> },
+   749→  ];
+   750→
+   751→  return (
+   752→    <div className='space-y-6'>
+   753→      <PageHeader title="Irrigation Management" subtitle="Smart water management for your crops" />
+   754→
+   755→      {/* Big Status Card */}
+   756→      <motion.div {...fadeInUp}>
+   757→        <Card className={cn('border-0', status.required ? 'gradient-green' : 'bg-blue-500') + ' text-white'}>
+   758→          <CardContent className='p-6'>
+   759→            <div className='flex flex-col sm:flex-row items-center gap-6'>
+   760→              <div className='text-6xl'>💧</div>
+   761→              <div className='text-center sm:text-left'>
+   762→                <h2 className='text-xl font-bold'>{status.required ? 'Irrigation Recommended' : 'No Irrigation Needed'}</h2>
+   763→                <p className='text-white/80 mt-1 text-sm'>Based on current conditions and crop needs</p>
+   764→              </div>
+   765→            </div>
+   766→            <div className='grid grid-cols-2 gap-4 mt-6'>
+   767→              <div className='bg-white/15 rounded-xl p-4 text-center'>
+   768→                <p className='text-white/70 text-xs'>Recommended Water</p>
+   769→                <p className='text-2xl font-bold mt-1'>{status.recommendedWater.toLocaleString()} Liters</p>
+   770→              </div>
+   771→              <div className='bg-white/15 rounded-xl p-4 text-center'>
+   772→                <p className='text-white/70 text-xs'>Best Time</p>
+   773→                <p className='text-2xl font-bold mt-1'>{status.bestTime}</p>
+   774→              </div>
+   775→            </div>
+   776→          </CardContent>
+   777→        </Card>
+   778→      </motion.div>
+   779→
+   780→      {/* Factor Cards 2x2 Grid */}
+   781→      <SectionWrapper title="Irrigation Factors" subtitle="Key parameters affecting irrigation decision">
+   782→        <div className='grid grid-cols-2 gap-3'>
+   783→          {factors.map((f, i) => (
+   784→            <motion.div key={f.label} {...fadeIn} transition={{ delay: i * 0.08 }}>
+   785→              <Card className={cn('h-full', factorCardColor(f.status))}>
+   786→                <CardContent className='p-4'>
+   787→                  <div className='flex items-center justify-between mb-2'>
+   788→                    <div className='p-2 rounded-lg bg-muted text-muted-foreground'>{f.icon}</div>
+   789→                    <div className='flex items-center gap-1.5'>
+   790→                      <div className={cn('w-2 h-2 rounded-full', factorDotColor(f.status))} />
+   791→                      <span className={cn(
+   792→                        'text-[10px] font-semibold uppercase',
+   793→                        f.status === 'Low' && 'text-amber-600',
+   794→                        f.status === 'Normal' && 'text-emerald-600',
+   795→                        f.status === 'Critical' && 'text-red-600',
+   796→                      )}>
+   797→                        {f.status}
+   798→                      </span>
+   799→                    </div>
+   800→                  </div>
+   801→                  <p className='text-xs text-muted-foreground'>{f.label}</p>
+   802→                  <p className='text-xl font-bold mt-1'>{f.value}</p>
+   803→                </CardContent>
+   804→              </Card>
+   805→            </motion.div>
+   806→          ))}
+   807→        </div>
+   808→      </SectionWrapper>
+   809→
+   810→      {/* AI Explanation */}
+   811→      <AIInsightCard
+   812→        title="AI Irrigation Analysis"
+   813→        message={status.aiExplanation}
+   814→        type={status.required ? 'success' : 'info'}
+   815→      />
+   816→    </div>
+   817→  );
+   818→}
+   819→
+   820→// ============================================================
+   821→// 6. WEATHER PAGE
+   822→// ============================================================
+   823→export function WeatherPage() {
+   824→  const weather = mockWeather;
+   825→  const forecast = mockForecast;
+   826→  const alerts = forecast.filter(f => f.farmingAlert);
+   827→
+   828→  return (
+   829→    <div className='space-y-6'>
+   830→      <PageHeader title="Farming Weather" subtitle="Weather intelligence for better farming decisions" />
+   831→
+   832→      {/* Current Weather Card */}
+   833→      <motion.div {...fadeInUp}>
+   834→        <Card className='border-0 overflow-hidden'>
+   835→          <div className='bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 text-white p-6'>
+   836→            <div className='flex items-center gap-2 text-white/70 text-sm mb-1'>
+   837→              <MapPin className='w-3.5 h-3.5' /> {weather.location}
+   838→            </div>
+   839→            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+   840→              <div className='flex items-center gap-4'>
+   841→                <div className='text-7xl'>{weather.icon}</div>
+   842→                <div>
+   843→                  <p className='text-5xl font-bold'>{weather.temperature}°C</p>
+   844→                  <p className='text-white/80 text-lg'>{weather.condition}</p>
+   845→                  <p className='text-white/60 text-sm'>Feels like {weather.feelsLike}°C</p>
+   846→                </div>
+   847→              </div>
+   848→              <div className='grid grid-cols-2 gap-3 sm:gap-4'>
+   849→                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px]'>
+   850→                  <Droplets className='w-5 h-5 mx-auto mb-1' />
+   851→                  <p className='text-lg font-bold'>{weather.humidity}%</p>
+   852→                  <p className='text-[10px] text-white/60'>Humidity</p>
+   853→                </div>
+   854→                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px]'>
+   855→                  <Wind className='w-5 h-5 mx-auto mb-1' />
+   856→                  <p className='text-lg font-bold'>{weather.windSpeed} km/h</p>
+   857→                  <p className='text-[10px] text-white/60'>Wind {weather.windDirection}</p>
+   858→                </div>
+   859→                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px]'>
+   860→                  <CloudRain className='w-5 h-5 mx-auto mb-1' />
+   861→                  <p className='text-lg font-bold'>{weather.rainProbability}%</p>
+   862→                  <p className='text-[10px] text-white/60'>Rain</p>
+   863→                </div>
+   864→                <div className='bg-white/10 rounded-xl p-3 text-center min-w-[80px]'>
+   865→                  <Sun className='w-5 h-5 mx-auto mb-1' />
+   866→                  <p className='text-lg font-bold'>{weather.uvIndex}</p>
+   867→                  <p className='text-[10px] text-white/60'>UV Index</p>
+   868→                </div>
+   869→              </div>
+   870→            </div>
+   871→          </div>
+   872→        </Card>
+   873→      </motion.div>
+   874→
+   875→      {/* 7-Day Forecast */}
+   876→      <SectionWrapper title="7-Day Forecast" subtitle="Plan your farming activities ahead">
+   877→        <div className='flex gap-3 overflow-x-auto pb-2 scrollbar-thin'>
+   878→          {forecast.map((day, i) => (
+   879→            <motion.div key={day.date} {...fadeIn} transition={{ delay: i * 0.05 }} className='shrink-0'>
+   880→              <Card className={cn(
+   881→                'w-[100px] hover:shadow-md transition-shadow cursor-pointer',
+   882→                i === 0 && 'border-primary bg-primary/[0.03]'
+   883→              )}>
+   884→                <CardContent className='p-3 text-center'>
+   885→                  <p className={cn('text-xs font-semibold', i === 0 ? 'text-primary' : 'text-muted-foreground')}>{day.day}</p>
+   886→                  <div className='text-2xl my-2'>{day.icon}</div>
+   887→                  <div className='flex items-center justify-center gap-1'>
+   888→                    <span className='text-sm font-bold'>{day.high}°</span>
+   889→                    <span className='text-xs text-muted-foreground'>{day.low}°</span>
+   890→                  </div>
+   891→                  {day.rainProbability > 30 && (
+   892→                    <p className='text-[10px] text-blue-500 mt-1.5'>🌧 {day.rainProbability}%</p>
+   893→                  )}
+   894→                </CardContent>
+   895→              </Card>
+   896→            </motion.div>
+   897→          ))}
+   898→        </div>
+   899→      </SectionWrapper>
+   900→
+   901→      {/* Farming Intelligence Alerts */}
+   902→      {alerts.length > 0 && (
+   903→        <SectionWrapper title="Farming Intelligence" subtitle="Weather alerts affecting your farm">
+   904→          <div className='space-y-3'>
+   905→            {alerts.map((alert, i) => (
+   906→              <motion.div key={alert.date} {...fadeIn} transition={{ delay: i * 0.1 }}>
+   907→                <Card className='border-amber-200 dark:border-amber-800'>
+   908→                  <CardContent className='p-4'>
+   909→                    <div className='flex items-start gap-3'>
+   910→                      <div className='p-2 rounded-lg bg-amber-100 dark:bg-amber-950 shrink-0'>
+   911→                        <AlertTriangle className='w-4 h-4 text-amber-600 dark:text-amber-400' />
+   912→                      </div>
+   913→                      <div className='flex-1'>
+   914→                        <div className='flex items-center gap-2 mb-1'>
+   915→                          <span className='font-semibold text-sm'>{alert.day}, {alert.date}</span>
+   916→                          <Badge className='bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 text-[10px]' variant='secondary'>
+   917→                            {alert.condition}
+   918→                          </Badge>
+   919→                        </div>
+   920→                        <p className='text-sm text-muted-foreground'>{alert.farmingAlert}</p>
+   921→                      </div>
+   922→                      <span className='text-2xl shrink-0'>{alert.icon}</span>
+   923→                    </div>
+   924→                  </CardContent>
+   925→                </Card>
+   926→              </motion.div>
+   927→            ))}
+   928→          </div>
+   929→        </SectionWrapper>
+   930→      )}
+   931→    </div>
+   932→  );
+   933→}
+   934→
+   935→// ============================================================
+   936→// 7. MARKET PRICES PAGE
+   937→// ============================================================
+   938→
+   939→const monthlyPriceHistory: Record<string, { month: string; price: number }[]> = {
+   940→  tomato: [
+   941→    { month: 'Aug', price: 18 }, { month: 'Sep', price: 22 }, { month: 'Oct', price: 20 },
+   942→    { month: 'Nov', price: 24 }, { month: 'Dec', price: 26 }, { month: 'Jan', price: 28 },
+   943→  ],
+   944→  chilli: [
+   945→    { month: 'Aug', price: 140 }, { month: 'Sep', price: 155 }, { month: 'Oct', price: 148 },
+   946→    { month: 'Nov', price: 160 }, { month: 'Dec', price: 170 }, { month: 'Jan', price: 180 },
+   947→  ],
+   948→  onion: [
+   949→    { month: 'Aug', price: 60 }, { month: 'Sep', price: 55 }, { month: 'Oct', price: 42 },
+   950→    { month: 'Nov', price: 38 }, { month: 'Dec', price: 35 }, { month: 'Jan', price: 35 },
+   951→  ],
+   952→  rice: [
+   953→    { month: 'Aug', price: 30 }, { month: 'Sep', price: 31 }, { month: 'Oct', price: 32 },
+   954→    { month: 'Nov', price: 33 }, { month: 'Dec', price: 32 }, { month: 'Jan', price: 32 },
+   955→  ],
+   956→  brinjal: [
+   957→    { month: 'Aug', price: 20 }, { month: 'Sep', price: 22 }, { month: 'Oct', price: 21 },
+   958→    { month: 'Nov', price: 23 }, { month: 'Dec', price: 24 }, { month: 'Jan', price: 25 },
+   959→  ],
+   960→  cotton: [
+   961→    { month: 'Aug', price: 7200 }, { month: 'Sep', price: 7300 }, { month: 'Oct', price: 7400 },
+   962→    { month: 'Nov', price: 7450 }, { month: 'Dec', price: 7500 }, { month: 'Jan', price: 7521 },
+   963→  ],
+   964→  maize: [
+   965→    { month: 'Aug', price: 18 }, { month: 'Sep', price: 19 }, { month: 'Oct', price: 20 },
+   966→    { month: 'Nov', price: 21 }, { month: 'Dec', price: 21 }, { month: 'Jan', price: 22 },
+   967→  ],
+   968→  potato: [
+   969→    { month: 'Aug', price: 18 }, { month: 'Sep', price: 22 }, { month: 'Oct', price: 24 },
+   970→    { month: 'Nov', price: 23 }, { month: 'Dec', price: 21 }, { month: 'Jan', price: 20 },
+   971→  ],
+   972→};
+   973→
+   974→export function MarketPricesPage() {
+   975→  const [selectedCrop, setSelectedCrop] = useState('Tomato');
+   976→  const [chartTab, setChartTab] = useState<'weekly' | 'monthly'>('weekly');
+   977→
+   978→  const cropKey = selectedCrop.toLowerCase();
+   979→  const weeklyData = priceHistory[cropKey as keyof typeof priceHistory] || [];
+   980→  const monthlyData = monthlyPriceHistory[cropKey as keyof typeof monthlyPriceHistory] || [];
+   981→  const chartData = chartTab === 'weekly' ? weeklyData : monthlyData;
+   982→  const xKey = chartTab === 'weekly' ? 'week' : 'month';
+   983→
+   984→  const prediction = mockMarketPrediction;
+   985→  const directionIcon = prediction.direction === 'up'
+   986→    ? <TrendingUp className='w-5 h-5 text-emerald-600' />
+   987→    : prediction.direction === 'down'
+   988→      ? <TrendingDown className='w-5 h-5 text-red-600' />
+   989→      : <Minus className='w-5 h-5 text-amber-600' />;
+   990→
+   991→  const confidenceColor = prediction.confidence === 'high'
+   992→    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+   993→    : prediction.confidence === 'medium'
+   994→      ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+   995→      : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';
+   996→
+   997→  return (
+   998→    <div className='space-y-6'>
+   999→      <PageHeader title="Market Prices" subtitle="Today's commodity prices and AI predictions" />
+  1000→
+  1001→      {/* Crop Selector Row */}
+  1002→      <motion.div {...fadeIn}>
+  1003→        <div className='flex gap-2 overflow-x-auto pb-2 scrollbar-thin'>
+  1004→          {mockMarketPrices.map(mp => (
+  1005→            <Button
+  1006→              key={mp.crop}
+  1007→              size='sm'
+  1008→              variant={selectedCrop === mp.crop ? 'default' : 'outline'}
+  1009→              onClick={() => setSelectedCrop(mp.crop)}
+  1010→              className='shrink-0 text-xs'
+  1011→            >
+  1012→              {mp.crop}
+  1013→            </Button>
+  1014→          ))}
+  1015→        </div>
+  1016→      </motion.div>
+  1017→
+  1018→      {/* Price Cards Grid */}
+  1019→      <motion.div
+  1020→        className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3'
+  1021→        variants={staggerContainer}
+  1022→        initial='initial'
+  1023→        animate='animate'
+  1024→      >
+  1025→        {mockMarketPrices.map(mp => (
+  1026→          <motion.div key={mp.crop} {...scaleIn}>
+  1027→            <MarketPriceCard
+  1028→              crop={mp.crop}
+  1029→              price={mp.price}
+  1030→              unit={mp.unit}
+  1031→              change={mp.change}
+  1032→              changePercent={mp.changePercent}
+  1033→            />
+  1034→          </motion.div>
+  1035→        ))}
+  1036→      </motion.div>
+  1037→
+  1038→      {/* Price History Chart */}
+  1039→      <SectionWrapper title={`Price History - ${selectedCrop}`} subtitle='Track price trends over time'>
+  1040→        <Card>
+  1041→          <CardContent className='p-4'>
+  1042→            <Tabs value={chartTab} onValueChange={(v) => setChartTab(v as 'weekly' | 'monthly')}>
+  1043→              <TabsList className='mb-4'>
+  1044→                <TabsTrigger value='weekly'>Weekly</TabsTrigger>
+  1045→                <TabsTrigger value='monthly'>Monthly</TabsTrigger>
+  1046→              </TabsList>
+  1047→              <TabsContent value={chartTab} className='mt-0'>
+  1048→                {chartData.length > 0 ? (
+  1049→                  <div className='h-[250px] w-full'>
+  1050→                    <ResponsiveContainer width='100%' height='100%'>
+  1051→                      <LineChart data={chartData}>
+  1052→                        <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+  1053→                        <XAxis
+  1054→                          dataKey={xKey}
+  1055→                          tick={{ fontSize: 12 }}
+  1056→                          className='text-muted-foreground'
+  1057→                        />
+  1058→                        <YAxis
+  1059→                          tick={{ fontSize: 12 }}
+  1060→                          className='text-muted-foreground'
+  1061→                          tickFormatter={(v) => `₹${v}`}
+  1062→                        />
+  1063→                        <Tooltip
+  1064→                          contentStyle={{
+  1065→                            borderRadius: '12px',
+  1066→                            border: '1px solid var(--border)',
+  1067→                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+  1068→                          }}
+  1069→                          formatter={(value: number) => [`₹${value.toLocaleString('en-IN')}`, 'Price']}
+  1070→                        />
+  1071→                        <Line
+  1072→                          type='monotone'
+  1073→                          dataKey='price'
+  1074→                          stroke='#16a34a'
+  1075→                          strokeWidth={2.5}
+  1076→                          dot={{ r: 4, fill: '#16a34a' }}
+  1077→                          activeDot={{ r: 6 }}
+  1078→                        />
+  1079→                      </LineChart>
+  1080→                    </ResponsiveContainer>
+  1081→                  </div>
+  1082→                ) : (
+  1083→                  <div className='h-[250px] flex items-center justify-center'>
+  1084→                    <p className='text-sm text-muted-foreground'>No price history available for {selectedCrop}</p>
+  1085→                  </div>
+  1086→                )}
+  1087→              </TabsContent>
+  1088→            </Tabs>
+  1089→          </CardContent>
+  1090→        </Card>
+  1091→      </SectionWrapper>
+  1092→
+  1093→      {/* AI Market Prediction */}
+  1094→      <SectionWrapper title="AI Market Prediction" subtitle='Machine learning-based price forecasts'>
+  1095→        <Card className='border-amber-200 dark:border-amber-800'>
+  1096→          <CardHeader className='pb-3'>
+  1097→            <div className='flex items-center justify-between'>
+  1098→              <div className='flex items-center gap-2'>
+  1099→                <span className='text-xl'>🤖</span>
+  1100→                <CardTitle className='text-base'>Price Prediction - {selectedCrop}</CardTitle>
+  1101→              </div>
+  1102→              <div className='flex items-center gap-2'>
+  1103→                {directionIcon}
+  1104→                <Badge className={confidenceColor} variant='secondary'>
+  1105→                  {prediction.confidence.charAt(0).toUpperCase() + prediction.confidence.slice(1)} Confidence
+  1106→                </Badge>
+  1107→              </div>
+  1108→            </div>
+  1109→          </CardHeader>
+  1110→          <CardContent className='space-y-4'>
+  1111→            <p className='text-sm text-muted-foreground leading-relaxed'>{prediction.outlook}</p>
+  1112→            <div>
+  1113→              <p className='text-xs text-muted-foreground font-medium mb-2'>Key Factors:</p>
+  1114→              <div className='flex flex-wrap gap-2'>
+  1115→                {prediction.factors.map((f, i) => (
+  1116→                  <Badge key={i} variant='outline' className='text-xs'>
+  1117→                    {f}
+  1118→                  </Badge>
+  1119→                ))}
+  1120→              </div>
+  1121→            </div>
+  1122→            <div className='flex items-center gap-2 bg-amber-50 dark:bg-amber-950 rounded-lg p-3'>
+  1123→              <AlertTriangle className='w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0' />
+  1124→              <p className='text-xs text-amber-800 dark:text-amber-200'>
+  1125→                ⚠️ AI Prediction - Not guaranteed. Prices are influenced by many unpredictable factors.
+  1126→              </p>
+  1127→            </div>
+  1128→          </CardContent>
+  1129→        </Card>
+  1130→      </SectionWrapper>
+  1131→    </div>
+  1132→  );
+  1133→}
+  1134→

@@ -1,0 +1,1561 @@
+   104→  const { addToCart } = useCartStore();
+   105→
+   106→  const handleAdd = (e: React.MouseEvent) => {
+   107→    e.stopPropagation();
+   108→    if (!product.inStock) return;
+   109→    addToCart(product);
+   110→    toast.success(`${product.name} added to cart!`);
+   111→  };
+   112→
+   113→  return (
+   114→    <motion.div {...fadeIn}>
+   115→      <Card
+   116→        className='hover:shadow-md transition-all hover:-translate-y-0.5 h-full cursor-pointer group'
+   117→        onClick={() => navigate('marketplace/product-detail' as any, { productId: product.id })}
+   118→      >
+   119→        <CardContent className='p-3'>
+   120→          {/* Image */}
+   121→          <div className={cn('aspect-square rounded-xl flex items-center justify-center mb-3 relative overflow-hidden', getImageGradient(product.category))}>
+   122→            <span className='text-5xl group-hover:scale-110 transition-transform duration-300'>
+   123→              {getCategoryIcon(product.category)}
+   124→            </span>
+   125→            {product.isCertified && (
+   126→              <div className='absolute top-2 right-2'>
+   127→                <Badge className='bg-emerald-500 text-white text-[10px] px-1.5 py-0 gap-0.5'>
+   128→                  <ShieldCheck className='size-3' /> Certified
+   129→                </Badge>
+   130→              </div>
+   131→            )}
+   132→            {product.qualityScore && product.qualityScore >= 90 && (
+   133→              <div className='absolute top-2 left-2'>
+   134→                <Badge className='bg-amber-500 text-white text-[10px] px-1.5 py-0'>
+   135→                  Premium
+   136→                </Badge>
+   137→              </div>
+   138→            )}
+   139→          </div>
+   140→
+   141→          {/* Name */}
+   142→          <h3 className='font-medium text-sm leading-tight line-clamp-2 min-h-[2.5rem]'>{product.name}</h3>
+   143→
+   144→          {/* Farmer */}
+   145→          {product.farmer && (
+   146→            <p className='text-xs text-muted-foreground mt-1 truncate flex items-center gap-1'>
+   147→              <Sprout className='size-3 shrink-0' /> {product.farmer}
+   148→            </p>
+   149→          )}
+   150→
+   151→          {/* Rating */}
+   152→          <div className='flex items-center gap-1.5 mt-1.5'>
+   153→            <RatingStars rating={product.rating} />
+   154→            <span className='text-xs text-muted-foreground'>{product.rating}</span>
+   155→          </div>
+   156→
+   157→          {/* Price + Add to Cart */}
+   158→          <div className='flex items-center justify-between mt-3'>
+   159→            <div>
+   160→              <span className='font-bold text-base'>₹{product.price.toLocaleString('en-IN')}</span>
+   161→              <span className='text-xs text-muted-foreground'>/{product.unit}</span>
+   162→            </div>
+   163→            <Button
+   164→              size='sm'
+   165→              className='rounded-lg text-xs h-8 gap-1'
+   166→              onClick={handleAdd}
+   167→              disabled={!product.inStock}
+   168→            >
+   169→              <ShoppingCart className='size-3' />
+   170→              {product.inStock ? 'Add' : 'Sold'}
+   171→            </Button>
+   172→          </div>
+   173→        </CardContent>
+   174→      </Card>
+   175→    </motion.div>
+   176→  );
+   177→}
+   178→
+   179→export function MarketplaceHome() {
+   180→  const { navigate } = useAppStore();
+   181→  const [search, setSearch] = useState('');
+   182→  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+   183→
+   184→  const freshToday = mockConsumerProducts.slice(0, 4);
+   185→  const directFromFarmers = mockConsumerProducts.slice(4);
+   186→  const seasonalPicks = mockSeedProducts.slice(0, 4);
+   187→
+   188→  const handleCategoryClick = (cat: string) => {
+   189→    if (cat === 'Seeds') {
+   190→      navigate('marketplace/seeds');
+   191→    } else {
+   192→      setActiveCategory(activeCategory === cat ? null : cat);
+   193→    }
+   194→  };
+   195→
+   196→  return (
+   197→    <div className='space-y-6'>
+   198→      {/* Hero Banner */}
+   199→      <motion.div
+   200→        initial={{ opacity: 0, y: -10 }}
+   201→        animate={{ opacity: 1, y: 0 }}
+   202→        className='relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 p-6 md:p-8 text-white'
+   203→      >
+   204→        <div className='absolute inset-0 bg-[url("data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.06%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E")] opacity-40' />
+   205→        <div className='relative z-10'>
+   206→          <motion.h1
+   207→            initial={{ opacity: 0, y: 20 }}
+   208→            animate={{ opacity: 1, y: 0 }}
+   209→            transition={{ delay: 0.1 }}
+   210→            className='text-3xl md:text-4xl font-bold'
+   211→          >
+   212→            🌿 Fresh from Farms
+   213→          </motion.h1>
+   214→          <motion.p
+   215→            initial={{ opacity: 0, y: 20 }}
+   216→            animate={{ opacity: 1, y: 0 }}
+   217→            transition={{ delay: 0.2 }}
+   218→            className='text-white/80 mt-2 text-sm md:text-base max-w-md'
+   219→          >
+   220→            Direct from verified farmers to your doorstep. Quality produce at fair prices.
+   221→          </motion.p>
+   222→        </div>
+   223→      </motion.div>
+   224→
+   225→      {/* Search Bar */}
+   226→      <div className='relative'>
+   227→        <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+   228→        <Input
+   229→          placeholder='Search products, seeds, spices...'
+   230→          className='pl-10 rounded-xl h-11'
+   231→          value={search}
+   232→          onChange={e => setSearch(e.target.value)}
+   233→        />
+   234→      </div>
+   235→
+   236→      {/* Category Pills */}
+   237→      <div className='flex gap-2 overflow-x-auto pb-2 scrollbar-none'>
+   238→        {homeCategories.map(cat => (
+   239→          <button
+   240→            key={cat.name}
+   241→            onClick={() => handleCategoryClick(cat.name)}
+   242→            className={cn(
+   243→              'flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-all',
+   244→              activeCategory === cat.name
+   245→                ? 'bg-primary text-primary-foreground border-primary'
+   246→                : 'bg-background border-border hover:border-primary/30 hover:bg-primary/5'
+   247→            )}
+   248→          >
+   249→            <span>{cat.icon}</span>
+   250→            {cat.name}
+   251→          </button>
+   252→        ))}
+   253→      </div>
+   254→
+   255→      {/* Fresh Today */}
+   256→      <SectionWrapper
+   257→        title='Fresh Today'
+   258→        subtitle='Harvested today, delivered tomorrow'
+   259→        action={
+   260→          <Button
+   261→            variant='ghost'
+   262→            size='sm'
+   263→            className='text-primary'
+   264→            onClick={() => navigate('marketplace/products')}
+   265→          >
+   266→            View All <ChevronRight className='size-4 ml-1' />
+   267→          </Button>
+   268→        }
+   269→      >
+   270→        <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'>
+   271→          {freshToday.map(product => (
+   272→            <HomeProductCard key={product.id} product={product} />
+   273→          ))}
+   274→        </div>
+   275→      </SectionWrapper>
+   276→
+   277→      {/* Direct from Farmers */}
+   278→      <SectionWrapper
+   279→        title='Direct from Farmers'
+   280→        subtitle='Skip the middleman, support local farming'
+   281→        action={
+   282→          <Button
+   283→            variant='ghost'
+   284→            size='sm'
+   285→            className='text-primary'
+   286→            onClick={() => navigate('marketplace/products')}
+   287→          >
+   288→            View All <ChevronRight className='size-4 ml-1' />
+   289→          </Button>
+   290→        }
+   291→      >
+   292→        <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'>
+   293→          {directFromFarmers.map(product => (
+   294→            <HomeProductCard key={product.id} product={product} />
+   295→          ))}
+   296→        </div>
+   297→      </SectionWrapper>
+   298→
+   299→      {/* Seasonal Picks */}
+   300→      <SectionWrapper
+   301→        title='Seasonal Picks'
+   302→        subtitle='Seeds & supplies for the current season'
+   303→        action={
+   304→          <Button
+   305→            variant='ghost'
+   306→            size='sm'
+   307→            className='text-primary'
+   308→            onClick={() => navigate('marketplace/seeds')}
+   309→          >
+   310→            View All Seeds <ChevronRight className='size-4 ml-1' />
+   311→          </Button>
+   312→        }
+   313→      >
+   314→        <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'>
+   315→          {seasonalPicks.map(product => (
+   316→            <HomeProductCard key={product.id} product={product} />
+   317→          ))}
+   318→        </div>
+   319→      </SectionWrapper>
+   320→    </div>
+   321→  );
+   322→}
+   323→
+   324→// ============== 2. SEEDS PAGE ==============
+   325→const seedCategories = ['All', 'Vegetables', 'Grains', 'Fruits', 'Organic', 'Fibers'];
+   326→
+   327→export function SeedsPage() {
+   328→  const { navigate } = useAppStore();
+   329→  const { addToCart } = useCartStore();
+   330→  const [search, setSearch] = useState('');
+   331→  const [filter, setFilter] = useState('All');
+   332→
+   333→  const filtered = useMemo(() => {
+   334→    let products = mockSeedProducts;
+   335→    if (filter !== 'All') {
+   336→      products = products.filter(p => p.category === filter);
+   337→    }
+   338→    if (search) {
+   339→      const q = search.toLowerCase();
+   340→      products = products.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+   341→    }
+   342→    return products;
+   343→  }, [search, filter]);
+   344→
+   345→  return (
+   346→    <div className='space-y-6'>
+   347→      <PageHeader title='Buy Quality Seeds' subtitle='Certified seeds for better yield' />
+   348→
+   349→      {/* Search + Filter Row */}
+   350→      <div className='flex flex-col sm:flex-row gap-3'>
+   351→        <div className='relative flex-1'>
+   352→          <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+   353→          <Input
+   354→            placeholder='Search seeds...'
+   355→            className='pl-10 rounded-xl h-11'
+   356→            value={search}
+   357→            onChange={e => setSearch(e.target.value)}
+   358→          />
+   359→        </div>
+   360→      </div>
+   361→
+   362→      {/* Category Filter Pills */}
+   363→      <div className='flex gap-2 overflow-x-auto pb-2 scrollbar-none'>
+   364→        {seedCategories.map(cat => (
+   365→          <button
+   366→            key={cat}
+   367→            onClick={() => setFilter(cat)}
+   368→            className={cn(
+   369→              'px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-all',
+   370→              filter === cat
+   371→                ? 'bg-primary text-primary-foreground border-primary'
+   372→                : 'bg-background border-border hover:border-primary/30 hover:bg-primary/5'
+   373→            )}
+   374→          >
+   375→            {cat}
+   376→          </button>
+   377→        ))}
+   378→      </div>
+   379→
+   380→      {/* Seed Products Grid */}
+   381→      <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'>
+   382→        {filtered.map((product, idx) => (
+   383→          <motion.div key={product.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.04 }}>
+   384→            <Card className='hover:shadow-md transition-all hover:-translate-y-0.5 h-full'>
+   385→              <CardContent className='p-3'>
+   386→                {/* Image */}
+   387→                <div className={cn('aspect-square rounded-xl flex items-center justify-center mb-3 relative', getImageGradient(product.category))}>
+   388→                  <span className='text-5xl'>{getCategoryIcon(product.category)}</span>
+   389→                  {!product.inStock && (
+   390→                    <div className='absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center'>
+   391→                      <Badge variant='destructive' className='text-xs'>Out of Stock</Badge>
+   392→                    </div>
+   393→                  )}
+   394→                  {product.isCertified && product.inStock && (
+   395→                    <div className='absolute top-2 right-2'>
+   396→                      <Badge className='bg-emerald-500 text-white text-[10px] px-1.5 py-0 gap-0.5'>
+   397→                        <ShieldCheck className='size-3' /> Certified
+   398→                      </Badge>
+   399→                    </div>
+   400→                  )}
+   401→                </div>
+   402→
+   403→                {/* Category Badge */}
+   404→                <Badge variant='outline' className={cn('text-[10px] px-1.5 py-0 mb-1.5 border', getCategoryColor(product.category))}>
+   405→                  {product.category}
+   406→                </Badge>
+   407→
+   408→                {/* Name */}
+   409→                <h3 className='font-medium text-sm leading-tight line-clamp-2 min-h-[2.5rem]'>{product.name}</h3>
+   410→
+   411→                {/* Rating */}
+   412→                <div className='flex items-center gap-1.5 mt-1.5'>
+   413→                  <RatingStars rating={product.rating} />
+   414→                  <span className='text-xs text-muted-foreground'>{product.rating}</span>
+   415→                </div>
+   416→
+   417→                {/* Germination */}
+   418→                {product.germination && (
+   419→                  <div className='flex items-center gap-1 mt-1.5 text-xs text-muted-foreground'>
+   420→                    <Sprout className='size-3 text-emerald-500' />
+   421→                    <span>{product.germination} germination</span>
+   422→                  </div>
+   423→                )}
+   424→
+   425→                {/* Price + Add to Cart */}
+   426→                <div className='flex items-center justify-between mt-3'>
+   427→                  <div>
+   428→                    <span className='font-bold text-base'>₹{product.price.toLocaleString('en-IN')}</span>
+   429→                    <span className='text-xs text-muted-foreground'>/{product.unit}</span>
+   430→                  </div>
+   431→                  <Button
+   432→                    size='sm'
+   433→                    className='rounded-lg text-xs h-8 gap-1'
+   434→                    onClick={() => {
+   435→                      if (!product.inStock) return;
+   436→                      addToCart(product);
+   437→                      toast.success(`${product.name} added to cart!`);
+   438→                    }}
+   439→                    disabled={!product.inStock}
+   440→                  >
+   441→                    <ShoppingCart className='size-3' />
+   442→                    {product.inStock ? 'Add' : 'Sold'}
+   443→                  </Button>
+   444→                </div>
+   445→              </CardContent>
+   446→            </Card>
+   447→          </motion.div>
+   448→        ))}
+   449→      </div>
+   450→
+   451→      {filtered.length === 0 && (
+   452→        <EmptyState
+   453→          icon='🌰'
+   454→          title='No seeds found'
+   455→          description='Try adjusting your search or filter criteria'
+   456→        />
+   457→      )}
+   458→    </div>
+   459→  );
+   460→}
+   461→
+   462→// ============== 3. PRODUCTS PAGE ==============
+   463→type SortOption = 'price_asc' | 'price_desc' | 'rating' | 'newest';
+   464→const allProductCategories = ['All', 'Vegetables', 'Grains', 'Spices', 'Dairy', 'Organic', 'Fruits', 'Fibers'];
+   465→
+   466→export function ProductsPage() {
+   467→  const { navigate } = useAppStore();
+   468→  const { addToCart } = useCartStore();
+   469→  const [search, setSearch] = useState('');
+   470→  const [sort, setSort] = useState<SortOption>('newest');
+   471→  const [category, setCategory] = useState('All');
+   472→
+   473→  const allProducts = useMemo(() => [...mockConsumerProducts, ...mockSeedProducts], []);
+   474→
+   475→  const filtered = useMemo(() => {
+   476→    let products = allProducts;
+   477→    if (category !== 'All') {
+   478→      products = products.filter(p => p.category === category);
+   479→    }
+   480→    if (search) {
+   481→      const q = search.toLowerCase();
+   482→      products = products.filter(
+   483→        p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || (p.farmer && p.farmer.toLowerCase().includes(q))
+   484→      );
+   485→    }
+   486→    switch (sort) {
+   487→      case 'price_asc': products = [...products].sort((a, b) => a.price - b.price); break;
+   488→      case 'price_desc': products = [...products].sort((a, b) => b.price - a.price); break;
+   489→      case 'rating': products = [...products].sort((a, b) => b.rating - a.rating); break;
+   490→      case 'newest': break;
+   491→    }
+   492→    return products;
+   493→  }, [search, sort, category, allProducts]);
+   494→
+   495→  return (
+   496→    <div className='space-y-6'>
+   497→      <PageHeader title='All Products' subtitle='Browse fresh produce and farm supplies' />
+   498→
+   499→      {/* Search + Sort Row */}
+   500→      <div className='flex flex-col sm:flex-row gap-3'>
+   501→        <div className='relative flex-1'>
+   502→          <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+   503→          <Input
+   504→            placeholder='Search all products...'
+   505→            className='pl-10 rounded-xl h-11'
+   506→            value={search}
+   507→            onChange={e => setSearch(e.target.value)}
+   508→          />
+   509→        </div>
+   510→        <Select value={sort} onValueChange={v => setSort(v as SortOption)}>
+   511→          <SelectTrigger className='w-full sm:w-[200px] rounded-xl h-11'>
+   512→            <SelectValue placeholder='Sort by' />
+   513→          </SelectTrigger>
+   514→          <SelectContent>
+   515→            <SelectItem value='price_asc'>Price: Low to High</SelectItem>
+   516→            <SelectItem value='price_desc'>Price: High to Low</SelectItem>
+   517→            <SelectItem value='rating'>Top Rated</SelectItem>
+   518→            <SelectItem value='newest'>Newest First</SelectItem>
+   519→          </SelectContent>
+   520→        </Select>
+   521→      </div>
+   522→
+   523→      <div className='flex gap-6'>
+   524→        {/* Desktop Sidebar */}
+   525→        <aside className='hidden lg:block w-48 shrink-0'>
+   526→          <Card>
+   527→            <CardContent className='p-4'>
+   528→              <h3 className='font-semibold text-sm mb-3'>Categories</h3>
+   529→              <div className='space-y-1'>
+   530→                {allProductCategories.map(cat => (
+   531→                  <button
+   532→                    key={cat}
+   533→                    onClick={() => setCategory(cat)}
+   534→                    className={cn(
+   535→                      'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors',
+   536→                      category === cat
+   537→                        ? 'bg-primary text-primary-foreground font-medium'
+   538→                        : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+   539→                    )}
+   540→                  >
+   541→                    {cat !== 'All' && <span className='mr-2'>{getCategoryIcon(cat)}</span>}
+   542→                    {cat}
+   543→                  </button>
+   544→                ))}
+   545→              </div>
+   546→            </CardContent>
+   547→          </Card>
+   548→        </aside>
+   549→
+   550→        {/* Mobile Category Scroll + Product Grid */}
+   551→        <div className='flex-1 min-w-0'>
+   552→          {/* Mobile Categories */}
+   553→          <div className='lg:hidden flex gap-2 overflow-x-auto pb-3 scrollbar-none'>
+   554→            {allProductCategories.map(cat => (
+   555→              <button
+   556→                key={cat}
+   557→                onClick={() => setCategory(cat)}
+   558→                className={cn(
+   559→                  'px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-all',
+   560→                  category === cat
+   561→                    ? 'bg-primary text-primary-foreground border-primary'
+   562→                    : 'bg-background border-border hover:border-primary/30 hover:bg-primary/5'
+   563→                )}
+   564→              >
+   565→                {cat}
+   566→              </button>
+   567→            ))}
+   568→          </div>
+   569→
+   570→          {/* Products Grid */}
+   571→          <div className='grid grid-cols-2 lg:grid-cols-3 gap-3'>
+   572→            {filtered.map((product, idx) => (
+   573→              <motion.div key={product.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.03 }}>
+   574→                <Card className='hover:shadow-md transition-all hover:-translate-y-0.5 h-full'>
+   575→                  <CardContent className='p-3'>
+   576→                    <div
+   577→                      className={cn('aspect-square rounded-xl flex items-center justify-center mb-3 relative cursor-pointer', getImageGradient(product.category))}
+   578→                      onClick={() => navigate('marketplace/product-detail' as any, { productId: product.id })}
+   579→                    >
+   580→                      <span className='text-5xl'>{getCategoryIcon(product.category)}</span>
+   581→                      {!product.inStock && (
+   582→                        <div className='absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center'>
+   583→                          <Badge variant='destructive' className='text-xs'>Out of Stock</Badge>
+   584→                        </div>
+   585→                      )}
+   586→                      {product.isCertified && product.inStock && (
+   587→                        <div className='absolute top-2 right-2'>
+   588→                          <Badge className='bg-emerald-500 text-white text-[10px] px-1.5 py-0 gap-0.5'>
+   589→                            <ShieldCheck className='size-3' /> Certified
+   590→                          </Badge>
+   591→                        </div>
+   592→                      )}
+   593→                    </div>
+   594→
+   595→                    <h3
+   596→                      className='font-medium text-sm leading-tight line-clamp-2 min-h-[2.5rem] cursor-pointer'
+   597→                      onClick={() => navigate('marketplace/product-detail' as any, { productId: product.id })}
+   598→                    >
+   599→                      {product.name}
+   600→                    </h3>
+   601→
+   602→                    {product.farmer && (
+   603→                      <p className='text-xs text-muted-foreground mt-1 truncate flex items-center gap-1'>
+   604→                        <Sprout className='size-3 shrink-0' /> {product.farmer}
+   605→                      </p>
+   606→                    )}
+   607→
+   608→                    <div className='flex items-center gap-1.5 mt-1.5'>
+   609→                      <RatingStars rating={product.rating} />
+   610→                      <span className='text-xs text-muted-foreground'>{product.rating}</span>
+   611→                    </div>
+   612→
+   613→                    <div className='flex items-center justify-between mt-3'>
+   614→                      <div>
+   615→                        <span className='font-bold'>₹{product.price.toLocaleString('en-IN')}</span>
+   616→                        <span className='text-xs text-muted-foreground'>/{product.unit}</span>
+   617→                      </div>
+   618→                      <Button
+   619→                        size='sm'
+   620→                        className='rounded-lg text-xs h-8 gap-1'
+   621→                        onClick={() => {
+   622→                          if (!product.inStock) return;
+   623→                          addToCart(product);
+   624→                          toast.success(`${product.name} added to cart!`);
+   625→                        }}
+   626→                        disabled={!product.inStock}
+   627→                      >
+   628→                        <ShoppingCart className='size-3' />
+   629→                        {product.inStock ? 'Add' : 'Sold'}
+   630→                      </Button>
+   631→                    </div>
+   632→                  </CardContent>
+   633→                </Card>
+   634→              </motion.div>
+   635→            ))}
+   636→          </div>
+   637→
+   638→          {filtered.length === 0 && (
+   639→            <EmptyState
+   640→              icon='🔍'
+   641→              title='No products found'
+   642→              description='Try adjusting your search or filter'
+   643→              action='Browse Marketplace'
+   644→              onAction={() => { setSearch(''); setCategory('All'); }}
+   645→            />
+   646→          )}
+   647→        </div>
+   648→      </div>
+   649→    </div>
+   650→  );
+   651→}
+   652→
+   653→// ============== 4. PRODUCT DETAIL PAGE ==============
+   654→export function ProductDetailPage() {
+   655→  const { navigate, routeParams } = useAppStore();
+   656→  const { addToCart } = useCartStore();
+   657→  const allProducts = [...mockConsumerProducts, ...mockSeedProducts];
+   658→  const product = allProducts.find(p => p.id === routeParams.productId) || mockConsumerProducts[0];
+   659→  const [qty, setQty] = useState(1);
+   660→
+   661→  const related = allProducts
+   662→    .filter(p => p.id !== product.id && p.category === product.category)
+   663→    .slice(0, 4);
+   664→
+   665→  const handleAddToCart = () => {
+   666→    for (let i = 0; i < qty; i++) addToCart(product);
+   667→    toast.success(`${qty}x ${product.name} added to cart!`);
+   668→  };
+   669→
+   670→  const handleBuyNow = () => {
+   671→    for (let i = 0; i < qty; i++) addToCart(product);
+   672→    navigate('marketplace/checkout');
+   673→  };
+   674→
+   675→  return (
+   676→    <div className='space-y-6 max-w-4xl'>
+   677→      {/* Back Button */}
+   678→      <button
+   679→        onClick={() => navigate('marketplace/home')}
+   680→        className='text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors'
+   681→      >
+   682→        <ArrowLeft className='size-4' /> Back
+   683→      </button>
+   684→
+   685→      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+   686→        {/* Product Image */}
+   687→        <motion.div {...fadeInUp}>
+   688→          <Card className='overflow-hidden'>
+   689→            <div className={cn('aspect-square flex items-center justify-center', getImageGradient(product.category))}>
+   690→              <span className='text-8xl'>{getCategoryIcon(product.category)}</span>
+   691→            </div>
+   692→          </Card>
+   693→        </motion.div>
+   694→
+   695→        {/* Product Info */}
+   696→        <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className='space-y-4'>
+   697→          {/* Badges */}
+   698→          <div className='flex items-center gap-2 flex-wrap'>
+   699→            <Badge variant='outline' className={cn('border', getCategoryColor(product.category))}>
+   700→              {product.category}
+   701→            </Badge>
+   702→            {product.isCertified && (
+   703→              <Badge className='bg-emerald-500 text-white gap-1'>
+   704→                <ShieldCheck className='size-3' /> Certified
+   705→              </Badge>
+   706→            )}
+   707→            {product.qualityScore && (
+   708→              <Badge className='bg-amber-500 text-white'>
+   709→                Quality: {product.qualityScore}/100
+   710→              </Badge>
+   711→            )}
+   712→          </div>
+   713→
+   714→          {/* Name */}
+   715→          <h1 className='text-2xl md:text-3xl font-bold'>{product.name}</h1>
+   716→
+   717→          {/* Rating */}
+   718→          <div className='flex items-center gap-2'>
+   719→            <RatingStars rating={product.rating} size='md' />
+   720→            <span className='font-medium'>{product.rating}</span>
+   721→            <span className='text-sm text-muted-foreground'>({product.reviewCount} reviews)</span>
+   722→          </div>
+   723→
+   724→          {/* Price */}
+   725→          <div className='flex items-baseline gap-1'>
+   726→            <span className='text-3xl font-bold'>₹{product.price.toLocaleString('en-IN')}</span>
+   727→            <span className='text-muted-foreground'>/{product.unit}</span>
+   728→          </div>
+   729→
+   730→          <Separator />
+   731→
+   732→          {/* Farmer/Source Info Card */}
+   733→          {product.farmer && (
+   734→            <Card className='bg-muted/30'>
+   735→              <CardContent className='p-4 flex items-center gap-3'>
+   736→                <div className='w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center'>
+   737→                  <Sprout className='size-5 text-primary' />
+   738→                </div>
+   739→                <div>
+   740→                  <p className='font-medium text-sm'>{product.farmer}</p>
+   741→                  {product.farmerLocation && (
+   742→                    <p className='text-xs text-muted-foreground flex items-center gap-1 mt-0.5'>
+   743→                      <MapPin className='size-3' /> {product.farmerLocation}
+   744→                    </p>
+   745→                  )}
+   746→                </div>
+   747→                {product.harvestDate && (
+   748→                  <div className='ml-auto text-right'>
+   749→                    <p className='text-xs text-muted-foreground'>Harvested</p>
+   750→                    <p className='text-xs font-medium'>{product.harvestDate}</p>
+   751→                  </div>
+   752→                )}
+   753→              </CardContent>
+   754→            </Card>
+   755→          )}
+   756→
+   757→          {/* Description */}
+   758→          {product.description && (
+   759→            <p className='text-sm text-muted-foreground leading-relaxed'>{product.description}</p>
+   760→          )}
+   761→
+   762→          {/* Germination for seeds */}
+   763→          {product.germination && (
+   764→            <div className='flex items-center gap-2 text-sm'>
+   765→              <Sprout className='size-4 text-emerald-500' />
+   766→              <span className='text-muted-foreground'>Germination Rate:</span>
+   767→              <span className='font-semibold text-emerald-600'>{product.germination}</span>
+   768→            </div>
+   769→          )}
+   770→
+   771→          <Separator />
+   772→
+   773→          {/* Quantity Selector */}
+   774→          <div className='flex items-center gap-4'>
+   775→            <span className='text-sm font-medium'>Quantity:</span>
+   776→            <div className='flex items-center border rounded-xl'>
+   777→              <Button variant='ghost' size='icon' className='h-10 w-10' onClick={() => setQty(Math.max(1, qty - 1))}>
+   778→                <Minus className='size-4' />
+   779→              </Button>
+   780→              <span className='w-12 text-center font-semibold'>{qty}</span>
+   781→              <Button variant='ghost' size='icon' className='h-10 w-10' onClick={() => setQty(qty + 1)}>
+   782→                <Plus className='size-4' />
+   783→              </Button>
+   784→            </div>
+   785→            <span className='text-sm text-muted-foreground'>₹{(product.price * qty).toLocaleString('en-IN')} total</span>
+   786→          </div>
+   787→
+   788→          {/* Action Buttons */}
+   789→          <div className='flex gap-3 pt-2'>
+   790→            <Button
+   791→              variant='outline'
+   792→              className='flex-1 h-12 rounded-xl gap-2'
+   793→              onClick={handleAddToCart}
+   794→              disabled={!product.inStock}
+   795→            >
+   796→              <ShoppingCart className='size-5' />
+   797→              Add to Cart
+   798→            </Button>
+   799→            <Button
+   800→              className='flex-1 h-12 rounded-xl gap-2'
+   801→              onClick={handleBuyNow}
+   802→              disabled={!product.inStock}
+   803→            >
+   804→              <CreditCard className='size-5' />
+   805→              Buy Now
+   806→            </Button>
+   807→          </div>
+   808→
+   809→          {!product.inStock && (
+   810→            <p className='text-sm text-destructive text-center'>This product is currently out of stock</p>
+   811→          )}
+   812→        </motion.div>
+   813→      </div>
+   814→
+   815→      {/* Related Products */}
+   816→      {related.length > 0 && (
+   817→        <SectionWrapper title='Related Products' subtitle={`More ${product.category}`}>
+   818→          <div className='grid grid-cols-2 lg:grid-cols-4 gap-3'>
+   819→            {related.map((p, idx) => {
+   820→              const { addToCart: addRelated } = useCartStore.getState();
+   821→              return (
+   822→                <motion.div key={p.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}>
+   823→                  <Card
+   824→                    className='hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer'
+   825→                    onClick={() => {
+   826→                      setQty(1);
+   827→                      navigate('marketplace/product-detail' as any, { productId: p.id });
+   828→                    }}
+   829→                  >
+   830→                    <CardContent className='p-3'>
+   831→                      <div className={cn('aspect-square rounded-xl flex items-center justify-center mb-2', getImageGradient(p.category))}>
+   832→                        <span className='text-4xl'>{getCategoryIcon(p.category)}</span>
+   833→                      </div>
+   834→                      <h3 className='font-medium text-sm line-clamp-1'>{p.name}</h3>
+   835→                      <div className='flex items-center justify-between mt-2'>
+   836→                        <span className='font-bold text-sm'>₹{p.price.toLocaleString('en-IN')}</span>
+   837→                        <Button
+   838→                          size='sm'
+   839→                          className='h-7 text-xs gap-1 rounded-lg'
+   840→                          onClick={(e) => {
+   841→                            e.stopPropagation();
+   842→                            addRelated(p);
+   843→                            toast.success(`${p.name} added to cart!`);
+   844→                          }}
+   845→                          disabled={!p.inStock}
+   846→                        >
+   847→                          <ShoppingCart className='size-3' /> Add
+   848→                        </Button>
+   849→                      </div>
+   850→                    </CardContent>
+   851→                  </Card>
+   852→                </motion.div>
+   853→              );
+   854→            })}
+   855→          </div>
+   856→        </SectionWrapper>
+   857→      )}
+   858→    </div>
+   859→  );
+   860→}
+   861→
+   862→// ============== 5. CART PAGE ==============
+   863→export function CartPage() {
+   864→  const { items, updateQuantity, removeFromCart, getTotal, getItemCount } = useCartStore();
+   865→  const { navigate } = useAppStore();
+   866→
+   867→  const subtotal = getTotal();
+   868→  const deliveryFee = subtotal > 500 ? 0 : 49;
+   869→  const total = subtotal + deliveryFee;
+   870→
+   871→  if (items.length === 0) {
+   872→    return (
+   873→      <div className='space-y-6'>
+   874→        <PageHeader title='Shopping Cart' />
+   875→        <EmptyState
+   876→          icon='🛒'
+   877→          title='Your cart is empty'
+   878→          description='Browse the marketplace and add fresh products to your cart'
+   879→          action='Browse Marketplace'
+   880→          onAction={() => navigate('marketplace/home')}
+   881→        />
+   882→      </div>
+   883→    );
+   884→  }
+   885→
+   886→  return (
+   887→    <div className='space-y-6'>
+   888→      <PageHeader
+   889→        title='Shopping Cart'
+   890→        subtitle={`${getItemCount()} item${getItemCount() !== 1 ? 's' : ''}`}
+   891→      />
+   892→
+   893→      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+   894→        {/* Cart Items */}
+   895→        <div className='lg:col-span-2 space-y-3'>
+   896→          {items.map(item => (
+   897→            <motion.div key={item.product.id} {...fadeIn}>
+   898→              <Card>
+   899→                <CardContent className='p-4'>
+   900→                  <div className='flex items-start gap-4'>
+   901→                    {/* Product Image */}
+   902→                    <div
+   903→                      className={cn('w-16 h-16 md:w-20 md:h-20 rounded-xl flex items-center justify-center shrink-0 cursor-pointer', getImageGradient(item.product.category))}
+   904→                      onClick={() => navigate('marketplace/product-detail' as any, { productId: item.product.id })}
+   905→                    >
+   906→                      <span className='text-3xl'>{getCategoryIcon(item.product.category)}</span>
+   907→                    </div>
+   908→
+   909→                    {/* Product Info */}
+   910→                    <div className='flex-1 min-w-0'>
+   911→                      <h3 className='font-medium text-sm md:text-base truncate'>{item.product.name}</h3>
+   912→                      {item.product.farmer && (
+   913→                        <p className='text-xs text-muted-foreground mt-0.5 flex items-center gap-1'>
+   914→                          <Sprout className='size-3' /> {item.product.farmer}
+   915→                        </p>
+   916→                      )}
+   917→                      <p className='text-sm text-muted-foreground mt-1'>
+   918→                        ₹{item.product.price.toLocaleString('en-IN')}/{item.product.unit}
+   919→                      </p>
+   920→
+   921→                      {/* Quantity Controls + Remove (Mobile) */}
+   922→                      <div className='flex items-center justify-between mt-3 lg:hidden'>
+   923→                        <div className='flex items-center border rounded-lg'>
+   924→                          <button
+   925→                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+   926→                            className='px-2.5 py-1.5 hover:bg-muted transition-colors'
+   927→                          >
+   928→                            <Minus className='size-3' />
+   929→                          </button>
+   930→                          <span className='w-8 text-center text-sm font-medium'>{item.quantity}</span>
+   931→                          <button
+   932→                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+   933→                            className='px-2.5 py-1.5 hover:bg-muted transition-colors'
+   934→                          >
+   935→                            <Plus className='size-3' />
+   936→                          </button>
+   937→                        </div>
+   938→                        <div className='flex items-center gap-3'>
+   939→                          <p className='font-semibold text-sm'>₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</p>
+   940→                          <button
+   941→                            onClick={() => { removeFromCart(item.product.id); toast.success('Removed from cart'); }}
+   942→                            className='text-muted-foreground hover:text-destructive transition-colors'
+   943→                          >
+   944→                            <Trash2 className='size-4' />
+   945→                          </button>
+   946→                        </div>
+   947→                      </div>
+   948→                    </div>
+   949→
+   950→                    {/* Quantity Controls + Remove (Desktop) */}
+   951→                    <div className='hidden lg:flex flex-col items-end gap-3'>
+   952→                      <button
+   953→                        onClick={() => { removeFromCart(item.product.id); toast.success('Removed from cart'); }}
+   954→                        className='text-muted-foreground hover:text-destructive transition-colors'
+   955→                      >
+   956→                        <Trash2 className='size-4' />
+   957→                      </button>
+   958→                      <div className='flex items-center border rounded-lg'>
+   959→                        <button
+   960→                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+   961→                          className='px-2.5 py-1.5 hover:bg-muted transition-colors'
+   962→                        >
+   963→                          <Minus className='size-3' />
+   964→                        </button>
+   965→                        <span className='w-8 text-center text-sm font-medium'>{item.quantity}</span>
+   966→                        <button
+   967→                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+   968→                          className='px-2.5 py-1.5 hover:bg-muted transition-colors'
+   969→                        >
+   970→                          <Plus className='size-3' />
+   971→                        </button>
+   972→                      </div>
+   973→                      <p className='font-semibold'>₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</p>
+   974→                    </div>
+   975→                  </div>
+   976→                </CardContent>
+   977→              </Card>
+   978→            </motion.div>
+   979→          ))}
+   980→        </div>
+   981→
+   982→        {/* Order Summary */}
+   983→        <div>
+   984→          <Card className='sticky top-4'>
+   985→            <CardHeader>
+   986→              <CardTitle className='text-base'>Order Summary</CardTitle>
+   987→            </CardHeader>
+   988→            <CardContent className='space-y-3'>
+   989→              <div className='flex justify-between text-sm'>
+   990→                <span className='text-muted-foreground'>Subtotal ({getItemCount()} items)</span>
+   991→                <span>₹{subtotal.toLocaleString('en-IN')}</span>
+   992→              </div>
+   993→              <div className='flex justify-between text-sm'>
+   994→                <span className='text-muted-foreground'>Delivery Fee</span>
+   995→                <span className={deliveryFee === 0 ? 'text-emerald-600 font-medium' : ''}>
+   996→                  {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
+   997→                </span>
+   998→              </div>
+   999→              {deliveryFee > 0 && (
+  1000→                <p className='text-xs text-muted-foreground'>Free delivery on orders above ₹500</p>
+  1001→              )}
+  1002→              <Separator />
+  1003→              <div className='flex justify-between font-bold text-lg'>
+  1004→                <span>Total</span>
+  1005→                <span>₹{total.toLocaleString('en-IN')}</span>
+  1006→              </div>
+  1007→              <Button
+  1008→                size='lg'
+  1009→                className='w-full rounded-xl mt-2'
+  1010→                onClick={() => navigate('marketplace/checkout')}
+  1011→              >
+  1012→                Proceed to Checkout <ChevronRight className='size-4 ml-1' />
+  1013→              </Button>
+  1014→            </CardContent>
+  1015→          </Card>
+  1016→        </div>
+  1017→      </div>
+  1018→    </div>
+  1019→  );
+  1020→}
+  1021→
+  1022→// ============== 6. CHECKOUT PAGE ==============
+  1023→type CheckoutStep = 1 | 2 | 3;
+  1024→const stepLabels = ['Delivery', 'Payment', 'Confirm'];
+  1025→
+  1026→const paymentMethods = [
+  1027→  {
+  1028→    id: 'UPI',
+  1029→    label: 'UPI',
+  1030→    icon: Smartphone,
+  1031→    description: 'Pay via UPI (GPay, PhonePe, Paytm)',
+  1032→    color: 'bg-violet-50 border-violet-200 text-violet-700',
+  1033→  },
+  1034→  {
+  1035→    id: 'COD',
+  1036→    label: 'Cash on Delivery',
+  1037→    icon: Banknote,
+  1038→    description: 'Pay when your order arrives',
+  1039→    color: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+  1040→  },
+  1041→  {
+  1042→    id: 'Card',
+  1043→    label: 'Credit/Debit Card',
+  1044→    icon: CreditCard,
+  1045→    description: 'Visa, Mastercard, RuPay',
+  1046→    color: 'bg-sky-50 border-sky-200 text-sky-700',
+  1047→  },
+  1048→];
+  1049→
+  1050→export function CheckoutPage() {
+  1051→  const { items, getTotal, placeOrder } = useCartStore();
+  1052→  const { navigate } = useAppStore();
+  1053→  const [step, setStep] = useState<CheckoutStep>(1);
+  1054→  const [payment, setPayment] = useState('UPI');
+  1055→  const [form, setForm] = useState({ name: '', phone: '', address: '', city: '', pincode: '' });
+  1056→
+  1057→  const subtotal = getTotal();
+  1058→  const deliveryFee = subtotal > 500 ? 0 : 49;
+  1059→  const total = subtotal + deliveryFee;
+  1060→
+  1061→  const canProceedDelivery = form.name && form.phone && form.address && form.city && form.pincode;
+  1062→
+  1063→  const handlePlaceOrder = () => {
+  1064→    if (items.length === 0) { toast.error('Cart is empty!'); return; }
+  1065→    const fullAddress = `${form.name}, ${form.phone}, ${form.address}, ${form.city} - ${form.pincode}`;
+  1066→    const order = placeOrder(fullAddress, 'Standard Delivery', payment);
+  1067→    toast.success(`Order ${order.id} placed successfully!`);
+  1068→    navigate('marketplace/order-tracking', { orderId: order.id });
+  1069→  };
+  1070→
+  1071→  if (items.length === 0) {
+  1072→    return (
+  1073→      <div className='space-y-6'>
+  1074→        <button
+  1075→          onClick={() => navigate('marketplace/cart')}
+  1076→          className='text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors'
+  1077→        >
+  1078→          <ArrowLeft className='size-4' /> Back to Cart
+  1079→        </button>
+  1080→        <EmptyState
+  1081→          icon='🛒'
+  1082→          title='Your cart is empty'
+  1083→          description='Add products to your cart before checking out'
+  1084→          action='Browse Marketplace'
+  1085→          onAction={() => navigate('marketplace/home')}
+  1086→        />
+  1087→      </div>
+  1088→    );
+  1089→  }
+  1090→
+  1091→  return (
+  1092→    <div className='space-y-6 max-w-3xl'>
+  1093→      {/* Back Button */}
+  1094→      <button
+  1095→        onClick={() => navigate('marketplace/cart')}
+  1096→        className='text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors'
+  1097→      >
+  1098→        <ArrowLeft className='size-4' /> Back to Cart
+  1099→      </button>
+  1100→
+  1101→      <PageHeader title='Checkout' />
+  1102→
+  1103→      {/* Progress Steps */}
+  1104→      <div className='relative'>
+  1105→        <div className='flex items-center justify-between'>
+  1106→          {stepLabels.map((label, idx) => {
+  1107→            const stepNum = (idx + 1) as CheckoutStep;
+  1108→            const isActive = step === stepNum;
+  1109→            const isCompleted = step > stepNum;
+  1110→            return (
+  1111→              <React.Fragment key={label}>
+  1112→                <button
+  1113→                  onClick={() => { if (isCompleted || isActive) setStep(stepNum); }}
+  1114→                  className='flex flex-col items-center gap-1.5'
+  1115→                >
+  1116→                  <div
+  1117→                    className={cn(
+  1118→                      'w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all',
+  1119→                      isCompleted
+  1120→                        ? 'bg-primary text-primary-foreground border-primary'
+  1121→                        : isActive
+  1122→                          ? 'border-primary text-primary bg-primary/5'
+  1123→                          : 'border-muted-foreground/30 text-muted-foreground'
+  1124→                    )}
+  1125→                  >
+  1126→                    {isCompleted ? <Check className='size-5' /> : stepNum}
+  1127→                  </div>
+  1128→                  <span className={cn('text-xs font-medium', isActive ? 'text-primary' : 'text-muted-foreground')}>
+  1129→                    {label}
+  1130→                  </span>
+  1131→                </button>
+  1132→                {idx < stepLabels.length - 1 && (
+  1133→                  <div className={cn('flex-1 h-0.5 mx-2 mt-[-1.25rem]', (step > stepNum || (step === stepNum + 1)) ? 'bg-primary' : 'bg-muted')} />
+  1134→                )}
+  1135→              </React.Fragment>
+  1136→            );
+  1137→          })}
+  1138→        </div>
+  1139→      </div>
+  1140→
+  1141→      {/* Step 1: Delivery Address */}
+  1142→      {step === 1 && (
+  1143→        <motion.div {...fadeInUp}>
+  1144→          <Card>
+  1145→            <CardHeader>
+  1146→              <CardTitle className='text-base flex items-center gap-2'>
+  1147→                <Truck className='size-5 text-primary' /> Delivery Address
+  1148→              </CardTitle>
+  1149→            </CardHeader>
+  1150→            <CardContent className='space-y-4'>
+  1151→              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+  1152→                <div className='space-y-2'>
+  1153→                  <label className='text-sm font-medium'>Full Name</label>
+  1154→                  <Input
+  1155→                    placeholder='Enter your name'
+  1156→                    value={form.name}
+  1157→                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+  1158→                    className='rounded-xl'
+  1159→                  />
+  1160→                </div>
+  1161→                <div className='space-y-2'>
+  1162→                  <label className='text-sm font-medium'>Phone Number</label>
+  1163→                  <Input
+  1164→                    placeholder='+91 9876543210'
+  1165→                    value={form.phone}
+  1166→                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+  1167→                    className='rounded-xl'
+  1168→                  />
+  1169→                </div>
+  1170→              </div>
+  1171→              <div className='space-y-2'>
+  1172→                <label className='text-sm font-medium'>Address</label>
+  1173→                <Input
+  1174→                  placeholder='House no, Street, Area'
+  1175→                  value={form.address}
+  1176→                  onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+  1177→                  className='rounded-xl'
+  1178→                />
+  1179→              </div>
+  1180→              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+  1181→                <div className='space-y-2'>
+  1182→                  <label className='text-sm font-medium'>City</label>
+  1183→                  <Input
+  1184→                    placeholder='Enter city'
+  1185→                    value={form.city}
+  1186→                    onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+  1187→                    className='rounded-xl'
+  1188→                  />
+  1189→                </div>
+  1190→                <div className='space-y-2'>
+  1191→                  <label className='text-sm font-medium'>Pincode</label>
+  1192→                  <Input
+  1193→                    placeholder='500001'
+  1194→                    value={form.pincode}
+  1195→                    onChange={e => setForm(f => ({ ...f, pincode: e.target.value }))}
+  1196→                    className='rounded-xl'
+  1197→                  />
+  1198→                </div>
+  1199→              </div>
+  1200→              <Button
+  1201→                className='w-full rounded-xl mt-2'
+  1202→                onClick={() => {
+  1203→                  if (!canProceedDelivery) {
+  1204→                    toast.error('Please fill all fields');
+  1205→                    return;
+  1206→                  }
+  1207→                  setStep(2);
+  1208→                }}
+  1209→              >
+  1210→                Continue to Payment <ChevronRight className='size-4 ml-1' />
+  1211→              </Button>
+  1212→            </CardContent>
+  1213→          </Card>
+  1214→        </motion.div>
+  1215→      )}
+  1216→
+  1217→      {/* Step 2: Payment Method */}
+  1218→      {step === 2 && (
+  1219→        <motion.div {...fadeInUp}>
+  1220→          <Card>
+  1221→            <CardHeader>
+  1222→              <CardTitle className='text-base flex items-center gap-2'>
+  1223→                <CreditCard className='size-5 text-primary' /> Payment Method
+  1224→              </CardTitle>
+  1225→            </CardHeader>
+  1226→            <CardContent className='space-y-3'>
+  1227→              <RadioGroup value={payment} onValueChange={setPayment} className='space-y-3'>
+  1228→                {paymentMethods.map(method => {
+  1229→                  const Icon = method.icon;
+  1230→                  const isSelected = payment === method.id;
+  1231→                  return (
+  1232→                    <label
+  1233→                      key={method.id}
+  1234→                      className={cn(
+  1235→                        'flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all',
+  1236→                        isSelected
+  1237→                          ? 'border-primary bg-primary/5'
+  1238→                          : 'border-border hover:border-primary/30'
+  1239→                      )}
+  1240→                    >
+  1241→                      <RadioGroupItem value={method.id} />
+  1242→                      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', method.color)}>
+  1243→                        <Icon className='size-5' />
+  1244→                      </div>
+  1245→                      <div className='flex-1'>
+  1246→                        <p className='font-medium text-sm'>{method.label}</p>
+  1247→                        <p className='text-xs text-muted-foreground'>{method.description}</p>
+  1248→                      </div>
+  1249→                      {isSelected && <Check className='size-5 text-primary' />}
+  1250→                    </label>
+  1251→                  );
+  1252→                })}
+  1253→              </RadioGroup>
+  1254→
+  1255→              <div className='flex gap-3 mt-4'>
+  1256→                <Button variant='outline' className='flex-1 rounded-xl' onClick={() => setStep(1)}>
+  1257→                  <ArrowLeft className='size-4 mr-1' /> Back
+  1258→                </Button>
+  1259→                <Button className='flex-1 rounded-xl' onClick={() => setStep(3)}>
+  1260→                  Review Order <ChevronRight className='size-4 ml-1' />
+  1261→                </Button>
+  1262→              </div>
+  1263→            </CardContent>
+  1264→          </Card>
+  1265→        </motion.div>
+  1266→      )}
+  1267→
+  1268→      {/* Step 3: Confirm Order */}
+  1269→      {step === 3 && (
+  1270→        <motion.div {...fadeInUp} className='space-y-4'>
+  1271→          {/* Items Summary */}
+  1272→          <Card>
+  1273→            <CardHeader>
+  1274→              <CardTitle className='text-base flex items-center gap-2'>
+  1275→                <Package className='size-5 text-primary' /> Order Items ({items.length})
+  1276→              </CardTitle>
+  1277→            </CardHeader>
+  1278→            <CardContent className='space-y-3'>
+  1279→              {items.map(item => (
+  1280→                <div key={item.product.id} className='flex items-center justify-between text-sm'>
+  1281→                  <div className='flex items-center gap-3 min-w-0'>
+  1282→                    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm', getImageGradient(item.product.category))}>
+  1283→                      {getCategoryIcon(item.product.category)}
+  1284→                    </div>
+  1285→                    <span className='truncate'>{item.product.name}</span>
+  1286→                    <span className='text-muted-foreground shrink-0'>×{item.quantity}</span>
+  1287→                  </div>
+  1288→                  <span className='font-medium shrink-0 ml-2'>₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</span>
+  1289→                </div>
+  1290→              ))}
+  1291→              <Separator />
+  1292→              <div className='flex justify-between text-sm'>
+  1293→                <span className='text-muted-foreground'>Subtotal</span>
+  1294→                <span>₹{subtotal.toLocaleString('en-IN')}</span>
+  1295→              </div>
+  1296→              <div className='flex justify-between text-sm'>
+  1297→                <span className='text-muted-foreground'>Delivery</span>
+  1298→                <span className={deliveryFee === 0 ? 'text-emerald-600 font-medium' : ''}>
+  1299→                  {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
+  1300→                </span>
+  1301→              </div>
+  1302→              <Separator />
+  1303→              <div className='flex justify-between font-bold text-lg'>
+  1304→                <span>Total</span>
+  1305→                <span>₹{total.toLocaleString('en-IN')}</span>
+  1306→              </div>
+  1307→            </CardContent>
+  1308→          </Card>
+  1309→
+  1310→          {/* Delivery & Payment Summary */}
+  1311→          <Card>
+  1312→            <CardContent className='p-4 space-y-2'>
+  1313→              <div className='flex items-start gap-2 text-sm'>
+  1314→                <MapPin className='size-4 text-muted-foreground mt-0.5 shrink-0' />
+  1315→                <div>
+  1316→                  <p className='font-medium'>Delivery Address</p>
+  1317→                  <p className='text-muted-foreground'>{form.name}, {form.address}, {form.city} - {form.pincode}</p>
+  1318→                </div>
+  1319→              </div>
+  1320→              <Separator />
+  1321→              <div className='flex items-center gap-2 text-sm'>
+  1322→                <CreditCard className='size-4 text-muted-foreground shrink-0' />
+  1323→                <span className='font-medium'>Payment:</span>
+  1324→                <span className='text-muted-foreground'>{paymentMethods.find(m => m.id === payment)?.label}</span>
+  1325→              </div>
+  1326→            </CardContent>
+  1327→          </Card>
+  1328→
+  1329→          {/* Action Buttons */}
+  1330→          <div className='flex gap-3'>
+  1331→            <Button variant='outline' className='flex-1 rounded-xl' onClick={() => setStep(2)}>
+  1332→              <ArrowLeft className='size-4 mr-1' /> Back
+  1333→            </Button>
+  1334→            <Button
+  1335→              size='lg'
+  1336→              className='flex-1 rounded-xl'
+  1337→              onClick={handlePlaceOrder}
+  1338→            >
+  1339→              <Check className='size-4 mr-1' /> Place Order · ₹{total.toLocaleString('en-IN')}
+  1340→            </Button>
+  1341→          </div>
+  1342→        </motion.div>
+  1343→      )}
+  1344→    </div>
+  1345→  );
+  1346→}
+  1347→
+  1348→// ============== 7. ORDER TRACKING PAGE ==============
+  1349→export function OrderTrackingPage() {
+  1350→  const { navigate } = useAppStore();
+  1351→
+  1352→  const orderData = {
+  1353→    id: 'ORD-2025-1847',
+  1354→    date: 'Jan 27, 2025',
+  1355→    status: 'Packaging',
+  1356→    statusColor: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  1357→    address: '42, Green Valley Layout, Sector 12, Nashik, Maharashtra 422013',
+  1358→    estimatedDelivery: 'Jan 30, 2025',
+  1359→    total: 300,
+  1360→    items: [
+  1361→      { emoji: '🌾', name: 'Organic Basmati Rice', qty: '2 kg', price: 120 },
+  1362→      { emoji: '🌶️', name: 'Organic Red Chilli Powder', qty: '500 g', price: 80 },
+  1363→      { emoji: '🥜', name: 'Raw Peanuts', qty: '1 kg', price: 70 },
+  1364→    ],
+  1365→    deliveryFee: 30,
+  1366→    subtotal: 270,
+  1367→  };
+  1368→
+  1369→  const timelineSteps = [
+  1370→    {
+  1371→      title: 'Order Placed',
+  1372→      description: 'Your order has been confirmed',
+  1373→      timestamp: 'Jan 27, 10:30 AM',
+  1374→      status: 'completed' as const,
+  1375→    },
+  1376→    {
+  1377→      title: 'Payment Verified',
+  1378→      description: 'Payment of ₹270 verified',
+  1379→      timestamp: 'Jan 27, 10:32 AM',
+  1380→      status: 'completed' as const,
+  1381→    },
+  1382→    {
+  1383→      title: 'Quality Check',
+  1384→      description: 'Products passed quality verification',
+  1385→      timestamp: 'Jan 28, 09:15 AM',
+  1386→      status: 'completed' as const,
+  1387→    },
+  1388→    {
+  1389→      title: 'Packaging',
+  1390→      description: 'Your order is being packed at GreenAgri Center',
+  1391→      timestamp: 'Jan 29, 11:00 AM',
+  1392→      status: 'active' as const,
+  1393→    },
+  1394→    {
+  1395→      title: 'Out for Delivery',
+  1396→      description: 'With delivery partner',
+  1397→      timestamp: '',
+  1398→      status: 'upcoming' as const,
+  1399→    },
+  1400→    {
+  1401→      title: 'Delivered',
+  1402→      description: 'Expected by Jan 30, 2025',
+  1403→      timestamp: '',
+  1404→      status: 'upcoming' as const,
+  1405→    },
+  1406→  ];
+  1407→
+  1408→  const timelineVariants = {
+  1409→    hidden: { opacity: 0 },
+  1410→    visible: {
+  1411→      opacity: 1,
+  1412→      transition: {
+  1413→        staggerChildren: 0.12,
+  1414→      },
+  1415→    },
+  1416→  };
+  1417→
+  1418→  const timelineItemVariants = {
+  1419→    hidden: { opacity: 0, x: -20 },
+  1420→    visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+  1421→  };
+  1422→
+  1423→  return (
+  1424→    <div className='space-y-6 max-w-2xl'>
+  1425→      {/* Back Button */}
+  1426→      <button
+  1427→        onClick={() => navigate('marketplace/home')}
+  1428→        className='text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors'
+  1429→      >
+  1430→        <ArrowLeft className='size-4' /> Back
+  1431→      </button>
+  1432→
+  1433→      {/* 1. Order Summary Card */}
+  1434→      <motion.div {...fadeIn}>
+  1435→        <Card>
+  1436→          <CardContent className='p-5 space-y-4'>
+  1437→            <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3'>
+  1438→              <div>
+  1439→                <h1 className='text-xl font-bold'>{orderData.id}</h1>
+  1440→                <p className='text-sm text-muted-foreground flex items-center gap-1.5 mt-1'>
+  1441→                  <Calendar className='size-3.5' />
+  1442→                  Placed on {orderData.date}
+  1443→                </p>
+  1444→              </div>
+  1445→              <Badge className={cn('w-fit shrink-0', orderData.statusColor)}>
+  1446→                {orderData.status}
+  1447→              </Badge>
+  1448→            </div>
+  1449→            <Separator />
+  1450→            <div className='flex items-start gap-3 text-sm'>
+  1451→              <MapPin className='size-4 text-muted-foreground mt-0.5 shrink-0' />
+  1452→              <div>
+  1453→                <p className='font-medium'>Delivery Address</p>
+  1454→                <p className='text-muted-foreground'>{orderData.address}</p>
+  1455→              </div>
+  1456→            </div>
+  1457→            <div className='flex items-center gap-6 text-sm'>
+  1458→              <div className='flex items-center gap-1.5 text-muted-foreground'>
+  1459→                <Truck className='size-4' />
+  1460→                <span>Est. {orderData.estimatedDelivery}</span>
+  1461→              </div>
+  1462→              <div className='flex items-center gap-1.5 font-semibold'>
+  1463→                <span>Total:</span>
+  1464→                <span>₹{orderData.total.toLocaleString('en-IN')}</span>
+  1465→              </div>
+  1466→            </div>
+  1467→          </CardContent>
+  1468→        </Card>
+  1469→      </motion.div>
+  1470→
+  1471→      {/* 2. Visual Timeline */}
+  1472→      <motion.div {...fadeInUp}>
+  1473→        <Card>
+  1474→          <CardHeader className='pb-3'>
+  1475→            <CardTitle className='text-base'>Order Progress</CardTitle>
+  1476→          </CardHeader>
+  1477→          <CardContent className='pb-5'>
+  1478→            <motion.div
+  1479→              variants={timelineVariants}
+  1480→              initial='hidden'
+  1481→              animate='visible'
+  1482→              className='relative'
+  1483→            >
+  1484→              {timelineSteps.map((step, index) => {
+  1485→                const isLast = index === timelineSteps.length - 1;
+  1486→                return (
+  1487→                  <motion.div
+  1488→                    key={step.title}
+  1489→                    variants={timelineItemVariants}
+  1490→                    className='relative flex gap-4'
+  1491→                  >
+  1492→                    {/* Vertical Line + Circle */}
+  1493→                    <div className='flex flex-col items-center'>
+  1494→                      {/* Circle indicator */}
+  1495→                      <div className='relative shrink-0'>
+  1496→                        {step.status === 'completed' && (
+  1497→                          <div className='size-9 rounded-full bg-green-500 flex items-center justify-center'>
+  1498→                            <Check className='size-4 text-white' strokeWidth={3} />
+  1499→                          </div>
+  1500→                        )}
+  1501→                        {step.status === 'active' && (
+  1502→                          <div className='size-9 rounded-full border-[3px] border-green-500 bg-green-500/10 flex items-center justify-center animate-pulse-ring'>
+  1503→                            <div className='size-2.5 rounded-full bg-green-500' />
+  1504→                          </div>
+  1505→                        )}
+  1506→                        {step.status === 'upcoming' && (
+  1507→                          <div className='size-9 rounded-full border-2 border-muted-foreground/30 bg-muted flex items-center justify-center'>
+  1508→                            <Circle className='size-2.5 text-muted-foreground/40' fill='currentColor' />
+  1509→                          </div>
+  1510→                        )}
+  1511→                      </div>
+  1512→                      {/* Connecting line */}
+  1513→                      {!isLast && (
+  1514→                        <div
+  1515→                          className={cn(
+  1516→                            'w-0.5 flex-1 min-h-[2rem]',
+  1517→                            step.status === 'completed'
+  1518→                              ? 'bg-green-500'
+  1519→                              : step.status === 'active'
+  1520→                                ? 'bg-gradient-to-b from-green-500 to-muted-foreground/20'
+  1521→                                : 'bg-muted-foreground/20',
+  1522→                          )}
+  1523→                        />
+  1524→                      )}
+  1525→                    </div>
+  1526→
+  1527→                    {/* Content */}
+  1528→                    <div className={cn('pb-7', isLast && 'pb-0')}>
+  1529→                      <p
+  1530→                        className={cn(
+  1531→                          'font-semibold text-sm',
+  1532→                          step.status === 'upcoming' && 'text-muted-foreground',
+  1533→                        )}
+  1534→                      >
+  1535→                        {step.title}
+  1536→                      </p>
+  1537→                      <p
+  1538→                        className={cn(
+  1539→                          'text-sm mt-0.5',
+  1540→                          step.status === 'active' ? 'text-foreground/80' : 'text-muted-foreground',
+  1541→                        )}
+  1542→                      >
+  1543→                        {step.description}
+  1544→                      </p>
+  1545→                      {step.timestamp && (
+  1546→                        <p className='text-xs text-muted-foreground/70 mt-1 flex items-center gap-1'>
+  1547→                          <Clock className='size-3' />
+  1548→                          {step.timestamp}
+  1549→                        </p>
+  1550→                      )}
+  1551→                    </div>
+  1552→                  </motion.div>
+  1553→                );
+  1554→              })}
+  1555→            </motion.div>
+  1556→          </CardContent>
+  1557→        </Card>
+  1558→      </motion.div>
+  1559→
+  1560→      {/* 3. Order Items Section */}
+  1561→      <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+  1562→        <Card>
+  1563→          <CardHeader className='pb-3'>
+  1564→            <CardTitle className='text-base flex items-center gap-2'>
+  1565→              <Package className='size-5 text-primary' /> Order Items
+  1566→            </CardTitle>
+  1567→          </CardHeader>
+  1568→          <CardContent className='p-0 pb-0'>
+  1569→            <div className='divide-y'>
+  1570→              {orderData.items.map((item) => (
+  1571→                <div key={item.name} className='flex items-center gap-3 px-5 py-3.5'>
+  1572→                  <span className='text-2xl shrink-0'>{item.emoji}</span>
+  1573→                  <div className='flex-1 min-w-0'>
+  1574→                    <p className='text-sm font-medium truncate'>{item.name}</p>
+  1575→                    <p className='text-xs text-muted-foreground'>Qty: {item.qty}</p>
+  1576→                  </div>
+  1577→                  <p className='font-semibold text-sm shrink-0'>
+  1578→                    ₹{item.price.toLocaleString('en-IN')}
+  1579→                  </p>
+  1580→                </div>
+  1581→              ))}
+  1582→            </div>
+  1583→            <div className='px-5 py-3.5 space-y-2 bg-muted/30 rounded-b-lg'>
+  1584→              <div className='flex justify-between text-sm'>
+  1585→                <span className='text-muted-foreground'>Subtotal</span>
+  1586→                <span>₹{orderData.subtotal.toLocaleString('en-IN')}</span>
+  1587→              </div>
+  1588→              <div className='flex justify-between text-sm'>
+  1589→                <span className='text-muted-foreground'>Delivery Fee</span>
+  1590→                <span>₹{orderData.deliveryFee.toLocaleString('en-IN')}</span>
+  1591→              </div>
+  1592→              <Separator />
+  1593→              <div className='flex justify-between font-bold'>
+  1594→                <span>Total</span>
+  1595→                <span>₹{orderData.total.toLocaleString('en-IN')}</span>
+  1596→              </div>
+  1597→            </div>
+  1598→          </CardContent>
+  1599→        </Card>
+  1600→      </motion.div>
+  1601→
+  1602→      {/* 4. Delivery Partner Info */}
+  1603→      <motion.div {...fadeInUp} transition={{ delay: 0.15 }}>
+  1604→        <Card>
+  1605→          <CardContent className='p-5'>
+  1606→            <div className='flex items-center gap-4'>
+  1607→              <div className='size-12 rounded-full bg-primary/10 flex items-center justify-center text-xl shrink-0'>
+  1608→                🛵
+  1609→              </div>
+  1610→              <div className='flex-1 min-w-0'>
+  1611→                <p className='font-semibold text-sm'>Ravi Kumar</p>
+  1612→                <p className='text-xs text-muted-foreground flex items-center gap-1'>
+  1613→                  <Phone className='size-3' /> +91 98765 43210 · Scooter
+  1614→                </p>
+  1615→              </div>
+  1616→              <div className='flex gap-2 shrink-0'>
+  1617→                <Button
+  1618→                  size='sm'
+  1619→                  variant='outline'
+  1620→                  className='gap-1.5'
+  1621→                  onClick={() => toast.success('Calling Ravi Kumar...')}
+  1622→                >
+  1623→                  <Phone className='size-3.5' /> Call
+  1624→                </Button>
+  1625→                <Button
+  1626→                  size='sm'
+  1627→                  className='gap-1.5'
+  1628→                  onClick={() => toast.success('Opening chat with Ravi Kumar...')}
+  1629→                >
+  1630→                  <MessageSquare className='size-3.5' /> Chat
+  1631→                </Button>
+  1632→              </div>
+  1633→            </div>
+  1634→          </CardContent>
+  1635→        </Card>
+  1636→      </motion.div>
+  1637→
+  1638→      {/* 5. Action Buttons */}
+  1639→      <motion.div {...fadeInUp} transition={{ delay: 0.2 }} className='flex flex-col sm:flex-row gap-3'>
+  1640→        <Button
+  1641→          variant='outline'
+  1642→          className='gap-2'
+  1643→          onClick={() => toast.info('Our support team will contact you shortly.')}
+  1644→        >
+  1645→          <HelpCircle className='size-4' /> Need Help?
+  1646→        </Button>
+  1647→        <Button
+  1648→          variant='outline'
+  1649→          className='gap-2 text-destructive hover:text-destructive hover:bg-destructive/10'
+  1650→          onClick={() => toast.info('Cancellation request submitted.')}
+  1651→        >
+  1652→          Cancel Order
+  1653→        </Button>
+  1654→        <Button
+  1655→          className='gap-2 ml-auto'
+  1656→          onClick={() => toast.success('Invoice downloaded')}
+  1657→        >
+  1658→          <Download className='size-4' /> Download Invoice
+  1659→        </Button>
+  1660→      </motion.div>
+  1661→    </div>
+  1662→  );
+  1663→}
+  1664→

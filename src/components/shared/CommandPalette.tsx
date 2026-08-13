@@ -180,6 +180,10 @@ const contentVariants = {
   },
 };
 
+// Module-level open/close control so the hook can toggle the palette directly
+let _togglePalette: (() => void) | null = null;
+let _closePalette: (() => void) | null = null;
+
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const { navigate } = useAppStore();
@@ -187,16 +191,29 @@ export default function CommandPalette() {
   const role = user?.role || 'farmer';
   const groups = getRouteGroups(role);
 
+  const toggle = useCallback(() => setOpen(prev => !prev), []);
+  const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    _togglePalette = toggle;
+    _closePalette = close;
+    return () => { _togglePalette = null; _closePalette = null; };
+  }, [toggle, close]);
+
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen(prev => !prev);
+        toggle();
+      }
+      if (e.key === 'Escape' && open) {
+        e.preventDefault();
+        close();
       }
     };
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
-  }, []);
+  }, [toggle, close, open]);
 
   const handleSelect = useCallback(
     (route: RoutePath) => {
@@ -271,16 +288,10 @@ export default function CommandPalette() {
   );
 }
 
-/** Hook to open the command palette from external triggers */
+/** Hook to toggle the command palette from external triggers (e.g. button clicks) */
 export function useCommandPaletteOpen() {
   const openPalette = useCallback(() => {
-    document.dispatchEvent(
-      new KeyboardEvent('keydown', {
-        key: 'k',
-        metaKey: true,
-        bubbles: true,
-      })
-    );
+    if (_togglePalette) _togglePalette();
   }, []);
   return { openPalette };
 }
