@@ -1,0 +1,689 @@
+    85→        return (
+    86→          <React.Fragment key={s.label}>
+    87→            {/* Circle */}
+    88→                <div
+    89→                  className={[
+    90→                    'relative flex flex-col items-center',
+    91→                    'transition-all duration-300',
+    92→                  ].join(' ')}
+    93→                >
+    94→                  <div
+    95→                    className={[
+    96→                      'flex items-center justify-center rounded-full transition-all duration-300',
+    97→                      isActive
+    98→                        ? 'size-10 gradient-green text-white shadow-md'
+    99→                        : isCompleted
+   100→                          ? 'size-10 bg-primary text-primary-foreground shadow-sm'
+   101→                          : 'size-10 bg-muted text-muted-foreground',
+   102→                    ].join(' ')}
+   103→                  >
+   104→                    {isCompleted ? (
+   105→                      <Check className="size-5" strokeWidth={3} />
+   106→                    ) : (
+   107→                      <Icon className="size-4" />
+   108→                    )}
+   109→                  </div>
+   110→                  <span
+   111→                    className={[
+   112→                      'text-[10px] mt-1.5 font-medium transition-colors duration-300',
+   113→                      isActive ? 'text-primary' : isCompleted ? 'text-foreground' : 'text-muted-foreground',
+   114→                    ].join(' ')}
+   115→                  >
+   116→                    {s.label}
+   117→                  </span>
+   118→                </div>
+   119→                {i < stepMeta.length - 1 && (
+   120→                  <div className="flex-1 mx-1 mt-[-14px]">
+   121→                    <div className="h-0.5 rounded-full bg-muted overflow-hidden">
+   122→                      <div
+   123→                        className="h-full rounded-full gradient-green transition-all duration-500"
+   124→                        style={{
+   125→                          width: isCompleted || isActive ? '100%' : '0%',
+   126→                        }}
+   127→                      />
+   128→                    </div>
+   129→                  </div>
+   130→                )}
+   131→              </React.Fragment>
+   132→            );
+   133→          })}
+   134→      </div>
+   135→    );
+   136→}
+   137→
+   138→// ============== CONFETTI ==============
+   139→
+   140→function ConfettiParticle({ delay, x, color }: { delay: number; x: number; color: string }) {
+   141→  return (
+   142→    <motion.div
+   143→      className="absolute w-2 h-2 rounded-sm"
+   144→      style={{
+   145→        backgroundColor: color,
+   146→        left: `${x}%`,
+   147→        top: '-5%',
+   148→      }}
+   149→      initial={{ opacity: 0, y: 0, rotate: 0 }}
+   150→      animate={{
+   151→        opacity: [0, 1, 1, 0],
+   152→        y: [0, 120, 250, 400],
+   153→        x: [0, Math.sin(x) * 30, Math.cos(x) * 20, Math.sin(x) * 50],
+   154→        rotate: [0, 180, 360, 540],
+   155→      }}
+   156→      transition={{
+   157→        duration: 2.5,
+   158→        delay,
+   159→        ease: 'easeOut',
+   160→      }}
+   161→    />
+   162→  );
+   163→}
+   164→
+   165→const confettiColors = ['#16a34a', '#22c55e', '#f59e0b', '#fbbf24', '#ef4444', '#a855f7', '#0ea5e9'];
+   166→
+   167→// ============== ANIMATION VARIANTS ==============
+   168→
+   169→const slideVariants = {
+   170→  enter: (direction: number) => ({
+   171→    x: direction > 0 ? 80 : -80,
+   172→    opacity: 0,
+   173→  }),
+   174→  center: {
+   175→    x: 0,
+   176→    opacity: 1,
+   177→  },
+   178→  exit: (direction: number) => ({
+   179→    x: direction > 0 ? -80 : 80,
+   180→    opacity: 0,
+   181→  }),
+   182→};
+   183→
+   184→// ============== MAIN COMPONENT ==============
+   185→
+   186→export default function OnboardingPage() {
+   187→  const { navigate } = useAppStore();
+   188→  const { completeOnboarding, isLoading } = useAuthStore();
+   189→  const [step, setStep] = useState(1);
+   190→  const [direction, setDirection] = useState(1);
+   191→
+   192→  // Step 1 state
+   193→  const [farmName, setFarmName] = useState('');
+   194→  const [district, setDistrict] = useState('');
+   195→  const [state, setState] = useState('');
+   196→  const [farmSize, setFarmSize] = useState('');
+   197→
+   198→  // Step 2 state
+   199→  const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
+   200→
+   201→  // Step 3 state
+   202→  const [soilType, setSoilType] = useState('');
+   203→  const [irrigationMethod, setIrrigationMethod] = useState('');
+   204→  const [farmingType, setFarmingType] = useState('');
+   205→
+   206→  const totalSteps = 4;
+   207→  const progress = (step / totalSteps) * 100;
+   208→
+   209→  const goNext = () => {
+   210→    if (step < totalSteps) {
+   211→      setDirection(1);
+   212→      setStep((s) => s + 1);
+   213→    }
+   214→  };
+   215→
+   216→  const goBack = () => {
+   217→    if (step > 1) {
+   218→      setDirection(-1);
+   219→      setStep((s) => s - 1);
+   220→    }
+   221→  };
+   222→
+   223→  const toggleCrop = (cropId: string) => {
+   224→    setSelectedCrops((prev) =>
+   225→      prev.includes(cropId)
+   226→        ? prev.filter((c) => c !== cropId)
+   227→        : [...prev, cropId],
+   228→    );
+   229→  };
+   230→
+   231→  const isStep1Valid = farmName.trim() !== '' && district.trim() !== '' && state !== '' && farmSize !== '';
+   232→  const isStep2Valid = selectedCrops.length >= 1;
+   233→  const isStep3Valid = soilType !== '' && irrigationMethod !== '' && farmingType !== '';
+   234→
+   235→  const handleComplete = () => {
+   236→    completeOnboarding({
+   237→      state,
+   238→      district,
+   239→      village: district,
+   240→      location: `${district}, ${state}`,
+   241→    });
+   242→    navigate('farmer/dashboard');
+   243→  };
+   244→
+   245→  const handleCompleteLater = () => {
+   246→    navigate('farmer/dashboard');
+   247→  };
+   248→
+   249→  // Summary data for step 4
+   250→  const summaryData = [
+   251→    { label: 'Farm Name', value: farmName || '—' },
+   252→    { label: 'Location', value: `${district}, ${state}` || '—' },
+   253→    { label: 'Farm Size', value: farmSize ? `${farmSize} acres` : '—' },
+   254→    { label: 'Crops', value: selectedCrops.map((id) => cropOptions.find((c) => c.id === id)?.name).filter(Boolean).join(', ') || '—' },
+   255→    { label: 'Soil Type', value: soilType || '—' },
+   256→    { label: 'Irrigation', value: irrigationMethod || '—' },
+   257→    { label: 'Farming', value: farmingType || '—' },
+   258→  ];
+   259→
+   260→  return (
+   261→    <div className="min-h-screen flex flex-col bg-background">
+   262→      {/* Thin green gradient progress bar at very top */}
+   263→      <div className="fixed top-0 left-0 right-0 z-50 h-1">
+   264→        <motion.div
+   265→          className="h-full gradient-green"
+   266→          initial={{ width: '0%' }}
+   267→          animate={{ width: `${progress}%` }}
+   268→          transition={{ duration: 0.4, ease: 'easeInOut' }}
+   269→        />
+   270→      </div>
+   271→
+   272→      {/* Main content area */}
+   273→      <div className="flex-1 flex items-center justify-center px-4 pt-8 pb-6">
+   274→        <div className="w-full max-w-lg">
+   275→          {/* Step Indicator */}
+   276→          <div className="mb-6">
+   277→            <StepIndicator currentStep={step} />
+   278→          </div>
+   279→
+   280→          {/* Card with glass-card styling */}
+   281→          <Card className="glass-card rounded-2xl overflow-hidden">
+   282→            <CardContent className="p-6 sm:p-8">
+   283→              <AnimatePresence mode="wait" custom={direction}>
+   284→                {/* ========== STEP 1: FARM LOCATION ========== */}
+   285→                {step === 1 && (
+   286→                  <motion.div
+   287→                    key="step1"
+   288→                    custom={direction}
+   289→                    variants={slideVariants}
+   290→                    initial="enter"
+   291→                    animate="center"
+   292→                    exit="exit"
+   293→                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+   294→                  >
+   295→                    {/* Header with illustration */
+   296→                    <div className="flex flex-col items-center mb-6">
+   297→                      <div className="relative mb-4">
+   298→                        <div className="size-20 sm:size-24 rounded-2xl bg-gradient-to-br from-emerald-600/20 to-green-500/20 dark:from-emerald-600/10 dark:to-green-500/10 flex items-center justify-center">
+   299→                          <MapPin className="size-10 sm:size-12 text-emerald-600 dark:text-emerald-400" />
+   300→                        </div>
+   301→                        <motion.div
+   302→                          className="absolute -top-1 -right-1 size-6 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center"
+   303→                          animate={{ y: [0, -3, 0] }}
+   304→                          transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+   305→                        >
+   306→                          <span className="text-xs">📍</span>
+   307→                        </motion.div>
+   308→                      </div>
+   309→                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-center">
+   310→                        Where is your farm?
+   311→                      </h2>
+   312→                      <p className="text-muted-foreground text-sm mt-1 text-center">
+   313→                        We&apos;ll use this for weather and market insights
+   314→                      </p>
+   315→                    </div>
+   316→
+   317→                    {/* Form */}
+   318→                    <div className="space-y-4">
+   319→                      <div className="space-y-2">
+   320→                        <Label htmlFor="onb-farm-name" className="text-sm font-medium">
+   321→                          Farm Name
+   322→                        </Label>
+   323→                        <Input
+   324→                          id="onb-farm-name"
+   325→                          placeholder="e.g., Green Fields"
+   326→                          value={farmName}
+   327→                          onChange={(e) => setFarmName(e.target.value)}
+   328→                        />
+   329→                      </div>
+   330→
+   331→                      <div className="space-y-2">
+   332→                        <Label htmlFor="onb-district" className="text-sm font-medium">
+   333→                          Village / District
+   334→                        </Label>
+   335→                        <Input
+   336→                          id="onb-district"
+   337→                          placeholder="e.g., Siddipet"
+   338→                          value={district}
+   339→                          onChange={(e) => setDistrict(e.target.value)}
+   340→                        />
+   341→                      </div>
+   342→
+   343→                      <div className="space-y-2">
+   344→                        <Label className="text-sm font-medium">State</Label>
+   345→                        <Select value={state} onValueChange={setState}>
+   346→                          <SelectTrigger className="w-full">
+   347→                            <SelectValue placeholder="Select your state" />
+   348→                          </SelectTrigger>
+   349→                          <SelectContent>
+   350→                            {states.map((s) => (
+   351→                              <SelectItem key={s} value={s}>
+   352→                                {s}
+   353→                              </SelectItem>
+   354→                            ))}
+   355→                          </SelectContent>
+   356→                        </Select>
+   357→                      </div>
+   358→
+   359→                      <div className="space-y-2">
+   360→                        <Label htmlFor="onb-farm-size" className="text-sm font-medium">
+   361→                          Farm Size
+   362→                        </Label>
+   363→                        <div className="relative">
+   364→                          <Input
+   365→                            id="onb-farm-size"
+   366→                            type="number"
+   367→                            min="0.1"
+   368→                            step="0.1"
+   369→                            placeholder="e.g., 5"
+   370→                            value={farmSize}
+   371→                            onChange={(e) => setFarmSize(e.target.value)}
+   372→                            className="pr-16"
+   373→                          />
+   374→                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+   375→                            acres
+   376→                          </span>
+   377→                        </div>
+   378→                      </div>
+   379→                    </div>
+   380→                  </motion.div>
+   381→                )}
+   382→
+   383→                {/* ========== STEP 2: CROP SELECTION ========== */}
+   384→                {step === 2 && (
+   385→                  <motion.div
+   386→                    key="step2"
+   387→                    custom={direction}
+   388→                    variants={slideVariants}
+   389→                    initial="enter"
+   390→                    animate="center"
+   391→                    exit="exit"
+   392→                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+   393→                  >
+   394→                    {/* Header */}
+   395→                    <div className="flex flex-col items-center mb-6">
+   396→                      <div className="relative mb-4">
+   397→                        <div className="size-20 sm:size-24 rounded-2xl bg-gradient-to-br from-emerald-600/20 to-green-500/20 dark:from-emerald-600/10 dark:to-green-500/10 flex items-center justify-center">
+   398→                          <Sprout className="size-10 sm:size-12 text-emerald-600 dark:text-emerald-400" />
+   399→                        </div>
+   400→                      </div>
+   401→                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-center">
+   402→                        What do you grow?
+   403→                      </h2>
+   404→                      <p className="text-muted-foreground text-sm mt-1 text-center">
+   405→                        Select at least 1 crop (you can add more later)
+   406→                      </p>
+   407→                    </div>
+   408→
+   409→                    {/* Crop grid */}
+   410→                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-72 overflow-y-auto scrollbar-thin pr-1">
+   411→                      {cropOptions.map((crop) => {
+   412→                        const isSelected = selectedCrops.includes(crop.id);
+   413→                        return (
+   414→                          <motion.button
+   415→                            key={crop.id}
+   416→                            type="button"
+   417→                            whileTap={{ scale: 0.95 }}
+   418→                            onClick={() => toggleCrop(crop.id)}
+   419→                            className={[
+   420→                              'relative rounded-xl border-2 p-3 sm:p-4 text-center transition-all duration-200',
+   421→                              isSelected
+   422→                                ? 'border-emerald-600 bg-emerald-50 dark:border-emerald-500 dark:bg-emerald-900/20 shadow-sm'
+   423→                                : 'border-border hover:border-emerald-600/30 hover:bg-muted/50',
+   424→                            ].join(' ')}
+   425→                          >
+   426→                            {isSelected && (
+   427→                              <div className="absolute top-1.5 right-1.5">
+   428→                                <div className="size-4 rounded-full bg-emerald-600 dark:bg-emerald-500 flex items-center justify-center">
+   429→                                  <Check className="size-2.5 text-white" strokeWidth={3} />
+   430→                                </div>
+   431→                              </div>
+   432→                            )}
+   433→                            <span className="text-2xl sm:text-3xl block mb-1.5">{crop.emoji}</span>
+   434→                            <span className="text-xs sm:text-sm font-medium leading-tight">{crop.name}</span>
+   435→                          </motion.button>
+   436→                        );
+   437→                      })}
+   438→                    </div>
+   439→
+   440→                    {selectedCrops.length > 0 && (
+   441→                      <motion.p
+   442→                        initial={{ opacity: 0, y: 4 }}
+   443→                        animate={{ opacity: 1, y: 0 }}
+   444→                        className="text-xs text-muted-foreground mt-3 text-center"
+   445→                      >
+   446→                        {selectedCrops.length} crop{selectedCrops.length > 1 ? 's' : ''} selected
+   447→                      </motion.p>
+   448→                    )}
+   449→                  </motion.div>
+   450→                )}
+   451→
+   452→                {/* ========== STEP 3: FARMING PRACTICES ========== */}
+   453→                {step === 3 && (
+   454→                  <motion.div
+   455→                    key="step3"
+   456→                    custom={direction}
+   457→                    variants={slideVariants}
+   458→                    initial="enter"
+   459→                    animate="center"
+   460→                    exit="exit"
+   461→                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+   462→                  >
+   463→                    {/* Header */}
+   464→                    <div className="flex flex-col items-center mb-6">
+   465→                      <div className="relative mb-4">
+   466→                        <div className="size-20 sm:size-24 rounded-2xl bg-gradient-to-br from-emerald-600/20 to-green-500/20 dark:from-emerald-600/10 dark:to-green-500/10 flex items-center justify-center">
+   467→                          <Leaf className="size-10 sm:size-12 text-emerald-600 dark:text-emerald-400" />
+   468→                        </div>
+   469→                      </div>
+   470→                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-center">
+   471→                        How do you farm?
+   472→                      </h2>
+   473→                      <p className="text-muted-foreground text-sm mt-1 text-center">
+   474→                        This helps us tailor advice for your practices
+   475→                      </p>
+   476→                    </div>
+   477→
+   478→                    <div className="space-y-6">
+   479→                      {/* Soil Type */}
+   480→                      <div className="space-y-3">
+   481→                        <Label className="text-sm font-medium flex items-center gap-2">
+   482→                          <span className="size-6 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+   483→                            <span className="text-xs">🪨</span>
+   484→                          </span>
+   485→                          Soil Type
+   486→                        </Label>
+   487→                        <RadioGroup value={soilType} onValueChange={setSoilType} className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+   488→                          {soilTypes.map((soil) => (
+   489→                            <Label
+   490→                              key={soil}
+   491→                              htmlFor={`soil-${soil}`}
+   492→                              className={[
+   493→                                'flex items-center gap-2 rounded-lg border-2 px-3 py-2.5 cursor-pointer transition-all duration-200',
+   494→                                soilType === soil
+   495→                                  ? 'border-emerald-600 bg-emerald-50 dark:border-emerald-500 dark:bg-emerald-900/20'
+   496→                                  : 'border-border hover:border-emerald-600/30 hover:bg-muted/50',
+   497→                              ].join(' ')}
+   498→                            >
+   499→                              <RadioGroupItem value={soil} id={`soil-${soil}`} className="sr-only" />
+   500→                              <div className={[
+   501→                                'size-4 rounded-full border-2 flex items-center justify-center transition-colors',
+   502→                                soilType === soil
+   503→                                  ? 'border-emerald-600 bg-emerald-600'
+   504→                                  : 'border-muted-foreground/30',
+   505→                              ].join(' ')}>
+   506→                                {soilType === soil && <Check className="size-2.5 text-white" strokeWidth={3} />}
+   507→                              </div>
+   508→                              <span className="text-xs sm:text-sm font-medium">{soil}</span>
+   509→                            </Label>
+   510→                          ))}
+   511→                        </RadioGroup>
+   512→                      </div>
+   513→
+   514→                      {/* Irrigation Method */}
+   515→                      <div className="space-y-3">
+   516→                        <Label className="text-sm font-medium flex items-center gap-2">
+   517→                          <span className="size-6 rounded-md bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+   518→                            <Droplets className="size-3 text-sky-600 dark:text-sky-400" />
+   519→                          </span>
+   520→                          Irrigation Method
+   521→                        </Label>
+   522→                        <RadioGroup value={irrigationMethod} onValueChange={setIrrigationMethod} className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+   523→                          {irrigationMethods.map((method) => (
+   524→                            <Label
+   525→                              key={method}
+   526→                              htmlFor={`irrigation-${method}`}
+   527→                              className={[
+   528→                                'flex items-center gap-2 rounded-lg border-2 px-3 py-2.5 cursor-pointer transition-all duration-200',
+   529→                                irrigationMethod === method
+   530→                                  ? 'border-emerald-600 bg-emerald-50 dark:border-emerald-500 dark:bg-emerald-900/20'
+   531→                                  : 'border-border hover:border-emerald-600/30 hover:bg-muted/50',
+   532→                              ].join(' ')}
+   533→                            >
+   534→                              <RadioGroupItem value={method} id={`irrigation-${method}`} className="sr-only" />
+   535→                              <div className={[
+   536→                                'size-4 rounded-full border-2 flex items-center justify-center transition-colors',
+   537→                                irrigationMethod === method
+   538→                                  ? 'border-emerald-600 bg-emerald-600'
+   539→                                  : 'border-muted-foreground/30',
+   540→                              ].join(' ')}>
+   541→                                {irrigationMethod === method && <Check className="size-2.5 text-white" strokeWidth={3} />}
+   542→                              </div>
+   543→                              <span className="text-xs sm:text-sm font-medium">{method}</span>
+   544→                            </Label>
+   545→                          ))}
+   546→                        </RadioGroup>
+   547→                      </div>
+   548→
+   549→                      {/* Farming Type */}
+   550→                      <div className="space-y-3">
+   551→                        <Label className="text-sm font-medium flex items-center gap-2">
+   552→                          <span className="size-6 rounded-md bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+   553→                            <Leaf className="size-3 text-emerald-600 dark:text-emerald-400" />
+   554→                          </span>
+   555→                          Farming Type
+   556→                        </Label>
+   557→                        <RadioGroup value={farmingType} onValueChange={setFarmingType} className="grid grid-cols-3 gap-2">
+   558→                          {farmingTypes.map((type) => (
+   559→                            <Label
+   560→                              key={type}
+   561→                              htmlFor={`farming-${type}`}
+   562→                              className={[
+   563→                                'flex items-center gap-2 rounded-lg border-2 px-3 py-2.5 cursor-pointer transition-all duration-200',
+   564→                                farmingType === type
+   565→                                  ? 'border-emerald-600 bg-emerald-50 dark:border-emerald-500 dark:bg-emerald-900/20'
+   566→                                  : 'border-border hover:border-emerald-600/30 hover:bg-muted/50',
+   567→                              ].join(' ')}
+   568→                            >
+   569→                              <RadioGroupItem value={type} id={`farming-${type}`} className="sr-only" />
+   570→                              <div className={[
+   571→                                'size-4 rounded-full border-2 flex items-center justify-center transition-colors',
+   572→                                farmingType === type
+   573→                                  ? 'border-emerald-600 bg-emerald-600'
+   574→                                  : 'border-muted-foreground/30',
+   575→                              ].join(' ')}>
+   576→                                {farmingType === type && <Check className="size-2.5 text-white" strokeWidth={3} />}
+   577→                              </div>
+   578→                              <span className="text-xs sm:text-sm font-medium">{type}</span>
+   579→                            </Label>
+   580→                          ))}
+   581→                        </RadioGroup>
+   582→                      </div>
+   583→                    </div>
+   584→                  </motion.div>
+   585→                )}
+   586→
+   587→                {/* ========== STEP 4: ALL DONE! ========== */}
+   588→                {step === 4 && (
+   589→                  <motion.div
+   590→                    key="step4"
+   591→                    custom={direction}
+   592→                    variants={slideVariants}
+   593→                    initial="enter"
+   594→                    animate="center"
+   595→                    exit="exit"
+   596→                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+   597→                  >
+   598→                    {/* Confetti particles */}
+   599→                    <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-2xl">
+   600→                      {confettiColors.map((color, i) => (
+   601→                        <ConfettiParticle
+   602→                          key={i}
+   603→                          delay={0.3 + i * 0.12}
+   604→                          x={10 + i * 12}
+   605→                          color={color}
+   606→                        />
+   607→                      ))}
+   608→                    </div>
+   609→
+   610→                    {/* Celebration header */}
+   611→                    <div className="relative flex flex-col items-center mb-6">
+   612→                      <motion.div
+   613→                        initial={{ scale: 0, rotate: -180 }}
+   614→                        animate={{ scale: 1, rotate: 0 }}
+   615→                        transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.1 }}
+   616→                        className="mb-4"
+   617→                      >
+   618→                        <div className="size-24 sm:size-28 rounded-full bg-gradient-to-br from-emerald-600/20 to-green-500/20 dark:from-emerald-600/10 dark:to-green-500/10 flex items-center justify-center">
+   619→                          <span className="text-5xl sm:text-6xl">🎉</span>
+   620→                        </div>
+   621→                      </motion.div>
+   622→
+   623→                      <motion.h2
+   624→                        initial={{ opacity: 0, y: 10 }}
+   625→                        animate={{ opacity: 1, y: 0 }}
+   626→                        transition={{ delay: 0.3 }}
+   627→                        className="text-2xl sm:text-3xl font-bold tracking-tight gradient-text text-center"
+   628→                      >
+   629→                        All Done!
+   630→                      </motion.h2>
+   631→                      <motion.p
+   632→                        initial={{ opacity: 0, y: 10 }}
+   633→                        animate={{ opacity: 1, y: 0 }}
+   634→                        transition={{ delay: 0.4 }}
+   635→                        className="text-muted-foreground text-sm mt-2 text-center"
+   636→                      >
+   637→                        Your farm profile is set up. Here&apos;s a summary:
+   638→                      </motion.p>
+   639→                    </div>
+   640→
+   641→                    {/* Summary card */}
+   642→                    <motion.div
+   643→                      initial={{ opacity: 0, y: 10 }}
+   644→                      animate={{ opacity: 1, y: 0 }}
+   645→                      transition={{ delay: 0.5 }}
+   646→                    >
+   647→                      <Card className="bg-muted/50 border-border/50">
+   648→                        <CardContent className="p-4 space-y-2.5">
+   649→                          {summaryData.map((item) => (
+   650→                            <div key={item.label} className="flex items-start justify-between gap-3">
+   651→                              <span className="text-xs text-muted-foreground shrink-0 pt-0.5">
+   652→                                {item.label}
+   653→                              </span>
+   654→                              <span className="text-sm font-medium text-right truncate">
+   655→                                {item.value}
+   656→                              </span>
+   657→                            </div>
+   658→                          ))}
+   659→                        </CardContent>
+   660→                      </Card>
+   661→                    </motion.div>
+   662→
+   663→                    {/* Crop badges */}
+   664→                    {selectedCrops.length > 0 && (
+   665→                      <motion.div
+   666→                        initial={{ opacity: 0, y: 10 }}
+   667→                        animate={{ opacity: 1, y: 0 }}
+   668→                        transition={{ delay: 0.6 }}
+   669→                        className="flex flex-wrap items-center justify-center gap-1.5 mt-4"
+   670→                      >
+   671→                        {selectedCrops.map((cropId) => {
+   672→                          const crop = cropOptions.find((c) => c.id === cropId);
+   673→                          if (!crop) return null;
+   674→                          return (
+   675→                            <Badge
+   676→                              key={cropId}
+   677→                              variant="secondary"
+   678→                              className="text-xs py-1 px-2.5 rounded-full"
+   679→                            >
+   680→                              {crop.emoji} {crop.name}
+   681→                            </Badge>
+   682→                          );
+   683→                        })}
+   684→                      </motion.div>
+   685→                    )}
+   686→
+   687→                    {/* CTA Button */}
+   688→                    <motion.div
+   689→                      initial={{ opacity: 0, y: 10 }}
+   690→                      animate={{ opacity: 1, y: 0 }}
+   691→                      transition={{ delay: 0.7 }}
+   692→                      className="mt-6"
+   693→                    >
+   694→                      <Button
+   695→                        className="w-full h-12 font-semibold rounded-xl text-base"
+   696→                        size="lg"
+   697→                        onClick={handleComplete}
+   698→                        disabled={isLoading}
+   699→                      >
+   700→                        {isLoading ? (
+   701→                          <span className="flex items-center gap-2">
+   702→                            <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+   703→                            Setting up...
+   704→                          </span>
+   705→                        ) : (
+   706→                          <>
+   707→                            Go to Dashboard
+   708→                            <ArrowRight className="size-4" />
+   709→                          </>
+   710→                        )}
+   711→                      </Button>
+   712→                      <button
+   713→                        type="button"
+   714→                        onClick={handleCompleteLater}
+   715→                        className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+   716→                      >
+   717→                        Complete Later
+   718→                      </button>
+   719→                    </motion.div>
+   720→                  </motion.div>
+   721→                )}
+   722→              </AnimatePresence>
+   723→
+   724→              {/* ========== NAVIGATION BUTTONS ========== */}
+   725→              {step < totalSteps && (
+   726→                <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border/50">
+   727→                  {step > 1 ? (
+   728→                    <Button
+   729→                      variant="outline"
+   730→                      size="lg"
+   731→                      onClick={goBack}
+   732→                      className="rounded-xl font-medium"
+   733→                    >
+   734→                      <ChevronLeft className="size-4" />
+   735→                      Back
+   736→                    </Button>
+   737→                  ) : (
+   738→                    <div />
+   739→                  )}
+   740→                  <Button
+   741→                    size="lg"
+   742→                    onClick={goNext}
+   743→                    disabled={
+   744→                      (step === 1 && !isStep1Valid) ||
+   745→                      (step === 2 && !isStep2Valid) ||
+   746→                      (step === 3 && !isStep3Valid)
+   747→                    }
+   748→                    className="flex-1 rounded-xl font-medium"
+   749→                  >
+   750→                    {step === 3 ? 'Complete' : 'Next'}
+   751→                    <ChevronRight className="size-4" />
+   752→                  </Button>
+   753→                </div>
+   754→              )}
+   755→            </CardContent>
+   756→          </Card>
+   757→
+   758→          {/* Skip for step < 4 */}
+   759→          {step < totalSteps && (
+   760→            <button
+   761→              type="button"
+   762→              onClick={handleCompleteLater}
+   763→              className="block mx-auto mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+   764→            >
+   765→              Skip for now
+   766→            </button>
+   767→          )}
+   768→        </div>
+   769→      </div>
+   770→    </div>
+   771→  );
+   772→}
+   773→

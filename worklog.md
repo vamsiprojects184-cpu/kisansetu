@@ -269,3 +269,73 @@ Stage Summary:
 - Visual enhancements: floating blobs, animated glow border, emoji drift, stagger animations, spring bounce logo, prominent register CTA
 - No functionality changed — all login/demo/register logic intact
 - Mobile responsive: left panel hidden on <lg, card centered on full width with gradient background blobs visible
+---
+Task ID: 4b
+Agent: Main Agent
+Task: Build Farmer Onboarding Wizard page (4-step wizard)
+
+Work Log:
+- Read page.tsx: confirmed 'onboarding' route already mapped in switch (line 55), imported from AuthPages
+- Read types/index.ts: confirmed 'onboarding' already in RoutePath union (line 288)
+- Read existing OnboardingPage in AuthPages.tsx: 6-step wizard (Welcome, Language, Location, Farm, Crops, Done) — lines 1377-1934
+- Read CommandPalette.tsx: farmer routes array indexed, onboarding not present
+- Created new OnboardingPage.tsx at src/components/pages/auth/OnboardingPage.tsx with 4-step wizard:
+  - Step 1 (Farm Location): Farm Name input, Village/District input, State dropdown (7 states), Farm Size in acres, MapPin icon illustration area with emerald gradient bg
+  - Step 2 (Crop Selection): 12 crop cards in 3x4 grid (Rice, Wheat, Cotton, Chilli, Tomato, Brinjal, Onion, Maize, Soybean, Groundnut, Sugarcane, Pulses), each with emoji + name, green border/bg when selected, min 1 required
+  - Step 3 (Farming Practices): Soil Type radio group (6 options), Irrigation Method radio group (5 options), Farming Type radio group (3 options), custom styled radio cards with green selection state
+  - Step 4 (All Done!): 🎉 celebration with confetti CSS animation (7 colored particles), summary card showing all selections, crop badges, "Go to Dashboard" button, "Complete Later" link
+- UI features:
+  - Step indicator: 4 circles connected by lines, active step = gradient-green, completed = checkmark, labels below
+  - Thin green gradient progress bar at very top of page (fixed, h-1, animated width)
+  - Back button (hidden on step 1) and Next/Complete button at bottom with border-t separator
+  - Skip for now link below card
+  - Centered card with glass-card styling, max-w-lg
+  - motion.div with AnimatePresence and custom slideVariants (directional left/right slide, 80px offset)
+  - Mobile responsive (full-width on small screens, sm: breakpoints for grids and padding)
+- Updated page.tsx import: separated OnboardingPage to import from new file (default export)
+- Removed old OnboardingPage (6-step) from AuthPages.tsx along with its data constants (indianStates, cropOptions)
+- Added onboarding to CommandPalette: UserPlus icon, "Complete your farm profile setup" description, placed first in farmer routes
+- Updated CommandPalette getRouteGroups farmer case: adjusted all index references (+1 offset due to new entry)
+- Fixed JSX comment bug: `{/* Header with illustration */` missing closing `*/`
+- Lint passes clean: zero errors
+
+Stage Summary:
+- New file: src/components/pages/auth/OnboardingPage.tsx (~773 lines)
+- Modified: src/app/page.tsx (import change)
+- Modified: src/components/pages/auth/AuthPages.tsx (removed ~560 lines of old onboarding)
+- Modified: src/components/shared/CommandPalette.tsx (added onboarding entry, updated farmer route indices)
+- 4-step wizard replaces old 6-step wizard with enhanced UI (glass-card, confetti, step indicator, green gradient progress bar)
+---
+Task ID: 4c
+Agent: Main Agent
+Task: Create rich Farmer Notifications page
+
+Work Log:
+- Verified 'farmer/notifications' in RoutePath type and route mapping in page.tsx (already wired)
+- Found existing NotificationsPage in FarmerPages.tsx (~80 lines, basic list with store data)
+- Created standalone NotificationsPage.tsx at src/components/pages/farmer/NotificationsPage.tsx (~220 lines)
+- Updated page.tsx import: separated NotificationsPage to import from new file (default export), removed from FarmerPages barrel import
+- New NotificationsPage features:
+  - PageHeader: Bell icon in primary/10 container, "Notifications" title with gradient-text, unread count subtitle, "Mark all as read" button with CheckCheck icon
+  - Filter Tabs: All | Weather | Market | Orders | AI Advisory | System using shadcn Tabs/TabsList/TabsTrigger
+  - Unread count badges on each tab (Badge component, min-w-4, 10px text)
+  - 12 realistic mock notifications with category-based colored icon containers:
+    - Weather (🌧️ cyan bg): Heavy rain, soil moisture, dry spell
+    - Market (📈 amber bg): Tomato prices, Rice MSP
+    - Order (📦 green bg): Delivery, payment processed
+    - AI (🤖 violet bg): Early blight, whitefly advisory, crop health score
+    - System (⚙️ gray bg): Profile completion, new collection center
+  - Notification cards: rounded-xl, border, hover:bg-accent/50, unread bg-primary/5 with border-primary/20
+  - Left: colored circle container with emoji, Middle: bold title, 2-line description (line-clamp-2), Clock timestamp, Right: w-2 h-2 unread dot
+  - Click to mark as read (removes dot, changes bg)
+  - Empty state: BellOff icon with "No notifications in this category" message
+  - Staggered fade-in animations (fadeInUp pattern: opacity 0→1, y 10→0, 0.04s stagger)
+  - Uses local state for notifications (not store), so doesn't conflict with existing notification dropdown
+  - Dark mode support via category bg classes (dark: variants)
+  - Mobile responsive (flex-col header on small, full-width tabs with overflow-x-auto)
+- Lint passes clean: zero errors
+
+Stage Summary:
+- New file: src/components/pages/farmer/NotificationsPage.tsx (~220 lines)
+- Modified: src/app/page.tsx (import separated from barrel)
+- Replaces basic 80-line NotificationsPage with rich 220-line version featuring filter tabs, category icons, stagger animations, empty states, and unread badges

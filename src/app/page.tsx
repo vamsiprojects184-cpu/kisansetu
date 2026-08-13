@@ -9,10 +9,12 @@ import AIChatPanel from '@/components/shared/AIChatPanel';
 import { LoadingState } from '@/components/shared/SharedComponents';
 
 // Auth Pages
-import { LandingPage, LoginPage, RegisterPage, OnboardingPage } from '@/components/pages/auth/AuthPages';
+import { LandingPage, LoginPage, RegisterPage } from '@/components/pages/auth/AuthPages';
+import OnboardingPage from '@/components/pages/auth/OnboardingPage';
 
 // Farmer Pages
-import { FarmerDashboard, MyFarmPage, FarmDetailsPage, FarmerProfilePage, NotificationsPage, FarmerOrdersPage, FarmerPaymentsPage } from '@/components/pages/farmer/FarmerPages';
+import { FarmerDashboard, MyFarmPage, FarmDetailsPage, FarmerProfilePage, FarmerOrdersPage, FarmerPaymentsPage } from '@/components/pages/farmer/FarmerPages';
+import NotificationsPage from '@/components/pages/farmer/NotificationsPage';
 import { SoilHealthPage, CropRecommendationsPage, DiseaseDetectionPage, FertilizerPage, IrrigationPage, WeatherPage, MarketPricesPage } from '@/components/pages/farmer/AgriculturePages';
 import { FarmerSellPage } from '@/components/pages/farmer/SellPages';
 import { FarmerCollectionCentersPage } from '@/components/pages/farmer/CollectionCentersPage';

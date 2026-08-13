@@ -43,6 +43,7 @@ import {
   Building2,
   SearchX,
   Settings,
+  UserPlus,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -60,6 +61,7 @@ interface RouteGroup {
 }
 
 const farmerRoutes: RouteEntry[] = [
+  { route: 'onboarding', label: 'Onboarding', description: 'Complete your farm profile setup', icon: UserPlus },
   { route: 'farmer/dashboard', label: 'Dashboard', description: 'Overview of your farm activity', icon: LayoutDashboard },
   { route: 'farmer/my-farm', label: 'My Farm', description: 'Manage your farms and fields', icon: Sprout },
   { route: 'farmer/soil-health', label: 'Soil Health', description: 'Soil analysis and recommendations', icon: Leaf },
@@ -123,11 +125,11 @@ function getRouteGroups(role: UserRole): RouteGroup[] {
   switch (role) {
     case 'farmer':
       return [
-        { heading: 'Main', routes: [farmerRoutes[0], farmerRoutes[13]] },
-        { heading: 'Farm Management', routes: farmerRoutes.slice(1, 3).concat(farmerRoutes.slice(7, 12)) },
-        { heading: 'AI Tools', routes: farmerRoutes.slice(3, 7) },
+        { heading: 'Main', routes: [farmerRoutes[0], farmerRoutes[1], farmerRoutes[14]] },
+        { heading: 'Farm Management', routes: farmerRoutes.slice(2, 4).concat(farmerRoutes.slice(8, 13)) },
+        { heading: 'AI Tools', routes: farmerRoutes.slice(4, 8) },
         { heading: 'Marketplace', routes: marketplaceRoutes },
-        { heading: 'Account', routes: farmerRoutes.slice(12).concat(settingsRoute) },
+        { heading: 'Account', routes: farmerRoutes.slice(13).concat(settingsRoute) },
       ];
     case 'consumer':
       return [
