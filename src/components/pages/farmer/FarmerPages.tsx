@@ -8,6 +8,7 @@ import {
   Bell, ArrowLeft, Edit3, Check, X, LogOut, CreditCard,
   Package, Tractor, Activity,
   BarChart3, ThermometerSun, Layers, ArrowUpRight, ArrowDownRight, Lightbulb,
+  Building2, Wallet, IndianRupee, TrendingUp as TrendingUpIcon, CircleDot,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   WeatherCard, CropCard, MarketPriceCard, AIInsightCard,
   CircularProgress, SectionWrapper, PageHeader, fadeIn, fadeInUp,
@@ -33,8 +35,9 @@ import type { RoutePath, OrderStatus } from '@/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Line,
+  LineChart, ComposedChart, ReferenceLine,
 } from 'recharts';
 
 // ============== HELPER ==============
@@ -1154,88 +1157,258 @@ export function FarmerOrdersPage() {
 }
 
 // ============== 7. FARMER PAYMENTS PAGE ==============
+
+// --- Payment helpers (must be outside component to avoid lint error) ---
+const PaymentsBarTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className='bg-popover border border-border rounded-lg px-3 py-2 shadow-md text-sm'>
+        <p className='font-medium'>{label}</p>
+        <p className='text-emerald-600 font-semibold'>₹{payload[0].value.toLocaleString('en-IN')}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const paymentsPieLabel = ({ name, percent }: { name: string; percent: number }) =>
+  `${name} ${(percent * 100).toFixed(0)}%`;
+
 export function FarmerPaymentsPage() {
-  const transactions = [
-    { id: 't1', description: 'Payment received for Tomatoes', amount: 12500, date: 'Jan 5, 2025', type: 'credit' as const },
-    { id: 't2', description: 'Payment received for Chilli', amount: 8500, date: 'Dec 28, 2024', type: 'credit' as const },
-    { id: 't3', description: 'Seed purchase — Tomato Hybrid GT-4', amount: -450, date: 'Dec 15, 2024', type: 'debit' as const },
-    { id: 't4', description: 'Payment received for Brinjal', amount: 6200, date: 'Dec 10, 2024', type: 'credit' as const },
-    { id: 't5', description: 'Fertilizer purchase — DAP', amount: -1200, date: 'Dec 5, 2024', type: 'debit' as const },
-    { id: 't6', description: 'Payment received for Rice', amount: 18000, date: 'Nov 25, 2024', type: 'credit' as const },
+  // ---------- Data ----------
+  const monthlyEarnings = [
+    { month: 'Feb', earnings: 8500 },
+    { month: 'Mar', earnings: 12000 },
+    { month: 'Apr', earnings: 9800 },
+    { month: 'May', earnings: 15000 },
+    { month: 'Jun', earnings: 11200 },
+    { month: 'Jul', earnings: 18500 },
+    { month: 'Aug', earnings: 14200 },
+    { month: 'Sep', earnings: 16800 },
+    { month: 'Oct', earnings: 19500 },
+    { month: 'Nov', earnings: 13200 },
+    { month: 'Dec', earnings: 21000 },
+    { month: 'Jan', earnings: 18500 },
+  ];
+  const avgEarnings = Math.round(monthlyEarnings.reduce((s, d) => s + d.earnings, 0) / monthlyEarnings.length);
+
+  const cropRevenue = [
+    { name: 'Tomato', value: 45000, color: '#ef4444' },
+    { name: 'Rice', value: 38000, color: '#f59e0b' },
+    { name: 'Chilli', value: 28500, color: '#f97316' },
+    { name: 'Other', value: 13000, color: '#10b981' },
+  ];
+  
+  const recentTransactions = [
+    { id: 't1', date: 'Jan 15, 2025', description: 'Tomato sale — Mandi APMC', crop: 'Tomato', quantity: '250 kg', amount: 12500, status: 'completed' as const },
+    { id: 't2', date: 'Jan 12, 2025', description: 'Rice procurement — FCI', crop: 'Rice', quantity: '500 kg', amount: 18500, status: 'processing' as const },
+    { id: 't3', date: 'Jan 8, 2025', description: 'Chilli sale — Export order', crop: 'Chilli', quantity: '80 kg', amount: 8500, status: 'completed' as const },
+    { id: 't4', date: 'Jan 3, 2025', description: 'Tomato advance — Rythu Bazar', crop: 'Tomato', quantity: '150 kg', amount: 6200, status: 'pending' as const },
+    { id: 't5', date: 'Dec 28, 2024', description: 'Rice bonus payment', crop: 'Rice', quantity: '—', amount: 4200, status: 'pending' as const },
   ];
 
-  const handleWithdraw = () => {
-    toast.success('Withdrawal request submitted! Amount will be credited in 2-3 business days.');
+  const statusBadge: Record<string, string> = {
+    completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    processing: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    pending: 'bg-gray-100 text-gray-600 dark:bg-gray-800/40 dark:text-gray-400',
+  };
+
+  // Sparkline data (last 7 months for the mini trend)
+  const sparkline = monthlyEarnings.slice(-7).map(d => d.earnings);
+
+  // ---------- Handlers ----------
+  const handleChangeBank = () => {
+    toast.info('Bank details change request submitted. Our team will contact you within 24 hours.');
   };
 
   return (
     <div className='space-y-6'>
-      <PageHeader title='Payments' subtitle='Track your earnings and transactions' />
+      <PageHeader title='Payments' subtitle='Track your earnings, revenue and payouts' />
 
-      {/* Balance Card */}
+      {/* ===== 1. Earnings Summary Banner ===== */}
       <motion.div {...fadeInUp}>
-        <Card className='gradient-green text-white border-0'>
-          <CardContent className='p-6'>
-            <p className='text-white/80 text-sm'>Total Earnings</p>
-            <p className='text-4xl font-bold mt-1'>₹45,000</p>
-            <p className='text-white/70 text-sm mt-2'>Available for withdrawal</p>
-            <div className='flex gap-3 mt-4'>
-              <Button
-                variant='secondary'
-                className='bg-white/20 hover:bg-white/30 text-white border-0'
-                onClick={handleWithdraw}
-              >
-                <CreditCard className='h-4 w-4 mr-2' /> Withdraw
-              </Button>
-              <Button
-                variant='secondary'
-                className='bg-white/20 hover:bg-white/30 text-white border-0'
-              >
-                <BarChart3 className='h-4 w-4 mr-2' /> Statement
+        <div className='rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 text-white p-6 md:p-8'>
+          <div className='flex flex-col md:flex-row md:items-end md:justify-between gap-6'>
+            {/* Left — main stats */}
+            <div className='space-y-4 flex-1'>
+              <p className='text-white/80 text-sm font-medium'>Total Earnings</p>
+              <p className='text-4xl md:text-5xl font-extrabold tracking-tight'>₹1,24,500</p>
+
+              <div className='flex flex-wrap items-center gap-5 text-sm'>
+                <div className='flex items-center gap-1.5'>
+                  <Wallet className='h-4 w-4 text-white/70' />
+                  <span className='text-white/70'>This Month:</span>
+                  <span className='font-semibold'>₹18,500</span>
+                  <Badge className='bg-white/20 hover:bg-white/30 text-white border-0 text-xs px-1.5 py-0'>+12%</Badge>
+                </div>
+                <div className='flex items-center gap-1.5'>
+                  <Clock className='h-4 w-4 text-white/70' />
+                  <span className='text-white/70'>Pending Payouts:</span>
+                  <span className='font-semibold'>₹4,200</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right — mini sparkline trend */}
+            <div className='flex-shrink-0 bg-white/10 backdrop-blur rounded-xl p-4 min-w-[160px]'>
+              <p className='text-xs text-white/70 mb-1 font-medium'>7-Month Trend</p>
+              <ResponsiveContainer width={140} height={48}>
+                <LineChart data={sparkline.map((v, i) => ({ i, v }))}>
+                  <Line type='monotone' dataKey='v' stroke='#fff' strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+              <div className='flex items-center gap-1 mt-1'>
+                <TrendingUpIcon className='h-3 w-3 text-white/80' />
+                <span className='text-xs text-white/80'>Upward trend</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ===== 2. Monthly Earnings Bar Chart ===== */}
+      <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+        <Card>
+          <CardHeader>
+            <CardTitle className='text-base'>Monthly Earnings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width='100%' height={300}>
+              <BarChart data={monthlyEarnings} barCategoryGap='20%'>
+                <CartesianGrid strokeDasharray='3 3' vertical={false} stroke='hsl(var(--border))' />
+                <XAxis dataKey='month' tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`} />
+                <Tooltip content={<PaymentsBarTooltip />} cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} />
+                <ReferenceLine y={avgEarnings} stroke='hsl(var(--muted-foreground))' strokeDasharray='6 4' strokeWidth={1} />
+                <text x={0} y={avgEarnings - 6} fontSize={10} fill='hsl(var(--muted-foreground))'>Avg ₹{(avgEarnings / 1000).toFixed(1)}k</text>
+                <Bar dataKey='earnings' radius={[6, 6, 0, 0]}>
+                  {monthlyEarnings.map((entry, idx) => (
+                    <Cell
+                      key={`bar-${idx}`}
+                      fill={entry.month === 'Jan' ? '#10b981' : '#6ee7b7'}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* ===== 3 & 4: Pie Chart + Transactions side by side on desktop ===== */}
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+        {/* 3. Crop-wise Revenue Breakdown (Pie / Donut) */}
+        <motion.div {...fadeInUp} transition={{ delay: 0.2 }}>
+          <Card className='h-full'>
+            <CardHeader>
+              <CardTitle className='text-base'>Crop-wise Revenue</CardTitle>
+            </CardHeader>
+            <CardContent className='flex flex-col items-center'>
+              <ResponsiveContainer width='100%' height={240}>
+                <PieChart>
+                  <Pie
+                    data={cropRevenue}
+                    cx='50%'
+                    cy='50%'
+                    innerRadius={60}
+                    outerRadius={95}
+                    paddingAngle={3}
+                    dataKey='value'
+                    label={paymentsPieLabel}
+                    labelLine={false}
+                  >
+                    {cropRevenue.map((entry, idx) => (
+                      <Cell key={`cell-${idx}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`}
+                    contentStyle={{ borderRadius: '8px', fontSize: '13px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+
+              {/* Custom legend */}
+              <div className='grid grid-cols-2 gap-3 w-full mt-2'>
+                {cropRevenue.map((c) => (
+                  <div key={c.name} className='flex items-center gap-2 text-sm'>
+                    <span className='h-3 w-3 rounded-full shrink-0' style={{ backgroundColor: c.color }} />
+                    <span className='text-muted-foreground'>{c.name}</span>
+                    <span className='ml-auto font-semibold'>₹{(c.value / 1000).toFixed(0)}k</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* 4. Recent Transactions Table */}
+        <motion.div {...fadeInUp} transition={{ delay: 0.3 }}>
+          <Card className='h-full'>
+            <CardHeader>
+              <CardTitle className='text-base'>Recent Transactions</CardTitle>
+            </CardHeader>
+            <CardContent className='p-0'>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className='pl-4'>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className='hidden sm:table-cell'>Crop</TableHead>
+                    <TableHead className='hidden md:table-cell'>Qty</TableHead>
+                    <TableHead className='text-right pr-4'>Amount</TableHead>
+                    <TableHead className='text-right pr-4'>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentTransactions.map((tx) => (
+                    <TableRow key={tx.id}>
+                      <TableCell className='pl-4 text-muted-foreground whitespace-nowrap'>{tx.date}</TableCell>
+                      <TableCell className='font-medium max-w-[180px] truncate'>{tx.description}</TableCell>
+                      <TableCell className='hidden sm:table-cell'>{tx.crop}</TableCell>
+                      <TableCell className='hidden md:table-cell'>{tx.quantity}</TableCell>
+                      <TableCell className='text-right pr-4 font-semibold whitespace-nowrap'>₹{tx.amount.toLocaleString('en-IN')}</TableCell>
+                      <TableCell className='text-right pr-4'>
+                        <Badge variant='secondary' className={cn('text-xs', statusBadge[tx.status])}>
+                          <CircleDot className='h-3 w-3 mr-1' />
+                          {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* ===== 5. Payout Methods ===== */}
+      <motion.div {...fadeInUp} transition={{ delay: 0.4 }}>
+        <Card>
+          <CardHeader>
+            <CardTitle className='text-base'>Payout Method</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+              <div className='flex items-center gap-4'>
+                <div className='h-12 w-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center'>
+                  <Building2 className='h-6 w-6 text-emerald-600' />
+                </div>
+                <div className='space-y-0.5'>
+                  <p className='font-semibold'>State Bank of India</p>
+                  <p className='text-sm text-muted-foreground'>Account: ****4523</p>
+                  <p className='text-sm text-muted-foreground'>IFSC: SBIN0041234</p>
+                </div>
+              </div>
+              <Button variant='outline' className='shrink-0' onClick={handleChangeBank}>
+                <CreditCard className='h-4 w-4 mr-2' />
+                Change Bank Details
               </Button>
             </div>
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* Recent Transactions */}
-      <SectionWrapper title='Recent Transactions' subtitle='Your latest payment activity'>
-        <Card>
-          <CardContent className='p-0'>
-            <div className='divide-y max-h-96 overflow-y-auto scrollbar-thin'>
-              {transactions.map((tx, idx) => (
-                <motion.div
-                  key={tx.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.06 }}
-                  className='flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors'
-                >
-                  <div className={cn(
-                    'p-2 rounded-lg',
-                    tx.type === 'credit' ? 'bg-emerald-50' : 'bg-red-50'
-                  )}>
-                    {tx.type === 'credit'
-                      ? <ArrowDownRight className='h-4 w-4 text-emerald-600' />
-                      : <ArrowUpRight className='h-4 w-4 text-red-500' />
-                    }
-                  </div>
-                  <div className='flex-1 min-w-0'>
-                    <p className='font-medium text-sm'>{tx.description}</p>
-                    <p className='text-xs text-muted-foreground'>{tx.date}</p>
-                  </div>
-                  <p className={cn(
-                    'font-semibold text-sm',
-                    tx.type === 'credit' ? 'text-emerald-600' : 'text-red-500'
-                  )}>
-                    {tx.type === 'credit' ? '+' : ''}₹{Math.abs(tx.amount).toLocaleString('en-IN')}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </SectionWrapper>
     </div>
   );
 }

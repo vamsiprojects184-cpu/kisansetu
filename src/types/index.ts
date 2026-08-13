@@ -326,7 +326,8 @@ export type RoutePath =
   | 'admin/products'
   | 'admin/orders'
   | 'admin/collection-centers'
-  | 'admin/analytics';
+  | 'admin/analytics'
+  | 'settings';
 
 // ============== ADMIN TYPES ==============
 export interface AdminStats {

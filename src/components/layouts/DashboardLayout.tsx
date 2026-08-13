@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, LogOut, Sun, Moon, Search } from 'lucide-react';
+import { Menu, LogOut, Sun, Moon, Search, Settings } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import NotificationDropdown from '@/components/shared/NotificationDropdown';
@@ -28,6 +28,7 @@ const navConfig: Record<string, NavItem[]> = {
     { label: 'Marketplace', icon: <span className='text-lg'>🛒</span>, route: 'marketplace/home' },
     { label: 'My Orders', icon: <span className='text-lg'>📦</span>, route: 'consumer/orders' },
     { label: 'Profile', icon: <span className='text-lg'>👤</span>, route: 'consumer/profile' },
+    { label: 'Settings', icon: <Settings size={20} />, route: 'settings' },
   ],
   collection_center: [
     { label: 'Dashboard', icon: <span className='text-lg'>📊</span>, route: 'collection-center/dashboard' },
@@ -35,11 +36,13 @@ const navConfig: Record<string, NavItem[]> = {
     { label: 'Incoming', icon: <span className='text-lg'>🚚</span>, route: 'collection-center/incoming' },
     { label: 'Quality Check', icon: <span className='text-lg'>✅</span>, route: 'collection-center/quality-check' },
     { label: 'Payouts', icon: <span className='text-lg'>💰</span>, route: 'collection-center/payouts' },
+    { label: 'Settings', icon: <Settings size={20} />, route: 'settings' },
   ],
   expert: [
     { label: 'Dashboard', icon: <span className='text-lg'>🔬</span>, route: 'expert/dashboard' },
     { label: 'Disease Cases', icon: <span className='text-lg'>🐛</span>, route: 'expert/disease-cases' },
     { label: 'Advisories', icon: <span className='text-lg'>📋</span>, route: 'expert/advisories' },
+    { label: 'Settings', icon: <Settings size={20} />, route: 'settings' },
   ],
   admin: [
     { label: 'Dashboard', icon: <span className='text-lg'>📊</span>, route: 'admin/dashboard' },
@@ -49,6 +52,7 @@ const navConfig: Record<string, NavItem[]> = {
     { label: 'Orders', icon: <span className='text-lg'>🛒</span>, route: 'admin/orders' },
     { label: 'Collection Centers', icon: <span className='text-lg'>🏢</span>, route: 'admin/collection-centers' },
     { label: 'Analytics', icon: <span className='text-lg'>📈</span>, route: 'admin/analytics' },
+    { label: 'Settings', icon: <Settings size={20} />, route: 'settings' },
   ],
 };
 

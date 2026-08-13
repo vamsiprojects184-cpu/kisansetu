@@ -32,6 +32,9 @@ import { ExpertDashboard, ExpertDiseaseCases, ExpertAdvisories } from '@/compone
 // Admin Pages
 import { AdminDashboard, AdminUsers, AdminFarmers, AdminProducts, AdminOrders, AdminCollectionCenters, AdminAnalytics } from '@/components/pages/admin/AdminPages';
 
+// Settings Page
+import SettingsPage from '@/components/pages/settings/SettingsPage';
+
 import type { RoutePath } from '@/types';
 
 // ============== ROUTE MAP ==============
@@ -103,6 +106,9 @@ function getRouteComponent(route: RoutePath): React.ReactNode {
     case 'admin/orders': return <AdminOrders />;
     case 'admin/collection-centers': return <AdminCollectionCenters />;
     case 'admin/analytics': return <AdminAnalytics />;
+
+    // Settings
+    case 'settings': return <SettingsPage />;
 
     default: return <LandingPage />;
   }

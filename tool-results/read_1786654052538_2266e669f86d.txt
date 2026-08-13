@@ -1,0 +1,1498 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useMemo } from 'react';
+     4→import { motion } from 'framer-motion';
+     5→import {
+     6→  ShoppingCart, Star, Plus, Minus, Trash2, ChevronRight,
+     7→  MapPin, Truck, ShieldCheck, Leaf, ArrowLeft, Check, Package, Search,
+     8→  CreditCard, Banknote, Smartphone, Sprout, Calendar, Clock, Tag,
+     9→} from 'lucide-react';
+    10→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    11→import { Button } from '@/components/ui/button';
+    12→import { Badge } from '@/components/ui/badge';
+    13→import { Input } from '@/components/ui/input';
+    14→import { Separator } from '@/components/ui/separator';
+    15→import {
+    16→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    17→} from '@/components/ui/select';
+    18→import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+    19→import { useAppStore } from '@/store/use-app-store';
+    20→import { useCartStore } from '@/store/use-cart-store';
+    21→import { mockSeedProducts, mockConsumerProducts } from '@/data/mock-data';
+    22→import { PageHeader, OrderTimeline, fadeIn, fadeInUp, staggerContainer, SectionWrapper, EmptyState } from '@/components/shared/SharedComponents';
+    23→import type { Product } from '@/types';
+    24→import { toast } from 'sonner';
+    25→import { cn } from '@/lib/utils';
+    26→
+    27→// ============== HELPERS ==============
+    28→const categoryIcons: Record<string, string> = {
+    29→  Vegetables: '🥬',
+    30→  Grains: '🌾',
+    31→  Spices: '🌶️',
+    32→  Fruits: '🍎',
+    33→  Organic: '🌱',
+    34→  Dairy: '🥚',
+    35→  Fibers: '🧵',
+    36→};
+    37→
+    38→function getCategoryIcon(category: string) {
+    39→  for (const [key, icon] of Object.entries(categoryIcons)) {
+    40→    if (category.toLowerCase().includes(key.toLowerCase())) return icon;
+    41→  }
+    42→  return '📦';
+    43→}
+    44→
+    45→function getCategoryColor(category: string) {
+    46→  const map: Record<string, string> = {
+    47→    Vegetables: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    48→    Grains: 'bg-amber-50 text-amber-700 border-amber-200',
+    49→    Spices: 'bg-red-50 text-red-700 border-red-200',
+    50→    Dairy: 'bg-sky-50 text-sky-700 border-sky-200',
+    51→    Organic: 'bg-lime-50 text-lime-700 border-lime-200',
+    52→    Fruits: 'bg-orange-50 text-orange-700 border-orange-200',
+    53→    Fibers: 'bg-violet-50 text-violet-700 border-violet-200',
+    54→  };
+    55→  for (const [key, cls] of Object.entries(map)) {
+    56→    if (category.toLowerCase().includes(key.toLowerCase())) return cls;
+    57→  }
+    58→  return 'bg-gray-50 text-gray-700 border-gray-200';
+    59→}
+    60→
+    61→function getImageGradient(category: string) {
+    62→  const map: Record<string, string> = {
+    63→    Vegetables: 'bg-gradient-to-br from-emerald-100 to-green-200',
+    64→    Grains: 'bg-gradient-to-br from-amber-100 to-yellow-200',
+    65→    Spices: 'bg-gradient-to-br from-red-100 to-orange-200',
+    66→    Dairy: 'bg-gradient-to-br from-sky-100 to-blue-200',
+    67→    Organic: 'bg-gradient-to-br from-lime-100 to-green-200',
+    68→    Fruits: 'bg-gradient-to-br from-orange-100 to-pink-200',
+    69→    Fibers: 'bg-gradient-to-br from-violet-100 to-purple-200',
+    70→  };
+    71→  for (const [key, cls] of Object.entries(map)) {
+    72→    if (category.toLowerCase().includes(key.toLowerCase())) return cls;
+    73→  }
+    74→  return 'bg-gradient-to-br from-gray-100 to-gray-200';
+    75→}
+    76→
+    77→function RatingStars({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) {
+    78→  const sz = size === 'sm' ? 'size-3' : 'size-4';
+    79→  return (
+    80→    <div className='flex items-center gap-0.5'>
+    81→      {[1, 2, 3, 4, 5].map(i => (
+    82→        <Star
+    83→          key={i}
+    84→          className={cn(sz, i <= Math.round(rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200')}
+    85→        />
+    86→      ))}
+    87→    </div>
+    88→  );
+    89→}
+    90→
+    91→// ============== 1. MARKETPLACE HOME ==============
+    92→const homeCategories = [
+    93→  { name: 'Vegetables', icon: '🥬' },
+    94→  { name: 'Grains', icon: '🌾' },
+    95→  { name: 'Spices', icon: '🌶️' },
+    96→  { name: 'Dairy', icon: '🥚' },
+    97→  { name: 'Organic', icon: '🌱' },
+    98→  { name: 'Seeds', icon: '🌰' },
+    99→];
+   100→
+   101→function HomeProductCard({ product }: { product: Product }) {
+   102→  const { navigate } = useAppStore();
+   103→  const { addToCart } = useCartStore();
+   104→
+   105→  const handleAdd = (e: React.MouseEvent) => {
+   106→    e.stopPropagation();
+   107→    if (!product.inStock) return;
+   108→    addToCart(product);
+   109→    toast.success(`${product.name} added to cart!`);
+   110→  };
+   111→
+   112→  return (
+   113→    <motion.div {...fadeIn}>
+   114→      <Card
+   115→        className='hover:shadow-md transition-all hover:-translate-y-0.5 h-full cursor-pointer group'
+   116→        onClick={() => navigate('marketplace/product-detail' as any, { productId: product.id })}
+   117→      >
+   118→        <CardContent className='p-3'>
+   119→          {/* Image */}
+   120→          <div className={cn('aspect-square rounded-xl flex items-center justify-center mb-3 relative overflow-hidden', getImageGradient(product.category))}>
+   121→            <span className='text-5xl group-hover:scale-110 transition-transform duration-300'>
+   122→              {getCategoryIcon(product.category)}
+   123→            </span>
+   124→            {product.isCertified && (
+   125→              <div className='absolute top-2 right-2'>
+   126→                <Badge className='bg-emerald-500 text-white text-[10px] px-1.5 py-0 gap-0.5'>
+   127→                  <ShieldCheck className='size-3' /> Certified
+   128→                </Badge>
+   129→              </div>
+   130→            )}
+   131→            {product.qualityScore && product.qualityScore >= 90 && (
+   132→              <div className='absolute top-2 left-2'>
+   133→                <Badge className='bg-amber-500 text-white text-[10px] px-1.5 py-0'>
+   134→                  Premium
+   135→                </Badge>
+   136→              </div>
+   137→            )}
+   138→          </div>
+   139→
+   140→          {/* Name */}
+   141→          <h3 className='font-medium text-sm leading-tight line-clamp-2 min-h-[2.5rem]'>{product.name}</h3>
+   142→
+   143→          {/* Farmer */}
+   144→          {product.farmer && (
+   145→            <p className='text-xs text-muted-foreground mt-1 truncate flex items-center gap-1'>
+   146→              <Sprout className='size-3 shrink-0' /> {product.farmer}
+   147→            </p>
+   148→          )}
+   149→
+   150→          {/* Rating */}
+   151→          <div className='flex items-center gap-1.5 mt-1.5'>
+   152→            <RatingStars rating={product.rating} />
+   153→            <span className='text-xs text-muted-foreground'>{product.rating}</span>
+   154→          </div>
+   155→
+   156→          {/* Price + Add to Cart */}
+   157→          <div className='flex items-center justify-between mt-3'>
+   158→            <div>
+   159→              <span className='font-bold text-base'>₹{product.price.toLocaleString('en-IN')}</span>
+   160→              <span className='text-xs text-muted-foreground'>/{product.unit}</span>
+   161→            </div>
+   162→            <Button
+   163→              size='sm'
+   164→              className='rounded-lg text-xs h-8 gap-1'
+   165→              onClick={handleAdd}
+   166→              disabled={!product.inStock}
+   167→            >
+   168→              <ShoppingCart className='size-3' />
+   169→              {product.inStock ? 'Add' : 'Sold'}
+   170→            </Button>
+   171→          </div>
+   172→        </CardContent>
+   173→      </Card>
+   174→    </motion.div>
+   175→  );
+   176→}
+   177→
+   178→export function MarketplaceHome() {
+   179→  const { navigate } = useAppStore();
+   180→  const [search, setSearch] = useState('');
+   181→  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+   182→
+   183→  const freshToday = mockConsumerProducts.slice(0, 4);
+   184→  const directFromFarmers = mockConsumerProducts.slice(4);
+   185→  const seasonalPicks = mockSeedProducts.slice(0, 4);
+   186→
+   187→  const handleCategoryClick = (cat: string) => {
+   188→    if (cat === 'Seeds') {
+   189→      navigate('marketplace/seeds');
+   190→    } else {
+   191→      setActiveCategory(activeCategory === cat ? null : cat);
+   192→    }
+   193→  };
+   194→
+   195→  return (
+   196→    <div className='space-y-6'>
+   197→      {/* Hero Banner */}
+   198→      <motion.div
+   199→        initial={{ opacity: 0, y: -10 }}
+   200→        animate={{ opacity: 1, y: 0 }}
+   201→        className='relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 p-6 md:p-8 text-white'
+   202→      >
+   203→        <div className='absolute inset-0 bg-[url("data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.06%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E")] opacity-40' />
+   204→        <div className='relative z-10'>
+   205→          <motion.h1
+   206→            initial={{ opacity: 0, y: 20 }}
+   207→            animate={{ opacity: 1, y: 0 }}
+   208→            transition={{ delay: 0.1 }}
+   209→            className='text-3xl md:text-4xl font-bold'
+   210→          >
+   211→            🌿 Fresh from Farms
+   212→          </motion.h1>
+   213→          <motion.p
+   214→            initial={{ opacity: 0, y: 20 }}
+   215→            animate={{ opacity: 1, y: 0 }}
+   216→            transition={{ delay: 0.2 }}
+   217→            className='text-white/80 mt-2 text-sm md:text-base max-w-md'
+   218→          >
+   219→            Direct from verified farmers to your doorstep. Quality produce at fair prices.
+   220→          </motion.p>
+   221→        </div>
+   222→      </motion.div>
+   223→
+   224→      {/* Search Bar */}
+   225→      <div className='relative'>
+   226→        <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+   227→        <Input
+   228→          placeholder='Search products, seeds, spices...'
+   229→          className='pl-10 rounded-xl h-11'
+   230→          value={search}
+   231→          onChange={e => setSearch(e.target.value)}
+   232→        />
+   233→      </div>
+   234→
+   235→      {/* Category Pills */}
+   236→      <div className='flex gap-2 overflow-x-auto pb-2 scrollbar-none'>
+   237→        {homeCategories.map(cat => (
+   238→          <button
+   239→            key={cat.name}
+   240→            onClick={() => handleCategoryClick(cat.name)}
+   241→            className={cn(
+   242→              'flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-all',
+   243→              activeCategory === cat.name
+   244→                ? 'bg-primary text-primary-foreground border-primary'
+   245→                : 'bg-background border-border hover:border-primary/30 hover:bg-primary/5'
+   246→            )}
+   247→          >
+   248→            <span>{cat.icon}</span>
+   249→            {cat.name}
+   250→          </button>
+   251→        ))}
+   252→      </div>
+   253→
+   254→      {/* Fresh Today */}
+   255→      <SectionWrapper
+   256→        title='Fresh Today'
+   257→        subtitle='Harvested today, delivered tomorrow'
+   258→        action={
+   259→          <Button
+   260→            variant='ghost'
+   261→            size='sm'
+   262→            className='text-primary'
+   263→            onClick={() => navigate('marketplace/products')}
+   264→          >
+   265→            View All <ChevronRight className='size-4 ml-1' />
+   266→          </Button>
+   267→        }
+   268→      >
+   269→        <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'>
+   270→          {freshToday.map(product => (
+   271→            <HomeProductCard key={product.id} product={product} />
+   272→          ))}
+   273→        </div>
+   274→      </SectionWrapper>
+   275→
+   276→      {/* Direct from Farmers */}
+   277→      <SectionWrapper
+   278→        title='Direct from Farmers'
+   279→        subtitle='Skip the middleman, support local farming'
+   280→        action={
+   281→          <Button
+   282→            variant='ghost'
+   283→            size='sm'
+   284→            className='text-primary'
+   285→            onClick={() => navigate('marketplace/products')}
+   286→          >
+   287→            View All <ChevronRight className='size-4 ml-1' />
+   288→          </Button>
+   289→        }
+   290→      >
+   291→        <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'>
+   292→          {directFromFarmers.map(product => (
+   293→            <HomeProductCard key={product.id} product={product} />
+   294→          ))}
+   295→        </div>
+   296→      </SectionWrapper>
+   297→
+   298→      {/* Seasonal Picks */}
+   299→      <SectionWrapper
+   300→        title='Seasonal Picks'
+   301→        subtitle='Seeds & supplies for the current season'
+   302→        action={
+   303→          <Button
+   304→            variant='ghost'
+   305→            size='sm'
+   306→            className='text-primary'
+   307→            onClick={() => navigate('marketplace/seeds')}
+   308→          >
+   309→            View All Seeds <ChevronRight className='size-4 ml-1' />
+   310→          </Button>
+   311→        }
+   312→      >
+   313→        <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'>
+   314→          {seasonalPicks.map(product => (
+   315→            <HomeProductCard key={product.id} product={product} />
+   316→          ))}
+   317→        </div>
+   318→      </SectionWrapper>
+   319→    </div>
+   320→  );
+   321→}
+   322→
+   323→// ============== 2. SEEDS PAGE ==============
+   324→const seedCategories = ['All', 'Vegetables', 'Grains', 'Fruits', 'Organic', 'Fibers'];
+   325→
+   326→export function SeedsPage() {
+   327→  const { navigate } = useAppStore();
+   328→  const { addToCart } = useCartStore();
+   329→  const [search, setSearch] = useState('');
+   330→  const [filter, setFilter] = useState('All');
+   331→
+   332→  const filtered = useMemo(() => {
+   333→    let products = mockSeedProducts;
+   334→    if (filter !== 'All') {
+   335→      products = products.filter(p => p.category === filter);
+   336→    }
+   337→    if (search) {
+   338→      const q = search.toLowerCase();
+   339→      products = products.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+   340→    }
+   341→    return products;
+   342→  }, [search, filter]);
+   343→
+   344→  return (
+   345→    <div className='space-y-6'>
+   346→      <PageHeader title='Buy Quality Seeds' subtitle='Certified seeds for better yield' />
+   347→
+   348→      {/* Search + Filter Row */}
+   349→      <div className='flex flex-col sm:flex-row gap-3'>
+   350→        <div className='relative flex-1'>
+   351→          <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+   352→          <Input
+   353→            placeholder='Search seeds...'
+   354→            className='pl-10 rounded-xl h-11'
+   355→            value={search}
+   356→            onChange={e => setSearch(e.target.value)}
+   357→          />
+   358→        </div>
+   359→      </div>
+   360→
+   361→      {/* Category Filter Pills */}
+   362→      <div className='flex gap-2 overflow-x-auto pb-2 scrollbar-none'>
+   363→        {seedCategories.map(cat => (
+   364→          <button
+   365→            key={cat}
+   366→            onClick={() => setFilter(cat)}
+   367→            className={cn(
+   368→              'px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-all',
+   369→              filter === cat
+   370→                ? 'bg-primary text-primary-foreground border-primary'
+   371→                : 'bg-background border-border hover:border-primary/30 hover:bg-primary/5'
+   372→            )}
+   373→          >
+   374→            {cat}
+   375→          </button>
+   376→        ))}
+   377→      </div>
+   378→
+   379→      {/* Seed Products Grid */}
+   380→      <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'>
+   381→        {filtered.map((product, idx) => (
+   382→          <motion.div key={product.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.04 }}>
+   383→            <Card className='hover:shadow-md transition-all hover:-translate-y-0.5 h-full'>
+   384→              <CardContent className='p-3'>
+   385→                {/* Image */}
+   386→                <div className={cn('aspect-square rounded-xl flex items-center justify-center mb-3 relative', getImageGradient(product.category))}>
+   387→                  <span className='text-5xl'>{getCategoryIcon(product.category)}</span>
+   388→                  {!product.inStock && (
+   389→                    <div className='absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center'>
+   390→                      <Badge variant='destructive' className='text-xs'>Out of Stock</Badge>
+   391→                    </div>
+   392→                  )}
+   393→                  {product.isCertified && product.inStock && (
+   394→                    <div className='absolute top-2 right-2'>
+   395→                      <Badge className='bg-emerald-500 text-white text-[10px] px-1.5 py-0 gap-0.5'>
+   396→                        <ShieldCheck className='size-3' /> Certified
+   397→                      </Badge>
+   398→                    </div>
+   399→                  )}
+   400→                </div>
+   401→
+   402→                {/* Category Badge */}
+   403→                <Badge variant='outline' className={cn('text-[10px] px-1.5 py-0 mb-1.5 border', getCategoryColor(product.category))}>
+   404→                  {product.category}
+   405→                </Badge>
+   406→
+   407→                {/* Name */}
+   408→                <h3 className='font-medium text-sm leading-tight line-clamp-2 min-h-[2.5rem]'>{product.name}</h3>
+   409→
+   410→                {/* Rating */}
+   411→                <div className='flex items-center gap-1.5 mt-1.5'>
+   412→                  <RatingStars rating={product.rating} />
+   413→                  <span className='text-xs text-muted-foreground'>{product.rating}</span>
+   414→                </div>
+   415→
+   416→                {/* Germination */}
+   417→                {product.germination && (
+   418→                  <div className='flex items-center gap-1 mt-1.5 text-xs text-muted-foreground'>
+   419→                    <Sprout className='size-3 text-emerald-500' />
+   420→                    <span>{product.germination} germination</span>
+   421→                  </div>
+   422→                )}
+   423→
+   424→                {/* Price + Add to Cart */}
+   425→                <div className='flex items-center justify-between mt-3'>
+   426→                  <div>
+   427→                    <span className='font-bold text-base'>₹{product.price.toLocaleString('en-IN')}</span>
+   428→                    <span className='text-xs text-muted-foreground'>/{product.unit}</span>
+   429→                  </div>
+   430→                  <Button
+   431→                    size='sm'
+   432→                    className='rounded-lg text-xs h-8 gap-1'
+   433→                    onClick={() => {
+   434→                      if (!product.inStock) return;
+   435→                      addToCart(product);
+   436→                      toast.success(`${product.name} added to cart!`);
+   437→                    }}
+   438→                    disabled={!product.inStock}
+   439→                  >
+   440→                    <ShoppingCart className='size-3' />
+   441→                    {product.inStock ? 'Add' : 'Sold'}
+   442→                  </Button>
+   443→                </div>
+   444→              </CardContent>
+   445→            </Card>
+   446→          </motion.div>
+   447→        ))}
+   448→      </div>
+   449→
+   450→      {filtered.length === 0 && (
+   451→        <EmptyState
+   452→          icon='🌰'
+   453→          title='No seeds found'
+   454→          description='Try adjusting your search or filter criteria'
+   455→        />
+   456→      )}
+   457→    </div>
+   458→  );
+   459→}
+   460→
+   461→// ============== 3. PRODUCTS PAGE ==============
+   462→type SortOption = 'price_asc' | 'price_desc' | 'rating' | 'newest';
+   463→const allProductCategories = ['All', 'Vegetables', 'Grains', 'Spices', 'Dairy', 'Organic', 'Fruits', 'Fibers'];
+   464→
+   465→export function ProductsPage() {
+   466→  const { navigate } = useAppStore();
+   467→  const { addToCart } = useCartStore();
+   468→  const [search, setSearch] = useState('');
+   469→  const [sort, setSort] = useState<SortOption>('newest');
+   470→  const [category, setCategory] = useState('All');
+   471→
+   472→  const allProducts = useMemo(() => [...mockConsumerProducts, ...mockSeedProducts], []);
+   473→
+   474→  const filtered = useMemo(() => {
+   475→    let products = allProducts;
+   476→    if (category !== 'All') {
+   477→      products = products.filter(p => p.category === category);
+   478→    }
+   479→    if (search) {
+   480→      const q = search.toLowerCase();
+   481→      products = products.filter(
+   482→        p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || (p.farmer && p.farmer.toLowerCase().includes(q))
+   483→      );
+   484→    }
+   485→    switch (sort) {
+   486→      case 'price_asc': products = [...products].sort((a, b) => a.price - b.price); break;
+   487→      case 'price_desc': products = [...products].sort((a, b) => b.price - a.price); break;
+   488→      case 'rating': products = [...products].sort((a, b) => b.rating - a.rating); break;
+   489→      case 'newest': break;
+   490→    }
+   491→    return products;
+   492→  }, [search, sort, category, allProducts]);
+   493→
+   494→  return (
+   495→    <div className='space-y-6'>
+   496→      <PageHeader title='All Products' subtitle='Browse fresh produce and farm supplies' />
+   497→
+   498→      {/* Search + Sort Row */}
+   499→      <div className='flex flex-col sm:flex-row gap-3'>
+   500→        <div className='relative flex-1'>
+   501→          <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+   502→          <Input
+   503→            placeholder='Search all products...'
+   504→            className='pl-10 rounded-xl h-11'
+   505→            value={search}
+   506→            onChange={e => setSearch(e.target.value)}
+   507→          />
+   508→        </div>
+   509→        <Select value={sort} onValueChange={v => setSort(v as SortOption)}>
+   510→          <SelectTrigger className='w-full sm:w-[200px] rounded-xl h-11'>
+   511→            <SelectValue placeholder='Sort by' />
+   512→          </SelectTrigger>
+   513→          <SelectContent>
+   514→            <SelectItem value='price_asc'>Price: Low to High</SelectItem>
+   515→            <SelectItem value='price_desc'>Price: High to Low</SelectItem>
+   516→            <SelectItem value='rating'>Top Rated</SelectItem>
+   517→            <SelectItem value='newest'>Newest First</SelectItem>
+   518→          </SelectContent>
+   519→        </Select>
+   520→      </div>
+   521→
+   522→      <div className='flex gap-6'>
+   523→        {/* Desktop Sidebar */}
+   524→        <aside className='hidden lg:block w-48 shrink-0'>
+   525→          <Card>
+   526→            <CardContent className='p-4'>
+   527→              <h3 className='font-semibold text-sm mb-3'>Categories</h3>
+   528→              <div className='space-y-1'>
+   529→                {allProductCategories.map(cat => (
+   530→                  <button
+   531→                    key={cat}
+   532→                    onClick={() => setCategory(cat)}
+   533→                    className={cn(
+   534→                      'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors',
+   535→                      category === cat
+   536→                        ? 'bg-primary text-primary-foreground font-medium'
+   537→                        : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+   538→                    )}
+   539→                  >
+   540→                    {cat !== 'All' && <span className='mr-2'>{getCategoryIcon(cat)}</span>}
+   541→                    {cat}
+   542→                  </button>
+   543→                ))}
+   544→              </div>
+   545→            </CardContent>
+   546→          </Card>
+   547→        </aside>
+   548→
+   549→        {/* Mobile Category Scroll + Product Grid */}
+   550→        <div className='flex-1 min-w-0'>
+   551→          {/* Mobile Categories */}
+   552→          <div className='lg:hidden flex gap-2 overflow-x-auto pb-3 scrollbar-none'>
+   553→            {allProductCategories.map(cat => (
+   554→              <button
+   555→                key={cat}
+   556→                onClick={() => setCategory(cat)}
+   557→                className={cn(
+   558→                  'px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-all',
+   559→                  category === cat
+   560→                    ? 'bg-primary text-primary-foreground border-primary'
+   561→                    : 'bg-background border-border hover:border-primary/30 hover:bg-primary/5'
+   562→                )}
+   563→              >
+   564→                {cat}
+   565→              </button>
+   566→            ))}
+   567→          </div>
+   568→
+   569→          {/* Products Grid */}
+   570→          <div className='grid grid-cols-2 lg:grid-cols-3 gap-3'>
+   571→            {filtered.map((product, idx) => (
+   572→              <motion.div key={product.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.03 }}>
+   573→                <Card className='hover:shadow-md transition-all hover:-translate-y-0.5 h-full'>
+   574→                  <CardContent className='p-3'>
+   575→                    <div
+   576→                      className={cn('aspect-square rounded-xl flex items-center justify-center mb-3 relative cursor-pointer', getImageGradient(product.category))}
+   577→                      onClick={() => navigate('marketplace/product-detail' as any, { productId: product.id })}
+   578→                    >
+   579→                      <span className='text-5xl'>{getCategoryIcon(product.category)}</span>
+   580→                      {!product.inStock && (
+   581→                        <div className='absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center'>
+   582→                          <Badge variant='destructive' className='text-xs'>Out of Stock</Badge>
+   583→                        </div>
+   584→                      )}
+   585→                      {product.isCertified && product.inStock && (
+   586→                        <div className='absolute top-2 right-2'>
+   587→                          <Badge className='bg-emerald-500 text-white text-[10px] px-1.5 py-0 gap-0.5'>
+   588→                            <ShieldCheck className='size-3' /> Certified
+   589→                          </Badge>
+   590→                        </div>
+   591→                      )}
+   592→                    </div>
+   593→
+   594→                    <h3
+   595→                      className='font-medium text-sm leading-tight line-clamp-2 min-h-[2.5rem] cursor-pointer'
+   596→                      onClick={() => navigate('marketplace/product-detail' as any, { productId: product.id })}
+   597→                    >
+   598→                      {product.name}
+   599→                    </h3>
+   600→
+   601→                    {product.farmer && (
+   602→                      <p className='text-xs text-muted-foreground mt-1 truncate flex items-center gap-1'>
+   603→                        <Sprout className='size-3 shrink-0' /> {product.farmer}
+   604→                      </p>
+   605→                    )}
+   606→
+   607→                    <div className='flex items-center gap-1.5 mt-1.5'>
+   608→                      <RatingStars rating={product.rating} />
+   609→                      <span className='text-xs text-muted-foreground'>{product.rating}</span>
+   610→                    </div>
+   611→
+   612→                    <div className='flex items-center justify-between mt-3'>
+   613→                      <div>
+   614→                        <span className='font-bold'>₹{product.price.toLocaleString('en-IN')}</span>
+   615→                        <span className='text-xs text-muted-foreground'>/{product.unit}</span>
+   616→                      </div>
+   617→                      <Button
+   618→                        size='sm'
+   619→                        className='rounded-lg text-xs h-8 gap-1'
+   620→                        onClick={() => {
+   621→                          if (!product.inStock) return;
+   622→                          addToCart(product);
+   623→                          toast.success(`${product.name} added to cart!`);
+   624→                        }}
+   625→                        disabled={!product.inStock}
+   626→                      >
+   627→                        <ShoppingCart className='size-3' />
+   628→                        {product.inStock ? 'Add' : 'Sold'}
+   629→                      </Button>
+   630→                    </div>
+   631→                  </CardContent>
+   632→                </Card>
+   633→              </motion.div>
+   634→            ))}
+   635→          </div>
+   636→
+   637→          {filtered.length === 0 && (
+   638→            <EmptyState
+   639→              icon='🔍'
+   640→              title='No products found'
+   641→              description='Try adjusting your search or filter'
+   642→              action='Browse Marketplace'
+   643→              onAction={() => { setSearch(''); setCategory('All'); }}
+   644→            />
+   645→          )}
+   646→        </div>
+   647→      </div>
+   648→    </div>
+   649→  );
+   650→}
+   651→
+   652→// ============== 4. PRODUCT DETAIL PAGE ==============
+   653→export function ProductDetailPage() {
+   654→  const { navigate, routeParams } = useAppStore();
+   655→  const { addToCart } = useCartStore();
+   656→  const allProducts = [...mockConsumerProducts, ...mockSeedProducts];
+   657→  const product = allProducts.find(p => p.id === routeParams.productId) || mockConsumerProducts[0];
+   658→  const [qty, setQty] = useState(1);
+   659→
+   660→  const related = allProducts
+   661→    .filter(p => p.id !== product.id && p.category === product.category)
+   662→    .slice(0, 4);
+   663→
+   664→  const handleAddToCart = () => {
+   665→    for (let i = 0; i < qty; i++) addToCart(product);
+   666→    toast.success(`${qty}x ${product.name} added to cart!`);
+   667→  };
+   668→
+   669→  const handleBuyNow = () => {
+   670→    for (let i = 0; i < qty; i++) addToCart(product);
+   671→    navigate('marketplace/checkout');
+   672→  };
+   673→
+   674→  return (
+   675→    <div className='space-y-6 max-w-4xl'>
+   676→      {/* Back Button */}
+   677→      <button
+   678→        onClick={() => navigate('marketplace/home')}
+   679→        className='text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors'
+   680→      >
+   681→        <ArrowLeft className='size-4' /> Back
+   682→      </button>
+   683→
+   684→      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+   685→        {/* Product Image */}
+   686→        <motion.div {...fadeInUp}>
+   687→          <Card className='overflow-hidden'>
+   688→            <div className={cn('aspect-square flex items-center justify-center', getImageGradient(product.category))}>
+   689→              <span className='text-8xl'>{getCategoryIcon(product.category)}</span>
+   690→            </div>
+   691→          </Card>
+   692→        </motion.div>
+   693→
+   694→        {/* Product Info */}
+   695→        <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className='space-y-4'>
+   696→          {/* Badges */}
+   697→          <div className='flex items-center gap-2 flex-wrap'>
+   698→            <Badge variant='outline' className={cn('border', getCategoryColor(product.category))}>
+   699→              {product.category}
+   700→            </Badge>
+   701→            {product.isCertified && (
+   702→              <Badge className='bg-emerald-500 text-white gap-1'>
+   703→                <ShieldCheck className='size-3' /> Certified
+   704→              </Badge>
+   705→            )}
+   706→            {product.qualityScore && (
+   707→              <Badge className='bg-amber-500 text-white'>
+   708→                Quality: {product.qualityScore}/100
+   709→              </Badge>
+   710→            )}
+   711→          </div>
+   712→
+   713→          {/* Name */}
+   714→          <h1 className='text-2xl md:text-3xl font-bold'>{product.name}</h1>
+   715→
+   716→          {/* Rating */}
+   717→          <div className='flex items-center gap-2'>
+   718→            <RatingStars rating={product.rating} size='md' />
+   719→            <span className='font-medium'>{product.rating}</span>
+   720→            <span className='text-sm text-muted-foreground'>({product.reviewCount} reviews)</span>
+   721→          </div>
+   722→
+   723→          {/* Price */}
+   724→          <div className='flex items-baseline gap-1'>
+   725→            <span className='text-3xl font-bold'>₹{product.price.toLocaleString('en-IN')}</span>
+   726→            <span className='text-muted-foreground'>/{product.unit}</span>
+   727→          </div>
+   728→
+   729→          <Separator />
+   730→
+   731→          {/* Farmer/Source Info Card */}
+   732→          {product.farmer && (
+   733→            <Card className='bg-muted/30'>
+   734→              <CardContent className='p-4 flex items-center gap-3'>
+   735→                <div className='w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center'>
+   736→                  <Sprout className='size-5 text-primary' />
+   737→                </div>
+   738→                <div>
+   739→                  <p className='font-medium text-sm'>{product.farmer}</p>
+   740→                  {product.farmerLocation && (
+   741→                    <p className='text-xs text-muted-foreground flex items-center gap-1 mt-0.5'>
+   742→                      <MapPin className='size-3' /> {product.farmerLocation}
+   743→                    </p>
+   744→                  )}
+   745→                </div>
+   746→                {product.harvestDate && (
+   747→                  <div className='ml-auto text-right'>
+   748→                    <p className='text-xs text-muted-foreground'>Harvested</p>
+   749→                    <p className='text-xs font-medium'>{product.harvestDate}</p>
+   750→                  </div>
+   751→                )}
+   752→              </CardContent>
+   753→            </Card>
+   754→          )}
+   755→
+   756→          {/* Description */}
+   757→          {product.description && (
+   758→            <p className='text-sm text-muted-foreground leading-relaxed'>{product.description}</p>
+   759→          )}
+   760→
+   761→          {/* Germination for seeds */}
+   762→          {product.germination && (
+   763→            <div className='flex items-center gap-2 text-sm'>
+   764→              <Sprout className='size-4 text-emerald-500' />
+   765→              <span className='text-muted-foreground'>Germination Rate:</span>
+   766→              <span className='font-semibold text-emerald-600'>{product.germination}</span>
+   767→            </div>
+   768→          )}
+   769→
+   770→          <Separator />
+   771→
+   772→          {/* Quantity Selector */}
+   773→          <div className='flex items-center gap-4'>
+   774→            <span className='text-sm font-medium'>Quantity:</span>
+   775→            <div className='flex items-center border rounded-xl'>
+   776→              <Button variant='ghost' size='icon' className='h-10 w-10' onClick={() => setQty(Math.max(1, qty - 1))}>
+   777→                <Minus className='size-4' />
+   778→              </Button>
+   779→              <span className='w-12 text-center font-semibold'>{qty}</span>
+   780→              <Button variant='ghost' size='icon' className='h-10 w-10' onClick={() => setQty(qty + 1)}>
+   781→                <Plus className='size-4' />
+   782→              </Button>
+   783→            </div>
+   784→            <span className='text-sm text-muted-foreground'>₹{(product.price * qty).toLocaleString('en-IN')} total</span>
+   785→          </div>
+   786→
+   787→          {/* Action Buttons */}
+   788→          <div className='flex gap-3 pt-2'>
+   789→            <Button
+   790→              variant='outline'
+   791→              className='flex-1 h-12 rounded-xl gap-2'
+   792→              onClick={handleAddToCart}
+   793→              disabled={!product.inStock}
+   794→            >
+   795→              <ShoppingCart className='size-5' />
+   796→              Add to Cart
+   797→            </Button>
+   798→            <Button
+   799→              className='flex-1 h-12 rounded-xl gap-2'
+   800→              onClick={handleBuyNow}
+   801→              disabled={!product.inStock}
+   802→            >
+   803→              <CreditCard className='size-5' />
+   804→              Buy Now
+   805→            </Button>
+   806→          </div>
+   807→
+   808→          {!product.inStock && (
+   809→            <p className='text-sm text-destructive text-center'>This product is currently out of stock</p>
+   810→          )}
+   811→        </motion.div>
+   812→      </div>
+   813→
+   814→      {/* Related Products */}
+   815→      {related.length > 0 && (
+   816→        <SectionWrapper title='Related Products' subtitle={`More ${product.category}`}>
+   817→          <div className='grid grid-cols-2 lg:grid-cols-4 gap-3'>
+   818→            {related.map((p, idx) => {
+   819→              const { addToCart: addRelated } = useCartStore.getState();
+   820→              return (
+   821→                <motion.div key={p.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}>
+   822→                  <Card
+   823→                    className='hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer'
+   824→                    onClick={() => {
+   825→                      setQty(1);
+   826→                      navigate('marketplace/product-detail' as any, { productId: p.id });
+   827→                    }}
+   828→                  >
+   829→                    <CardContent className='p-3'>
+   830→                      <div className={cn('aspect-square rounded-xl flex items-center justify-center mb-2', getImageGradient(p.category))}>
+   831→                        <span className='text-4xl'>{getCategoryIcon(p.category)}</span>
+   832→                      </div>
+   833→                      <h3 className='font-medium text-sm line-clamp-1'>{p.name}</h3>
+   834→                      <div className='flex items-center justify-between mt-2'>
+   835→                        <span className='font-bold text-sm'>₹{p.price.toLocaleString('en-IN')}</span>
+   836→                        <Button
+   837→                          size='sm'
+   838→                          className='h-7 text-xs gap-1 rounded-lg'
+   839→                          onClick={(e) => {
+   840→                            e.stopPropagation();
+   841→                            addRelated(p);
+   842→                            toast.success(`${p.name} added to cart!`);
+   843→                          }}
+   844→                          disabled={!p.inStock}
+   845→                        >
+   846→                          <ShoppingCart className='size-3' /> Add
+   847→                        </Button>
+   848→                      </div>
+   849→                    </CardContent>
+   850→                  </Card>
+   851→                </motion.div>
+   852→              );
+   853→            })}
+   854→          </div>
+   855→        </SectionWrapper>
+   856→      )}
+   857→    </div>
+   858→  );
+   859→}
+   860→
+   861→// ============== 5. CART PAGE ==============
+   862→export function CartPage() {
+   863→  const { items, updateQuantity, removeFromCart, getTotal, getItemCount } = useCartStore();
+   864→  const { navigate } = useAppStore();
+   865→
+   866→  const subtotal = getTotal();
+   867→  const deliveryFee = subtotal > 500 ? 0 : 49;
+   868→  const total = subtotal + deliveryFee;
+   869→
+   870→  if (items.length === 0) {
+   871→    return (
+   872→      <div className='space-y-6'>
+   873→        <PageHeader title='Shopping Cart' />
+   874→        <EmptyState
+   875→          icon='🛒'
+   876→          title='Your cart is empty'
+   877→          description='Browse the marketplace and add fresh products to your cart'
+   878→          action='Browse Marketplace'
+   879→          onAction={() => navigate('marketplace/home')}
+   880→        />
+   881→      </div>
+   882→    );
+   883→  }
+   884→
+   885→  return (
+   886→    <div className='space-y-6'>
+   887→      <PageHeader
+   888→        title='Shopping Cart'
+   889→        subtitle={`${getItemCount()} item${getItemCount() !== 1 ? 's' : ''}`}
+   890→      />
+   891→
+   892→      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+   893→        {/* Cart Items */}
+   894→        <div className='lg:col-span-2 space-y-3'>
+   895→          {items.map(item => (
+   896→            <motion.div key={item.product.id} {...fadeIn}>
+   897→              <Card>
+   898→                <CardContent className='p-4'>
+   899→                  <div className='flex items-start gap-4'>
+   900→                    {/* Product Image */}
+   901→                    <div
+   902→                      className={cn('w-16 h-16 md:w-20 md:h-20 rounded-xl flex items-center justify-center shrink-0 cursor-pointer', getImageGradient(item.product.category))}
+   903→                      onClick={() => navigate('marketplace/product-detail' as any, { productId: item.product.id })}
+   904→                    >
+   905→                      <span className='text-3xl'>{getCategoryIcon(item.product.category)}</span>
+   906→                    </div>
+   907→
+   908→                    {/* Product Info */}
+   909→                    <div className='flex-1 min-w-0'>
+   910→                      <h3 className='font-medium text-sm md:text-base truncate'>{item.product.name}</h3>
+   911→                      {item.product.farmer && (
+   912→                        <p className='text-xs text-muted-foreground mt-0.5 flex items-center gap-1'>
+   913→                          <Sprout className='size-3' /> {item.product.farmer}
+   914→                        </p>
+   915→                      )}
+   916→                      <p className='text-sm text-muted-foreground mt-1'>
+   917→                        ₹{item.product.price.toLocaleString('en-IN')}/{item.product.unit}
+   918→                      </p>
+   919→
+   920→                      {/* Quantity Controls + Remove (Mobile) */}
+   921→                      <div className='flex items-center justify-between mt-3 lg:hidden'>
+   922→                        <div className='flex items-center border rounded-lg'>
+   923→                          <button
+   924→                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+   925→                            className='px-2.5 py-1.5 hover:bg-muted transition-colors'
+   926→                          >
+   927→                            <Minus className='size-3' />
+   928→                          </button>
+   929→                          <span className='w-8 text-center text-sm font-medium'>{item.quantity}</span>
+   930→                          <button
+   931→                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+   932→                            className='px-2.5 py-1.5 hover:bg-muted transition-colors'
+   933→                          >
+   934→                            <Plus className='size-3' />
+   935→                          </button>
+   936→                        </div>
+   937→                        <div className='flex items-center gap-3'>
+   938→                          <p className='font-semibold text-sm'>₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</p>
+   939→                          <button
+   940→                            onClick={() => { removeFromCart(item.product.id); toast.success('Removed from cart'); }}
+   941→                            className='text-muted-foreground hover:text-destructive transition-colors'
+   942→                          >
+   943→                            <Trash2 className='size-4' />
+   944→                          </button>
+   945→                        </div>
+   946→                      </div>
+   947→                    </div>
+   948→
+   949→                    {/* Quantity Controls + Remove (Desktop) */}
+   950→                    <div className='hidden lg:flex flex-col items-end gap-3'>
+   951→                      <button
+   952→                        onClick={() => { removeFromCart(item.product.id); toast.success('Removed from cart'); }}
+   953→                        className='text-muted-foreground hover:text-destructive transition-colors'
+   954→                      >
+   955→                        <Trash2 className='size-4' />
+   956→                      </button>
+   957→                      <div className='flex items-center border rounded-lg'>
+   958→                        <button
+   959→                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+   960→                          className='px-2.5 py-1.5 hover:bg-muted transition-colors'
+   961→                        >
+   962→                          <Minus className='size-3' />
+   963→                        </button>
+   964→                        <span className='w-8 text-center text-sm font-medium'>{item.quantity}</span>
+   965→                        <button
+   966→                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+   967→                          className='px-2.5 py-1.5 hover:bg-muted transition-colors'
+   968→                        >
+   969→                          <Plus className='size-3' />
+   970→                        </button>
+   971→                      </div>
+   972→                      <p className='font-semibold'>₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</p>
+   973→                    </div>
+   974→                  </div>
+   975→                </CardContent>
+   976→              </Card>
+   977→            </motion.div>
+   978→          ))}
+   979→        </div>
+   980→
+   981→        {/* Order Summary */}
+   982→        <div>
+   983→          <Card className='sticky top-4'>
+   984→            <CardHeader>
+   985→              <CardTitle className='text-base'>Order Summary</CardTitle>
+   986→            </CardHeader>
+   987→            <CardContent className='space-y-3'>
+   988→              <div className='flex justify-between text-sm'>
+   989→                <span className='text-muted-foreground'>Subtotal ({getItemCount()} items)</span>
+   990→                <span>₹{subtotal.toLocaleString('en-IN')}</span>
+   991→              </div>
+   992→              <div className='flex justify-between text-sm'>
+   993→                <span className='text-muted-foreground'>Delivery Fee</span>
+   994→                <span className={deliveryFee === 0 ? 'text-emerald-600 font-medium' : ''}>
+   995→                  {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
+   996→                </span>
+   997→              </div>
+   998→              {deliveryFee > 0 && (
+   999→                <p className='text-xs text-muted-foreground'>Free delivery on orders above ₹500</p>
+  1000→              )}
+  1001→              <Separator />
+  1002→              <div className='flex justify-between font-bold text-lg'>
+  1003→                <span>Total</span>
+  1004→                <span>₹{total.toLocaleString('en-IN')}</span>
+  1005→              </div>
+  1006→              <Button
+  1007→                size='lg'
+  1008→                className='w-full rounded-xl mt-2'
+  1009→                onClick={() => navigate('marketplace/checkout')}
+  1010→              >
+  1011→                Proceed to Checkout <ChevronRight className='size-4 ml-1' />
+  1012→              </Button>
+  1013→            </CardContent>
+  1014→          </Card>
+  1015→        </div>
+  1016→      </div>
+  1017→    </div>
+  1018→  );
+  1019→}
+  1020→
+  1021→// ============== 6. CHECKOUT PAGE ==============
+  1022→type CheckoutStep = 1 | 2 | 3;
+  1023→const stepLabels = ['Delivery', 'Payment', 'Confirm'];
+  1024→
+  1025→const paymentMethods = [
+  1026→  {
+  1027→    id: 'UPI',
+  1028→    label: 'UPI',
+  1029→    icon: Smartphone,
+  1030→    description: 'Pay via UPI (GPay, PhonePe, Paytm)',
+  1031→    color: 'bg-violet-50 border-violet-200 text-violet-700',
+  1032→  },
+  1033→  {
+  1034→    id: 'COD',
+  1035→    label: 'Cash on Delivery',
+  1036→    icon: Banknote,
+  1037→    description: 'Pay when your order arrives',
+  1038→    color: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+  1039→  },
+  1040→  {
+  1041→    id: 'Card',
+  1042→    label: 'Credit/Debit Card',
+  1043→    icon: CreditCard,
+  1044→    description: 'Visa, Mastercard, RuPay',
+  1045→    color: 'bg-sky-50 border-sky-200 text-sky-700',
+  1046→  },
+  1047→];
+  1048→
+  1049→export function CheckoutPage() {
+  1050→  const { items, getTotal, placeOrder } = useCartStore();
+  1051→  const { navigate } = useAppStore();
+  1052→  const [step, setStep] = useState<CheckoutStep>(1);
+  1053→  const [payment, setPayment] = useState('UPI');
+  1054→  const [form, setForm] = useState({ name: '', phone: '', address: '', city: '', pincode: '' });
+  1055→
+  1056→  const subtotal = getTotal();
+  1057→  const deliveryFee = subtotal > 500 ? 0 : 49;
+  1058→  const total = subtotal + deliveryFee;
+  1059→
+  1060→  const canProceedDelivery = form.name && form.phone && form.address && form.city && form.pincode;
+  1061→
+  1062→  const handlePlaceOrder = () => {
+  1063→    if (items.length === 0) { toast.error('Cart is empty!'); return; }
+  1064→    const fullAddress = `${form.name}, ${form.phone}, ${form.address}, ${form.city} - ${form.pincode}`;
+  1065→    const order = placeOrder(fullAddress, 'Standard Delivery', payment);
+  1066→    toast.success(`Order ${order.id} placed successfully!`);
+  1067→    navigate('marketplace/order-tracking', { orderId: order.id });
+  1068→  };
+  1069→
+  1070→  if (items.length === 0) {
+  1071→    return (
+  1072→      <div className='space-y-6'>
+  1073→        <button
+  1074→          onClick={() => navigate('marketplace/cart')}
+  1075→          className='text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors'
+  1076→        >
+  1077→          <ArrowLeft className='size-4' /> Back to Cart
+  1078→        </button>
+  1079→        <EmptyState
+  1080→          icon='🛒'
+  1081→          title='Your cart is empty'
+  1082→          description='Add products to your cart before checking out'
+  1083→          action='Browse Marketplace'
+  1084→          onAction={() => navigate('marketplace/home')}
+  1085→        />
+  1086→      </div>
+  1087→    );
+  1088→  }
+  1089→
+  1090→  return (
+  1091→    <div className='space-y-6 max-w-3xl'>
+  1092→      {/* Back Button */}
+  1093→      <button
+  1094→        onClick={() => navigate('marketplace/cart')}
+  1095→        className='text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors'
+  1096→      >
+  1097→        <ArrowLeft className='size-4' /> Back to Cart
+  1098→      </button>
+  1099→
+  1100→      <PageHeader title='Checkout' />
+  1101→
+  1102→      {/* Progress Steps */}
+  1103→      <div className='relative'>
+  1104→        <div className='flex items-center justify-between'>
+  1105→          {stepLabels.map((label, idx) => {
+  1106→            const stepNum = (idx + 1) as CheckoutStep;
+  1107→            const isActive = step === stepNum;
+  1108→            const isCompleted = step > stepNum;
+  1109→            return (
+  1110→              <React.Fragment key={label}>
+  1111→                <button
+  1112→                  onClick={() => { if (isCompleted || isActive) setStep(stepNum); }}
+  1113→                  className='flex flex-col items-center gap-1.5'
+  1114→                >
+  1115→                  <div
+  1116→                    className={cn(
+  1117→                      'w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all',
+  1118→                      isCompleted
+  1119→                        ? 'bg-primary text-primary-foreground border-primary'
+  1120→                        : isActive
+  1121→                          ? 'border-primary text-primary bg-primary/5'
+  1122→                          : 'border-muted-foreground/30 text-muted-foreground'
+  1123→                    )}
+  1124→                  >
+  1125→                    {isCompleted ? <Check className='size-5' /> : stepNum}
+  1126→                  </div>
+  1127→                  <span className={cn('text-xs font-medium', isActive ? 'text-primary' : 'text-muted-foreground')}>
+  1128→                    {label}
+  1129→                  </span>
+  1130→                </button>
+  1131→                {idx < stepLabels.length - 1 && (
+  1132→                  <div className={cn('flex-1 h-0.5 mx-2 mt-[-1.25rem]', (step > stepNum || (step === stepNum + 1)) ? 'bg-primary' : 'bg-muted')} />
+  1133→                )}
+  1134→              </React.Fragment>
+  1135→            );
+  1136→          })}
+  1137→        </div>
+  1138→      </div>
+  1139→
+  1140→      {/* Step 1: Delivery Address */}
+  1141→      {step === 1 && (
+  1142→        <motion.div {...fadeInUp}>
+  1143→          <Card>
+  1144→            <CardHeader>
+  1145→              <CardTitle className='text-base flex items-center gap-2'>
+  1146→                <Truck className='size-5 text-primary' /> Delivery Address
+  1147→              </CardTitle>
+  1148→            </CardHeader>
+  1149→            <CardContent className='space-y-4'>
+  1150→              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+  1151→                <div className='space-y-2'>
+  1152→                  <label className='text-sm font-medium'>Full Name</label>
+  1153→                  <Input
+  1154→                    placeholder='Enter your name'
+  1155→                    value={form.name}
+  1156→                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+  1157→                    className='rounded-xl'
+  1158→                  />
+  1159→                </div>
+  1160→                <div className='space-y-2'>
+  1161→                  <label className='text-sm font-medium'>Phone Number</label>
+  1162→                  <Input
+  1163→                    placeholder='+91 9876543210'
+  1164→                    value={form.phone}
+  1165→                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+  1166→                    className='rounded-xl'
+  1167→                  />
+  1168→                </div>
+  1169→              </div>
+  1170→              <div className='space-y-2'>
+  1171→                <label className='text-sm font-medium'>Address</label>
+  1172→                <Input
+  1173→                  placeholder='House no, Street, Area'
+  1174→                  value={form.address}
+  1175→                  onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+  1176→                  className='rounded-xl'
+  1177→                />
+  1178→              </div>
+  1179→              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+  1180→                <div className='space-y-2'>
+  1181→                  <label className='text-sm font-medium'>City</label>
+  1182→                  <Input
+  1183→                    placeholder='Enter city'
+  1184→                    value={form.city}
+  1185→                    onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+  1186→                    className='rounded-xl'
+  1187→                  />
+  1188→                </div>
+  1189→                <div className='space-y-2'>
+  1190→                  <label className='text-sm font-medium'>Pincode</label>
+  1191→                  <Input
+  1192→                    placeholder='500001'
+  1193→                    value={form.pincode}
+  1194→                    onChange={e => setForm(f => ({ ...f, pincode: e.target.value }))}
+  1195→                    className='rounded-xl'
+  1196→                  />
+  1197→                </div>
+  1198→              </div>
+  1199→              <Button
+  1200→                className='w-full rounded-xl mt-2'
+  1201→                onClick={() => {
+  1202→                  if (!canProceedDelivery) {
+  1203→                    toast.error('Please fill all fields');
+  1204→                    return;
+  1205→                  }
+  1206→                  setStep(2);
+  1207→                }}
+  1208→              >
+  1209→                Continue to Payment <ChevronRight className='size-4 ml-1' />
+  1210→              </Button>
+  1211→            </CardContent>
+  1212→          </Card>
+  1213→        </motion.div>
+  1214→      )}
+  1215→
+  1216→      {/* Step 2: Payment Method */}
+  1217→      {step === 2 && (
+  1218→        <motion.div {...fadeInUp}>
+  1219→          <Card>
+  1220→            <CardHeader>
+  1221→              <CardTitle className='text-base flex items-center gap-2'>
+  1222→                <CreditCard className='size-5 text-primary' /> Payment Method
+  1223→              </CardTitle>
+  1224→            </CardHeader>
+  1225→            <CardContent className='space-y-3'>
+  1226→              <RadioGroup value={payment} onValueChange={setPayment} className='space-y-3'>
+  1227→                {paymentMethods.map(method => {
+  1228→                  const Icon = method.icon;
+  1229→                  const isSelected = payment === method.id;
+  1230→                  return (
+  1231→                    <label
+  1232→                      key={method.id}
+  1233→                      className={cn(
+  1234→                        'flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all',
+  1235→                        isSelected
+  1236→                          ? 'border-primary bg-primary/5'
+  1237→                          : 'border-border hover:border-primary/30'
+  1238→                      )}
+  1239→                    >
+  1240→                      <RadioGroupItem value={method.id} />
+  1241→                      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', method.color)}>
+  1242→                        <Icon className='size-5' />
+  1243→                      </div>
+  1244→                      <div className='flex-1'>
+  1245→                        <p className='font-medium text-sm'>{method.label}</p>
+  1246→                        <p className='text-xs text-muted-foreground'>{method.description}</p>
+  1247→                      </div>
+  1248→                      {isSelected && <Check className='size-5 text-primary' />}
+  1249→                    </label>
+  1250→                  );
+  1251→                })}
+  1252→              </RadioGroup>
+  1253→
+  1254→              <div className='flex gap-3 mt-4'>
+  1255→                <Button variant='outline' className='flex-1 rounded-xl' onClick={() => setStep(1)}>
+  1256→                  <ArrowLeft className='size-4 mr-1' /> Back
+  1257→                </Button>
+  1258→                <Button className='flex-1 rounded-xl' onClick={() => setStep(3)}>
+  1259→                  Review Order <ChevronRight className='size-4 ml-1' />
+  1260→                </Button>
+  1261→              </div>
+  1262→            </CardContent>
+  1263→          </Card>
+  1264→        </motion.div>
+  1265→      )}
+  1266→
+  1267→      {/* Step 3: Confirm Order */}
+  1268→      {step === 3 && (
+  1269→        <motion.div {...fadeInUp} className='space-y-4'>
+  1270→          {/* Items Summary */}
+  1271→          <Card>
+  1272→            <CardHeader>
+  1273→              <CardTitle className='text-base flex items-center gap-2'>
+  1274→                <Package className='size-5 text-primary' /> Order Items ({items.length})
+  1275→              </CardTitle>
+  1276→            </CardHeader>
+  1277→            <CardContent className='space-y-3'>
+  1278→              {items.map(item => (
+  1279→                <div key={item.product.id} className='flex items-center justify-between text-sm'>
+  1280→                  <div className='flex items-center gap-3 min-w-0'>
+  1281→                    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm', getImageGradient(item.product.category))}>
+  1282→                      {getCategoryIcon(item.product.category)}
+  1283→                    </div>
+  1284→                    <span className='truncate'>{item.product.name}</span>
+  1285→                    <span className='text-muted-foreground shrink-0'>×{item.quantity}</span>
+  1286→                  </div>
+  1287→                  <span className='font-medium shrink-0 ml-2'>₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</span>
+  1288→                </div>
+  1289→              ))}
+  1290→              <Separator />
+  1291→              <div className='flex justify-between text-sm'>
+  1292→                <span className='text-muted-foreground'>Subtotal</span>
+  1293→                <span>₹{subtotal.toLocaleString('en-IN')}</span>
+  1294→              </div>
+  1295→              <div className='flex justify-between text-sm'>
+  1296→                <span className='text-muted-foreground'>Delivery</span>
+  1297→                <span className={deliveryFee === 0 ? 'text-emerald-600 font-medium' : ''}>
+  1298→                  {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
+  1299→                </span>
+  1300→              </div>
+  1301→              <Separator />
+  1302→              <div className='flex justify-between font-bold text-lg'>
+  1303→                <span>Total</span>
+  1304→                <span>₹{total.toLocaleString('en-IN')}</span>
+  1305→              </div>
+  1306→            </CardContent>
+  1307→          </Card>
+  1308→
+  1309→          {/* Delivery & Payment Summary */}
+  1310→          <Card>
+  1311→            <CardContent className='p-4 space-y-2'>
+  1312→              <div className='flex items-start gap-2 text-sm'>
+  1313→                <MapPin className='size-4 text-muted-foreground mt-0.5 shrink-0' />
+  1314→                <div>
+  1315→                  <p className='font-medium'>Delivery Address</p>
+  1316→                  <p className='text-muted-foreground'>{form.name}, {form.address}, {form.city} - {form.pincode}</p>
+  1317→                </div>
+  1318→              </div>
+  1319→              <Separator />
+  1320→              <div className='flex items-center gap-2 text-sm'>
+  1321→                <CreditCard className='size-4 text-muted-foreground shrink-0' />
+  1322→                <span className='font-medium'>Payment:</span>
+  1323→                <span className='text-muted-foreground'>{paymentMethods.find(m => m.id === payment)?.label}</span>
+  1324→              </div>
+  1325→            </CardContent>
+  1326→          </Card>
+  1327→
+  1328→          {/* Action Buttons */}
+  1329→          <div className='flex gap-3'>
+  1330→            <Button variant='outline' className='flex-1 rounded-xl' onClick={() => setStep(2)}>
+  1331→              <ArrowLeft className='size-4 mr-1' /> Back
+  1332→            </Button>
+  1333→            <Button
+  1334→              size='lg'
+  1335→              className='flex-1 rounded-xl'
+  1336→              onClick={handlePlaceOrder}
+  1337→            >
+  1338→              <Check className='size-4 mr-1' /> Place Order · ₹{total.toLocaleString('en-IN')}
+  1339→            </Button>
+  1340→          </div>
+  1341→        </motion.div>
+  1342→      )}
+  1343→    </div>
+  1344→  );
+  1345→}
+  1346→
+  1347→// ============== 7. ORDER TRACKING PAGE ==============
+  1348→export function OrderTrackingPage() {
+  1349→  const { navigate, routeParams } = useAppStore();
+  1350→  const { orders } = useCartStore();
+  1351→  const order = orders.find(o => o.id === routeParams.orderId);
+  1352→
+  1353→  if (!order) {
+  1354→    return (
+  1355→      <div className='space-y-6'>
+  1356→        <button
+  1357→          onClick={() => navigate('marketplace/home')}
+  1358→          className='text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors'
+  1359→        >
+  1360→          <ArrowLeft className='size-4' /> Back
+  1361→        </button>
+  1362→        <EmptyState
+  1363→          icon='📦'
+  1364→          title='Order Not Found'
+  1365→          description='The order you are looking for does not exist'
+  1366→          action='Go to Marketplace'
+  1367→          onAction={() => navigate('marketplace/home')}
+  1368→        />
+  1369→      </div>
+  1370→    );
+  1371→  }
+  1372→
+  1373→  const statusColor: Record<string, string> = {
+  1374→    placed: 'bg-blue-100 text-blue-700',
+  1375→    preparing: 'bg-amber-100 text-amber-700',
+  1376→    quality_verified: 'bg-emerald-100 text-emerald-700',
+  1377→    out_for_delivery: 'bg-violet-100 text-violet-700',
+  1378→    delivered: 'bg-green-100 text-green-700',
+  1379→    cancelled: 'bg-red-100 text-red-700',
+  1380→  };
+  1381→
+  1382→  return (
+  1383→    <div className='space-y-6 max-w-2xl'>
+  1384→      {/* Back Button */}
+  1385→      <button
+  1386→        onClick={() => navigate('marketplace/home')}
+  1387→        className='text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors'
+  1388→      >
+  1389→        <ArrowLeft className='size-4' /> Back
+  1390→      </button>
+  1391→
+  1392→      {/* Order Header */}
+  1393→      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
+  1394→        <div>
+  1395→          <h1 className='text-2xl font-bold'>{order.id}</h1>
+  1396→          <p className='text-sm text-muted-foreground flex items-center gap-1 mt-1'>
+  1397→            <Calendar className='size-3' />
+  1398→            Placed on {new Date(order.createdAt).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}
+  1399→          </p>
+  1400→        </div>
+  1401→        <Badge className={cn('w-fit', statusColor[order.status] || 'bg-gray-100 text-gray-700')}>
+  1402→          {order.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+  1403→        </Badge>
+  1404→      </div>
+  1405→
+  1406→      {/* Order Timeline */}
+  1407→      <motion.div {...fadeIn}>
+  1408→        <Card>
+  1409→          <CardHeader>
+  1410→            <CardTitle className='text-base'>Order Progress</CardTitle>
+  1411→          </CardHeader>
+  1412→          <CardContent>
+  1413→            <OrderTimeline steps={order.trackingSteps} />
+  1414→          </CardContent>
+  1415→        </Card>
+  1416→      </motion.div>
+  1417→
+  1418→      {/* Order Items */}
+  1419→      <motion.div {...fadeInUp}>
+  1420→        <Card>
+  1421→          <CardHeader>
+  1422→            <CardTitle className='text-base flex items-center gap-2'>
+  1423→              <Package className='size-5 text-primary' /> Order Items
+  1424→            </CardTitle>
+  1425→          </CardHeader>
+  1426→          <CardContent className='space-y-3'>
+  1427→            {order.items.map(item => (
+  1428→              <div key={item.product.id} className='flex items-center gap-3'>
+  1429→                <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center shrink-0', getImageGradient(item.product.category))}>
+  1430→                  <span className='text-xl'>{getCategoryIcon(item.product.category)}</span>
+  1431→                </div>
+  1432→                <div className='flex-1 min-w-0'>
+  1433→                  <p className='text-sm font-medium truncate'>{item.product.name}</p>
+  1434→                  <p className='text-xs text-muted-foreground'>
+  1435→                    Qty: {item.quantity} · ₹{item.product.price.toLocaleString('en-IN')}/{item.product.unit}
+  1436→                  </p>
+  1437→                </div>
+  1438→                <p className='font-semibold text-sm shrink-0'>
+  1439→                  ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
+  1440→                </p>
+  1441→              </div>
+  1442→            ))}
+  1443→            <Separator />
+  1444→            <div className='flex justify-between font-bold'>
+  1445→              <span>Total</span>
+  1446→              <span>₹{order.total.toLocaleString('en-IN')}</span>
+  1447→            </div>
+  1448→          </CardContent>
+  1449→        </Card>
+  1450→      </motion.div>
+  1451→
+  1452→      {/* Delivery Info */}
+  1453→      <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+  1454→        <Card>
+  1455→          <CardHeader>
+  1456→            <CardTitle className='text-base flex items-center gap-2'>
+  1457→              <Truck className='size-5 text-primary' /> Delivery Details
+  1458→            </CardTitle>
+  1459→          </CardHeader>
+  1460→          <CardContent className='space-y-3'>
+  1461→            {order.deliveryAddress && (
+  1462→              <div className='flex items-start gap-3 text-sm'>
+  1463→                <MapPin className='size-4 text-muted-foreground mt-0.5 shrink-0' />
+  1464→                <div>
+  1465→                  <p className='font-medium'>Delivery Address</p>
+  1466→                  <p className='text-muted-foreground'>{order.deliveryAddress}</p>
+  1467→                </div>
+  1468→              </div>
+  1469→            )}
+  1470→            {order.estimatedDelivery && (
+  1471→              <div className='flex items-center gap-3 text-sm'>
+  1472→                <Clock className='size-4 text-muted-foreground shrink-0' />
+  1473→                <div>
+  1474→                  <p className='font-medium'>Estimated Delivery</p>
+  1475→                  <p className='text-muted-foreground'>
+  1476→                    {new Date(order.estimatedDelivery).toLocaleDateString('en-IN', {
+  1477→                      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+  1478→                    })}
+  1479→                  </p>
+  1480→                </div>
+  1481→              </div>
+  1482→            )}
+  1483→            {order.paymentMethod && (
+  1484→              <div className='flex items-center gap-3 text-sm'>
+  1485→                <CreditCard className='size-4 text-muted-foreground shrink-0' />
+  1486→                <div>
+  1487→                  <p className='font-medium'>Payment Method</p>
+  1488→                  <p className='text-muted-foreground'>{order.paymentMethod}</p>
+  1489→                </div>
+  1490→              </div>
+  1491→            )}
+  1492→          </CardContent>
+  1493→        </Card>
+  1494→      </motion.div>
+  1495→    </div>
+  1496→  );
+  1497→}
+  1498→

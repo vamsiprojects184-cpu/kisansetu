@@ -198,6 +198,16 @@ html {
   animation: pulse-green 2s ease-in-out infinite;
 }
 
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 oklch(0.52 0.17 150 / 0.5); }
+  70% { box-shadow: 0 0 0 10px oklch(0.52 0.17 150 / 0); }
+  100% { box-shadow: 0 0 0 0 oklch(0.52 0.17 150 / 0); }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }

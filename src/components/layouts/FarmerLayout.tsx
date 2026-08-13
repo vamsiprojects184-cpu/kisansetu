@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   LayoutDashboard, Sprout, Leaf, TestTube, Search, Bug, Droplets, CloudSun, TrendingUp,
   ShoppingCart, MapPin, Package, CreditCard, User, Menu, Mic, X, ChevronRight, LogOut,
-  Sun, Moon,
+  Sun, Moon, Settings,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -44,6 +44,7 @@ const farmerNavItems: NavItem[] = [
   { label: 'Marketplace', icon: <Package size={20} />, route: 'marketplace/home', badge: 0 },
   { label: 'Orders', icon: <Package size={20} />, route: 'farmer/orders' },
   { label: 'Payments', icon: <CreditCard size={20} />, route: 'farmer/payments' },
+  { label: 'Settings', icon: <Settings size={20} />, route: 'settings' },
 ];
 
 const bottomNavItems: NavItem[] = [

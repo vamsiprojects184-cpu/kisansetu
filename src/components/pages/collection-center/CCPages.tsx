@@ -4,28 +4,29 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Package, Truck, CheckCircle2, Clock, AlertTriangle, Warehouse,
-  ArrowDownRight, Download, Search, Eye, Check, X, Play,
-  IndianRupee, ClipboardCheck, BoxIcon, DollarSign, Filter,
+  Download, Search, Eye, Check, X, Play,
+  IndianRupee, ClipboardCheck, BoxIcon, DollarSign, BarChart3,
+  MapPin, CalendarClock, Users, Timer,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { useAppStore } from '@/store/use-app-store';
-import { mockQualityChecks, mockCollectionCenters } from '@/data/mock-data';
 import {
   PageHeader, StatCard, CircularProgress, fadeIn, fadeInUp,
-  staggerContainer, SectionWrapper, EmptyState,
+  SectionWrapper, EmptyState,
 } from '@/components/shared/SharedComponents';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from 'recharts';
 
 // ============== CC DASHBOARD ==============
 export function CCDashboard() {
   const { navigate } = useAppStore();
-  const pending = mockQualityChecks.filter(q => q.status === 'pending').length;
 
   const recentSubmissions = [
     { id: 'in1', farmer: 'Vamsi Krishna', crop: 'Tomato', qty: '500 kg', time: '10:30 AM', status: 'pending' as const },
@@ -43,11 +44,41 @@ export function CCDashboard() {
   const submissionStatusColor = (s: string) =>
     ({ pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', qc_started: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', verified: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' }[s] || 'bg-gray-100 text-gray-700');
 
+  const todaySchedule = [
+    { id: 'sch1', time: '9:00 AM', farmer: 'Vamsi Krishna', crop: 'Tomato', qty: '500kg', status: 'completed' as const, icon: '🍅' },
+    { id: 'sch2', time: '10:30 AM', farmer: 'Ramesh Reddy', crop: 'Chilli', qty: '200kg', status: 'completed' as const, icon: '🌶️' },
+    { id: 'sch3', time: '11:00 AM', farmer: 'Sunita Devi', crop: 'Rice', qty: '800kg', status: 'pending' as const, icon: '🌾' },
+    { id: 'sch4', time: '2:00 PM', farmer: 'Lakshmi', crop: 'Brinjal', qty: '350kg', status: 'upcoming' as const, icon: '🍆' },
+  ];
+
+  const scheduleStatusColor = (s: string) =>
+    ({ completed: 'bg-emerald-500', pending: 'bg-amber-500', upcoming: 'bg-gray-400' }[s] || 'bg-gray-400');
+
+  const scheduleStatusLabel = (s: string) =>
+    ({ completed: 'Completed', pending: 'Pending', upcoming: 'Upcoming' }[s] || 'Unknown');
+
   return (
     <div className='space-y-6'>
+      {/* Welcome Banner */}
       <motion.div {...fadeInUp}>
-        <h1 className='text-2xl font-bold tracking-tight'>Collection Center</h1>
-        <p className='text-muted-foreground mt-1'>Manage incoming produce, quality checks, and payouts</p>
+        <div className='rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-6 sm:p-8'>
+          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+            <div className='flex items-start gap-4'>
+              <div className='text-4xl shrink-0'>🏭</div>
+              <div>
+                <h1 className='text-2xl font-bold tracking-tight'>GreenAgri Collection Center</h1>
+                <div className='flex items-center gap-1.5 mt-1.5 text-white/80 text-sm'>
+                  <MapPin className='size-3.5' />
+                  <span>Warangal Rural, Telangana — Near Main Market Road</span>
+                </div>
+              </div>
+            </div>
+            <Badge className='bg-white/20 text-white border-white/30 hover:bg-white/30 text-sm px-3 py-1 shrink-0'>
+              <Truck className='size-3.5 mr-1.5' />
+              Today: 12 incoming
+            </Badge>
+          </div>
+        </div>
       </motion.div>
 
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
@@ -56,6 +87,74 @@ export function CCDashboard() {
         <StatCard title='Inventory Items' value={45} subtitle='items in stock' icon={<BoxIcon className='size-5' />} onClick={() => navigate('collection-center/inventory')} />
         <StatCard title='Pending Payouts' value='₹1.2L' subtitle='to be processed' icon={<IndianRupee className='size-5' />} onClick={() => navigate('collection-center/payouts')} />
       </div>
+
+      {/* Capacity Meter */}
+      <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+        <Card>
+          <CardHeader className='pb-4'>
+            <div className='flex items-center justify-between'>
+              <CardTitle className='text-base flex items-center gap-2'>
+                <Warehouse className='size-4 text-teal-600' />
+                Warehouse Capacity
+              </CardTitle>
+              <span className='text-2xl font-bold text-teal-600'>78%</span>
+            </div>
+          </CardHeader>
+          <CardContent className='pt-0'>
+            <Progress value={78} className='h-4 mb-4 [&>[data-slot=indicator]]:bg-gradient-to-r [&>[data-slot=indicator]]:from-teal-500 [&>[data-slot=indicator]]:to-cyan-500' />
+            <p className='text-sm font-semibold text-muted-foreground mb-2'>78% Full</p>
+            <div className='flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground'>
+              <span>🍅 Vegetables: <span className='font-medium text-foreground'>45%</span></span>
+              <span>🌾 Grains: <span className='font-medium text-foreground'>25%</span></span>
+              <span>🌶️ Spices: <span className='font-medium text-foreground'>8%</span></span>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Today's Schedule */}
+      <motion.div {...fadeInUp} transition={{ delay: 0.15 }}>
+        <Card>
+          <CardHeader className='pb-3'>
+            <CardTitle className='text-base flex items-center gap-2'>
+              <CalendarClock className='size-4 text-teal-600' />
+              Today&rsquo;s Schedule
+            </CardTitle>
+          </CardHeader>
+          <CardContent className='pt-0'>
+            <div className='space-y-4'>
+              {todaySchedule.map((item, idx) => (
+                <div key={item.id} className='flex items-start gap-4'>
+                  {/* Timeline dot + line */}
+                  <div className='flex flex-col items-center shrink-0'>
+                    <div className={cn('w-3 h-3 rounded-full shrink-0 mt-1', scheduleStatusColor(item.status))} />
+                    {idx < todaySchedule.length - 1 && <div className='w-px h-12 bg-border mt-1' />}
+                  </div>
+                  {/* Content */}
+                  <div className='flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 pb-1'>
+                    <Badge variant='outline' className='w-fit text-xs font-mono shrink-0 border-muted-foreground/30'>
+                      {item.time}
+                    </Badge>
+                    <div className='flex items-center gap-2 min-w-0 flex-1'>
+                      <span className='text-lg shrink-0'>{item.icon}</span>
+                      <p className='text-sm font-medium truncate'>{item.farmer}</p>
+                      <span className='text-xs text-muted-foreground hidden sm:inline'>· {item.crop}, {item.qty}</span>
+                    </div>
+                    <span className={cn(
+                      'text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0',
+                      item.status === 'completed' && 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+                      item.status === 'pending' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+                      item.status === 'upcoming' && 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
+                    )}>
+                      {scheduleStatusLabel(item.status)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       <SectionWrapper title='Quick Actions'>
         <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
@@ -276,8 +375,81 @@ export function CCIncoming() {
 }
 
 // ============== CC QUALITY CHECK ==============
+const QC_FLOW_STEPS = ['Received', 'Quality Test', 'Grading', 'Priced'] as const;
+
+type QcFlowStatus = 'pending' | 'in_progress' | 'qc_started' | 'verified' | 'approved' | 'rejected';
+
+function getQcStepIndex(status: QcFlowStatus): number {
+  const map: Record<QcFlowStatus, number> = {
+    pending: 0,
+    in_progress: 1,
+    qc_started: 2,
+    verified: 2,
+    approved: 3,
+    rejected: -1,
+  };
+  return map[status] ?? 0;
+}
+
+function QcFlowStepper({ status }: { status: QcFlowStatus }) {
+  const currentStep = getQcStepIndex(status);
+  const isRejected = status === 'rejected';
+
+  return (
+    <div className='flex items-center gap-0 w-full'>
+      {QC_FLOW_STEPS.map((step, idx) => {
+        const isCompleted = idx < currentStep;
+        const isCurrent = idx === currentStep && !isRejected;
+        const isFuture = idx > currentStep;
+
+        return (
+          <React.Fragment key={step}>
+            <div className='flex flex-col items-center gap-1 flex-1 min-w-0'>
+              <div className={cn(
+                'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors',
+                isCompleted && 'bg-emerald-500 text-white',
+                isCurrent && 'bg-teal-500 text-white ring-2 ring-teal-200 dark:ring-teal-800',
+                isFuture && 'bg-muted text-muted-foreground',
+                isRejected && idx === 0 && 'bg-red-500 text-white',
+              )}>
+                {isCompleted ? <Check className='size-3' /> : isRejected && idx === 0 ? <X className='size-3' /> : idx + 1}
+              </div>
+              <span className={cn(
+                'text-[10px] leading-tight text-center truncate w-full',
+                (isCompleted || isCurrent) ? 'text-foreground font-medium' : 'text-muted-foreground',
+              )}>
+                {step}
+              </span>
+            </div>
+            {idx < QC_FLOW_STEPS.length - 1 && (
+              <div className={cn(
+                'h-0.5 flex-1 mb-4 shrink-0',
+                idx < currentStep ? 'bg-emerald-500' : 'bg-muted',
+              )} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+const extendedQcItems = [
+  { id: 'qc_ext1', productName: 'Tomato', farmerName: 'Vamsi Krishna', qualityScore: 92, grade: 'premium', status: 'approved' as const, quantity: '500 kg' },
+  { id: 'qc_ext2', productName: 'Chilli', farmerName: 'Ramesh Reddy', qualityScore: 78, grade: 'standard', status: 'qc_started' as const, quantity: '200 kg' },
+  { id: 'qc_ext3', productName: 'Brinjal', farmerName: 'Suresh Kumar', qualityScore: 0, grade: 'standard', status: 'pending' as const, quantity: '350 kg' },
+  { id: 'qc_ext4', productName: 'Onion', farmerName: 'Lakshmi Devi', qualityScore: 85, grade: 'premium', status: 'approved' as const, quantity: '600 kg' },
+  { id: 'qc_ext5', productName: 'Rice', farmerName: 'Sunita Devi', qualityScore: 0, grade: 'standard', status: 'in_progress' as const, quantity: '800 kg' },
+];
+
 export function CCQualityCheck() {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const qcStats = [
+    { label: 'Pending', value: 5, icon: <Clock className='size-4' />, color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-800' },
+    { label: 'In Progress', value: 2, icon: <Play className='size-4' />, color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800' },
+    { label: 'Approved', value: 12, icon: <CheckCircle2 className='size-4' />, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800' },
+    { label: 'Rejected', value: 1, icon: <X className='size-4' />, color: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400', border: 'border-red-200 dark:border-red-800' },
+  ];
 
   const gradeColor = (g: string) =>
     ({ premium: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300', standard: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', rejected: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' }[g] || 'bg-gray-100 text-gray-700');
@@ -285,111 +457,147 @@ export function CCQualityCheck() {
   const gradeRingColor = (g: string) =>
     ({ premium: '#16a34a', standard: '#f59e0b', rejected: '#ef4444' }[g] || '#6b7280');
 
+  const getQcAction = (status: QcFlowStatus) => {
+    if (status === 'pending') return { label: 'Start QC', variant: 'default' as const, handler: () => toast.success('QC started!') };
+    if (status === 'in_progress' || status === 'qc_started') return { label: 'Continue QC', variant: 'outline' as const, handler: () => toast.info('Continuing quality check...') };
+    if (status === 'verified') return { label: 'Approve', variant: 'default' as const, handler: () => toast.success('Item approved!') };
+    return null;
+  };
+
+  const getQcProductIcon = (name: string) =>
+    ({ Tomato: '🍅', Chilli: '🌶️', Brinjal: '🍆', Onion: '🧅', Rice: '🌾' }[name] || '📦');
+
   return (
     <div className='space-y-6'>
-      <PageHeader title='Quality Check' subtitle={`${mockQualityChecks.length} items to verify`} />
+      <PageHeader title='Quality Check' subtitle={`${extendedQcItems.length} items to verify`} />
 
-      <div className='space-y-4'>
-        {mockQualityChecks.map((qc, idx) => (
-          <motion.div key={qc.id} {...fadeIn} transition={{ delay: idx * 0.05 }}>
-            <Card className={qc.status === 'pending' ? 'border-amber-200 dark:border-amber-800' : ''}>
-              <CardContent className='p-4 sm:p-6'>
-                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
-                  <div className='flex items-center gap-4 flex-1'>
-                    <div className='text-3xl shrink-0'>
-                      {qc.productName === 'Tomato' ? '🍅' : qc.productName === 'Chilli' ? '🌶️' : '🥬'}
-                    </div>
-                    <div className='min-w-0'>
-                      <h3 className='font-semibold text-sm'>{qc.productName}</h3>
-                      <p className='text-xs text-muted-foreground'>{qc.farmerName}</p>
-                    </div>
-                    {qc.status === 'verified' && (
-                      <div className='shrink-0'>
-                        <CircularProgress
-                          value={qc.qualityScore}
-                          size={70}
-                          strokeWidth={6}
-                          color={gradeRingColor(qc.grade)}
-                          label={String(qc.qualityScore)}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className='flex items-center gap-3'>
-                    <Badge variant='secondary' className={gradeColor(qc.grade)}>
-                      {qc.grade.toUpperCase()}
-                    </Badge>
-                    <Badge variant='secondary' className={
-                      qc.status === 'verified'
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                        : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                    }>
-                      {qc.status}
-                    </Badge>
-                    {qc.status === 'pending' && (
-                      <Button size='sm' onClick={() => setExpandedId(expandedId === qc.id ? null : qc.id)}>
-                        Review
-                      </Button>
-                    )}
-                  </div>
+      {/* QC Stats Bar */}
+      <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
+        {qcStats.map((stat, idx) => (
+          <motion.div key={stat.label} {...fadeIn} transition={{ delay: idx * 0.05 }}>
+            <Card className={cn('border', stat.border)}>
+              <CardContent className='p-4 flex items-center gap-3'>
+                <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center shrink-0', stat.color)}>
+                  {stat.icon}
                 </div>
-
-                {expandedId === qc.id && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className='mt-4 pt-4 border-t space-y-4'
-                  >
-                    <p className='text-sm text-muted-foreground'>Quality assessment metrics:</p>
-
-                    <div className='grid grid-cols-2 sm:grid-cols-4 gap-4'>
-                      {[
-                        { label: 'Freshness', value: qc.freshness },
-                        { label: 'Size Consistency', value: qc.sizeConsistency },
-                        { label: 'Appearance', value: qc.appearance },
-                        { label: 'Damage Check', value: qc.damageCheck },
-                      ].map(metric => (
-                        <div key={metric.label} className='space-y-2'>
-                          <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>{metric.label}</span>
-                            <span className='font-medium'>{metric.value > 0 ? `${metric.value}%` : 'Pending'}</span>
-                          </div>
-                          <Progress value={metric.value} className='h-2' />
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className='flex gap-2 justify-end pt-2'>
-                      <Button variant='outline' size='sm' onClick={() => { toast.info('Marked as rejected'); setExpandedId(null); }}>
-                        <X className='size-4 mr-1' /> Reject
-                      </Button>
-                      <Button size='sm' onClick={() => { toast.success('Quality check verified!'); setExpandedId(null); }}>
-                        <Check className='size-4 mr-1' /> Verify
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
+                <div>
+                  <p className='text-2xl font-bold leading-none'>{stat.value}</p>
+                  <p className='text-xs text-muted-foreground mt-0.5'>{stat.label}</p>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
         ))}
+      </div>
+
+      {/* QC Items with Flow Stepper */}
+      <div className='space-y-4'>
+        {extendedQcItems.map((qc, idx) => {
+          const action = getQcAction(qc.status);
+          return (
+            <motion.div key={qc.id} {...fadeIn} transition={{ delay: idx * 0.05 }}>
+              <Card className={qc.status === 'pending' ? 'border-amber-200 dark:border-amber-800' : ''}>
+                <CardContent className='p-4 sm:p-6 space-y-4'>
+                  {/* Top row: product info + score + badge */}
+                  <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
+                    <div className='flex items-center gap-3 flex-1 min-w-0'>
+                      <div className='text-2xl shrink-0'>{getQcProductIcon(qc.productName)}</div>
+                      <div className='min-w-0'>
+                        <h3 className='font-semibold text-sm'>{qc.productName}</h3>
+                        <p className='text-xs text-muted-foreground'>{qc.farmerName} · {qc.quantity}</p>
+                      </div>
+                    </div>
+                    <div className='flex items-center gap-3 shrink-0'>
+                      {qc.status === 'approved' && qc.qualityScore > 0 && (
+                        <div className='flex items-center gap-2'>
+                          <CircularProgress
+                            value={qc.qualityScore}
+                            size={52}
+                            strokeWidth={5}
+                            color={gradeRingColor(qc.grade)}
+                            label={String(qc.qualityScore)}
+                          />
+                          <span className='text-xs font-medium text-muted-foreground hidden sm:block'>
+                            Grade {qc.grade.charAt(0).toUpperCase() + qc.grade.slice(1)}: {qc.qualityScore}/100
+                          </span>
+                        </div>
+                      )}
+                      <Badge variant='secondary' className={gradeColor(qc.grade)}>
+                        {qc.grade.toUpperCase()}
+                      </Badge>
+                      <Badge variant='secondary' className={
+                        qc.status === 'approved' || qc.status === 'verified'
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                          : qc.status === 'rejected'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                      }>
+                        {qc.status.replace(/_/g, ' ')}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* QC Flow Stepper */}
+                  <QcFlowStepper status={qc.status} />
+
+                  {/* Action buttons */}
+                  <div className='flex items-center justify-between pt-1'>
+                    <p className='text-xs text-muted-foreground'>Step {Math.max(1, getQcStepIndex(qc.status) + 1)} of {QC_FLOW_STEPS.length}</p>
+                    <div className='flex gap-2'>
+                      {qc.status === 'pending' && (
+                        <Button variant='outline' size='sm' onClick={() => { toast.info('Marked as rejected'); }}>
+                          <X className='size-3.5 mr-1' /> Reject
+                        </Button>
+                      )}
+                      {action && (
+                        <Button size='sm' variant={action.variant} onClick={action.handler}>
+                          {action.label === 'Start QC' && <Play className='size-3.5 mr-1' />}
+                          {action.label === 'Continue QC' && <Play className='size-3.5 mr-1' />}
+                          {action.label === 'Approve' && <Check className='size-3.5 mr-1' />}
+                          {action.label}
+                        </Button>
+                      )}
+                      {qc.status === 'approved' && (
+                        <Button size='sm' variant='outline' onClick={() => toast.info('Viewing payout details...')}>
+                          <IndianRupee className='size-3.5 mr-1' /> View Payout
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
 // ============== CC PAYOUTS ==============
+const payoutChartData = [
+  { day: 'Mon', amount: 68000 },
+  { day: 'Tue', amount: 45000 },
+  { day: 'Wed', amount: 92000 },
+  { day: 'Thu', amount: 73000 },
+  { day: 'Fri', amount: 55000 },
+  { day: 'Sat', amount: 85000 },
+  { day: 'Sun', amount: 62000 },
+];
+
 export function CCPayouts() {
   const [payouts, setPayouts] = useState([
     { id: 'p1', farmer: 'Vamsi Krishna', crop: 'Tomato', amount: 14000, date: 'Jan 6, 2025', status: 'pending' as const },
     { id: 'p2', farmer: 'Ramesh Reddy', crop: 'Chilli', amount: 36000, date: 'Jan 5, 2025', status: 'pending' as const },
     { id: 'p3', farmer: 'Lakshmi Devi', crop: 'Brinjal', amount: 8750, date: 'Jan 4, 2025', status: 'completed' as const },
     { id: 'p4', farmer: 'Suresh Kumar', crop: 'Onion', amount: 22000, date: 'Jan 3, 2025', status: 'completed' as const },
+    { id: 'p5', farmer: 'Sunita Devi', crop: 'Rice', amount: 48000, date: 'Jan 2, 2025', status: 'completed' as const },
   ]);
 
   const pendingTotal = payouts.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
   const completedTotal = payouts.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
+  const totalMonth = pendingTotal + completedTotal;
+  const farmersPaid = payouts.filter(p => p.status === 'completed').length;
 
   const handleProcessAll = () => {
     setPayouts(prev => prev.map(p => ({ ...p, status: 'completed' as const })));
@@ -399,6 +607,10 @@ export function CCPayouts() {
   const handleProcessOne = (id: string) => {
     setPayouts(prev => prev.map(p => p.id === id ? { ...p, status: 'completed' as const } : p));
     toast.success('Payout processed!');
+  };
+
+  const handleScheduleLater = (id: string) => {
+    toast.info(`Payment for ${payouts.find(p => p.id === id)?.farmer} scheduled for later`);
   };
 
   const statusColor = (s: string) =>
@@ -419,20 +631,89 @@ export function CCPayouts() {
         }
       />
 
-      <motion.div {...fadeInUp}>
-        <Card className='bg-gradient-to-br from-emerald-500 to-green-600 text-white border-0'>
-          <CardContent className='p-6'>
-            <div className='grid grid-cols-2 gap-4'>
-              <div>
-                <p className='text-white/80 text-sm'>Pending Payouts</p>
-                <p className='text-2xl font-bold mt-1'>₹{pendingTotal.toLocaleString('en-IN')}</p>
-                <p className='text-white/70 text-xs mt-1'>{payouts.filter(p => p.status === 'pending').length} pending</p>
+      {/* Payout Summary */}
+      <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
+        <motion.div {...fadeIn} transition={{ delay: 0 }}>
+          <Card>
+            <CardContent className='p-4'>
+              <div className='flex items-center gap-2 text-muted-foreground mb-1'>
+                <IndianRupee className='size-4' />
+                <span className='text-xs font-medium'>Total Payouts This Month</span>
               </div>
-              <div>
-                <p className='text-white/80 text-sm'>Completed (This Month)</p>
-                <p className='text-2xl font-bold mt-1'>₹{completedTotal.toLocaleString('en-IN')}</p>
-                <p className='text-white/70 text-xs mt-1'>{payouts.filter(p => p.status === 'completed').length} completed</p>
+              <p className='text-xl sm:text-2xl font-bold'>₹{(totalMonth / 100000).toFixed(1)}L</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div {...fadeIn} transition={{ delay: 0.05 }}>
+          <Card className='border-amber-200 dark:border-amber-800'>
+            <CardContent className='p-4'>
+              <div className='flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-1'>
+                <Clock className='size-4' />
+                <span className='text-xs font-medium'>Pending</span>
               </div>
+              <p className='text-xl sm:text-2xl font-bold'>₹{(pendingTotal / 100000).toFixed(1)}L</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
+          <Card className='border-emerald-200 dark:border-emerald-800'>
+            <CardContent className='p-4'>
+              <div className='flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-1'>
+                <CheckCircle2 className='size-4' />
+                <span className='text-xs font-medium'>Processed</span>
+              </div>
+              <p className='text-xl sm:text-2xl font-bold'>₹{(completedTotal / 100000).toFixed(1)}L</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div {...fadeIn} transition={{ delay: 0.15 }}>
+          <Card>
+            <CardContent className='p-4'>
+              <div className='flex items-center gap-2 text-muted-foreground mb-1'>
+                <Users className='size-4' />
+                <span className='text-xs font-medium'>Farmers Paid</span>
+              </div>
+              <p className='text-xl sm:text-2xl font-bold'>{farmersPaid}</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Payment History Chart */}
+      <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+        <Card>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-base flex items-center gap-2'>
+              <BarChart3 className='size-4 text-teal-600' />
+              Daily Payout History
+            </CardTitle>
+            <p className='text-xs text-muted-foreground'>Last 7 days</p>
+          </CardHeader>
+          <CardContent>
+            <div className='h-48'>
+              <ResponsiveContainer width='100%' height='100%'>
+                <BarChart data={payoutChartData}>
+                  <CartesianGrid strokeDasharray='3 3' stroke='hsl(var(--border))' />
+                  <XAxis dataKey='day' tick={{ fontSize: 12 }} stroke='hsl(var(--muted-foreground))' />
+                  <YAxis tick={{ fontSize: 11 }} stroke='hsl(var(--muted-foreground))' tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip
+                    formatter={(value: number) => [`₹${value.toLocaleString('en-IN')}`, 'Payout']}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
+                  />
+                  <Bar dataKey='amount' fill='url(#payoutGradient)' radius={[4, 4, 0, 0]} />
+                  <defs>
+                    <linearGradient id='payoutGradient' x1='0' y1='0' x2='0' y2='1'>
+                      <stop offset='0%' stopColor='#14b8a6' />
+                      <stop offset='100%' stopColor='#06b6d4' />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
@@ -466,10 +747,17 @@ export function CCPayouts() {
                       <Badge variant='secondary' className={statusColor(p.status)}>{p.status}</Badge>
                     </td>
                     <td className='p-3'>
-                      {p.status === 'pending' && (
-                        <Button size='sm' variant='outline' onClick={() => handleProcessOne(p.id)}>
-                          Pay
-                        </Button>
+                      {p.status === 'pending' ? (
+                        <div className='flex gap-2'>
+                          <Button size='sm' onClick={() => handleProcessOne(p.id)}>
+                            <CheckCircle2 className='size-3.5 mr-1' /> Process Payment
+                          </Button>
+                          <Button size='sm' variant='outline' onClick={() => handleScheduleLater(p.id)}>
+                            <Timer className='size-3.5 mr-1' /> Schedule
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className='text-xs text-muted-foreground'>Paid</span>
                       )}
                     </td>
                   </motion.tr>

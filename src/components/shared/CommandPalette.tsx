@@ -42,6 +42,7 @@ import {
   BarChart3,
   Building2,
   SearchX,
+  Settings,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -104,6 +105,10 @@ const expertRoutes: RouteEntry[] = [
   { route: 'expert/advisories', label: 'Advisories', description: 'Farm advisories and reports', icon: FileText },
 ];
 
+const settingsRoute: RouteEntry[] = [
+  { route: 'settings' as RoutePath, label: 'Settings', description: 'App preferences and account settings', icon: Settings },
+];
+
 const adminRoutes: RouteEntry[] = [
   { route: 'admin/dashboard', label: 'Dashboard', description: 'Platform admin overview', icon: LayoutDashboard },
   { route: 'admin/users', label: 'Users', description: 'Manage platform users', icon: Users },
@@ -122,28 +127,31 @@ function getRouteGroups(role: UserRole): RouteGroup[] {
         { heading: 'Farm Management', routes: farmerRoutes.slice(1, 3).concat(farmerRoutes.slice(7, 12)) },
         { heading: 'AI Tools', routes: farmerRoutes.slice(3, 7) },
         { heading: 'Marketplace', routes: marketplaceRoutes },
-        { heading: 'Account', routes: farmerRoutes.slice(12) },
+        { heading: 'Account', routes: farmerRoutes.slice(12).concat(settingsRoute) },
       ];
     case 'consumer':
       return [
         { heading: 'Main', routes: [consumerRoutes[0]] },
         { heading: 'Marketplace', routes: marketplaceRoutes },
-        { heading: 'Account', routes: consumerRoutes.slice(1) },
+        { heading: 'Account', routes: consumerRoutes.slice(1).concat(settingsRoute) },
       ];
     case 'collection_center':
       return [
         { heading: 'Main', routes: [ccRoutes[0]] },
         { heading: 'Operations', routes: ccRoutes.slice(1) },
+        { heading: 'Account', routes: settingsRoute },
       ];
     case 'expert':
       return [
         { heading: 'Main', routes: [expertRoutes[0]] },
         { heading: 'Expert Tools', routes: expertRoutes.slice(1) },
+        { heading: 'Account', routes: settingsRoute },
       ];
     case 'admin':
       return [
         { heading: 'Main', routes: [adminRoutes[0]] },
         { heading: 'Management', routes: adminRoutes.slice(1) },
+        { heading: 'Account', routes: settingsRoute },
       ];
     default:
       return [];

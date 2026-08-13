@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Users, Tractor, Package, ShoppingCart, Building2, TrendingUp,
-  Bug, DollarSign, ArrowUpRight, Search, BarChart3, MapPin,
+  Bug, DollarSign, ArrowUpRight, ArrowDownRight, Search, BarChart3, MapPin,
   Star, Eye, Shield, Activity, AlertTriangle, Info,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Server, Zap, Repeat,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ import { toast } from 'sonner';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, Legend,
+  AreaChart, Area, ReferenceLine,
 } from 'recharts';
 import { cn } from '@/lib/utils';
 
@@ -545,27 +546,70 @@ export function AdminCollectionCenters() {
 
 // ============== ADMIN ANALYTICS ==============
 export function AdminAnalytics() {
-  const monthlyOrders = [
-    { month: 'Jul', orders: 6200 }, { month: 'Aug', orders: 7800 },
-    { month: 'Sep', orders: 8900 }, { month: 'Oct', orders: 9800 },
-    { month: 'Nov', orders: 11000 }, { month: 'Dec', orders: 12450 },
+  // KPI data
+  const kpiCards = [
+    { label: 'Total Revenue', value: '₹24.5L', trend: '+12.5%', trendUp: true, icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950/40' },
+    { label: 'Active Users', value: '8,934', trend: '+8.2%', trendUp: true, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/40' },
+    { label: 'Orders This Month', value: '1,247', trend: '+15.3%', trendUp: true, icon: ShoppingCart, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/40' },
+    { label: 'Avg Order Value', value: '₹342', trend: '-2.1%', trendUp: false, icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/40' },
+    { label: 'Farmer Retention', value: '87%', trend: '+3.8%', trendUp: true, icon: Repeat, color: 'text-teal-600', bg: 'bg-teal-50 dark:bg-teal-950/40' },
   ];
 
-  const revenueByCategory = [
-    { category: 'Vegetables', revenue: 520000 },
-    { category: 'Grains', revenue: 380000 },
-    { category: 'Spices', revenue: 290000 },
-    { category: 'Fibers', revenue: 210000 },
-    { category: 'Dairy', revenue: 180000 },
-    { category: 'Seeds', revenue: 270000 },
+  // Revenue trend data (12 months)
+  const revenueData = [
+    { month: 'Jan', revenue: 1450000, expenses: 980000 },
+    { month: 'Feb', revenue: 1320000, expenses: 910000 },
+    { month: 'Mar', revenue: 1680000, expenses: 1050000 },
+    { month: 'Apr', revenue: 1890000, expenses: 1120000 },
+    { month: 'May', revenue: 1750000, expenses: 1080000 },
+    { month: 'Jun', revenue: 1920000, expenses: 1150000 },
+    { month: 'Jul', revenue: 2100000, expenses: 1200000 },
+    { month: 'Aug', revenue: 2050000, expenses: 1180000 },
+    { month: 'Sep', revenue: 2280000, expenses: 1250000 },
+    { month: 'Oct', revenue: 2350000, expenses: 1280000 },
+    { month: 'Nov', revenue: 2180000, expenses: 1220000 },
+    { month: 'Dec', revenue: 2450000, expenses: 1310000 },
   ];
 
-  const userDistribution = [
-    { name: 'Farmers', value: 2847, color: '#16a34a' },
-    { name: 'Consumers', value: 4231, color: '#f59e0b' },
-    { name: 'Collection Centers', value: 24, color: '#8b5cf6' },
-    { name: 'Experts', value: 18, color: '#ef4444' },
-    { name: 'Admins', value: 6, color: '#06b6d4' },
+  // User growth by role (Jul-Dec)
+  const userGrowthData = [
+    { month: 'Jul', Farmers: 620, Consumers: 840, Experts: 12, 'CC Staff': 18 },
+    { month: 'Aug', Farmers: 710, Consumers: 920, Experts: 14, 'CC Staff': 19 },
+    { month: 'Sep', Farmers: 785, Consumers: 1010, Experts: 15, 'CC Staff': 20 },
+    { month: 'Oct', Farmers: 860, Consumers: 1120, Experts: 16, 'CC Staff': 21 },
+    { month: 'Nov', Farmers: 920, Consumers: 1210, Experts: 17, 'CC Staff': 22 },
+    { month: 'Dec', Farmers: 980, Consumers: 1340, Experts: 19, 'CC Staff': 24 },
+  ];
+
+  // Top products table
+  const topProducts = [
+    { rank: 1, product: 'Basmati Rice (Premium)', category: 'Grains', units: 3240, revenue: '₹10.4L', growth: 24.5 },
+    { rank: 2, product: 'Organic Turmeric Powder', category: 'Spices', units: 2870, revenue: '₹8.2L', growth: 18.2 },
+    { rank: 3, product: 'Fresh Tomatoes', category: 'Vegetables', units: 4560, revenue: '₹6.8L', growth: 12.7 },
+    { rank: 4, product: 'Cotton Bales (Grade A)', category: 'Fibers', units: 890, revenue: '₹5.9L', growth: 8.4 },
+    { rank: 5, product: 'Red Chilli (Guntur)', category: 'Spices', units: 2100, revenue: '₹5.1L', growth: 6.1 },
+    { rank: 6, product: 'Farm Fresh Eggs', category: 'Dairy', units: 18200, revenue: '₹4.5L', growth: -2.3 },
+    { rank: 7, product: 'Hybrid Tomato Seeds', category: 'Seeds', units: 1560, revenue: '₹3.8L', growth: 15.9 },
+    { rank: 8, product: 'Green Gram (Moong Dal)', category: 'Grains', units: 1980, revenue: '₹3.2L', growth: 4.2 },
+    { rank: 9, product: 'Cauliflower', category: 'Vegetables', units: 3210, revenue: '₹2.8L', growth: -1.5 },
+    { rank: 10, product: 'Sunflower Oil (Cold Press)', category: 'Oils', units: 980, revenue: '₹2.1L', growth: 9.3 },
+  ];
+
+  // Geographic distribution
+  const districts = [
+    { name: 'Warangal', farmers: 2340, percentage: 23, color: 'bg-green-600' },
+    { name: 'Hyderabad', farmers: 1832, percentage: 18, color: 'bg-green-500' },
+    { name: 'Karimnagar', farmers: 1527, percentage: 15, color: 'bg-emerald-500' },
+    { name: 'Nizamabad', farmers: 1221, percentage: 12, color: 'bg-emerald-400' },
+    { name: 'Khammam', farmers: 1018, percentage: 10, color: 'bg-green-400' },
+  ];
+
+  // Platform health metrics
+  const healthMetrics = [
+    { label: 'Uptime', value: '99.7%', status: 'green', icon: Server },
+    { label: 'API Response', value: '142ms', status: 'green', icon: Zap },
+    { label: 'Error Rate', value: '0.3%', status: 'amber', icon: AlertTriangle },
+    { label: 'Active Sessions', value: '342', status: 'green', icon: Activity },
   ];
 
   const tooltipStyle = {
@@ -575,78 +619,245 @@ export function AdminAnalytics() {
     fontSize: '12px',
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  };
+
   return (
-    <div className='space-y-6'>
-      <PageHeader title='Platform Analytics' subtitle='Detailed insights and metrics' />
+    <motion.div className='space-y-6' variants={containerVariants} initial='hidden' animate='visible'>
+      <PageHeader title='Platform Analytics' subtitle='Detailed insights and performance metrics' />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className='text-base'>Monthly Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='h-[300px]'>
-            <ResponsiveContainer width='100%' height='100%'>
-              <LineChart data={monthlyOrders}>
-                <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
-                <XAxis dataKey='month' className='text-xs' />
-                <YAxis className='text-xs' />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Line type='monotone' dataKey='orders' name='Orders' stroke='#16a34a' strokeWidth={2} dot={{ fill: '#16a34a', r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-base'>Revenue by Category</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='h-[300px]'>
-              <ResponsiveContainer width='100%' height='100%'>
-                <BarChart data={revenueByCategory} layout='vertical'>
-                  <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
-                  <XAxis type='number' className='text-xs' tickFormatter={(v) => `₹${(v / 1000)}K`} />
-                  <YAxis dataKey='category' type='category' className='text-xs' width={80} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`₹${v.toLocaleString('en-IN')}`, 'Revenue']} />
-                  <Bar dataKey='revenue' name='Revenue' fill='#16a34a' radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-base'>User Distribution by Role</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='h-[300px]'>
-              <ResponsiveContainer width='100%' height='100%'>
-                <PieChart>
-                  <Pie
-                    data={userDistribution}
-                    cx='50%'
-                    cy='50%'
-                    innerRadius={60}
-                    outerRadius={100}
-                    dataKey='value'
-                    paddingAngle={2}
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                  >
-                    {userDistribution.map((entry, idx) => (
-                      <Cell key={idx} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={tooltipStyle} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+      {/* ===== KPI Cards Row ===== */}
+      <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4'>
+        {kpiCards.map((kpi) => {
+          const Icon = kpi.icon;
+          return (
+            <motion.div key={kpi.label} variants={itemVariants}>
+              <Card className='hover-lift cursor-default'>
+                <CardContent className='p-4'>
+                  <div className='flex items-center justify-between mb-2'>
+                    <div className={cn('p-2 rounded-lg', kpi.bg)}>
+                      <Icon className={cn('h-4 w-4', kpi.color)} />
+                    </div>
+                    <span className={cn('text-xs font-medium flex items-center gap-0.5',
+                      kpi.trendUp ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'
+                    )}>
+                      {kpi.trendUp ? <ArrowUpRight className='h-3 w-3' /> : <ArrowDownRight className='h-3 w-3' />}
+                      {kpi.trend}
+                    </span>
+                  </div>
+                  <p className='text-2xl font-bold tracking-tight'>{kpi.value}</p>
+                  <p className='text-xs text-muted-foreground mt-0.5'>{kpi.label}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
-    </div>
+
+      {/* ===== Revenue Trend Chart ===== */}
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardHeader>
+            <CardTitle className='text-base'>Revenue Trend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='h-[320px]'>
+              <ResponsiveContainer width='100%' height='100%'>
+                <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id='revenueGrad' x1='0' y1='0' x2='0' y2='1'>
+                      <stop offset='5%' stopColor='#16a34a' stopOpacity={0.3} />
+                      <stop offset='95%' stopColor='#16a34a' stopOpacity={0.02} />
+                    </linearGradient>
+                    <linearGradient id='expenseGrad' x1='0' y1='0' x2='0' y2='1'>
+                      <stop offset='5%' stopColor='#f43f5e' stopOpacity={0.25} />
+                      <stop offset='95%' stopColor='#f43f5e' stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+                  <XAxis dataKey='month' className='text-xs' tick={{ fontSize: 12 }} />
+                  <YAxis className='text-xs' tick={{ fontSize: 12 }} tickFormatter={(v) => `₹${(v / 100000).toFixed(1)}L`} />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(value: number, name: string) => [
+                      `₹${(value / 100000).toFixed(2)}L`,
+                      name,
+                    ]}
+                  />
+                  <ReferenceLine y={1200000} stroke='hsl(var(--muted-foreground))' strokeDasharray='6 4' label={{ value: 'Break-even', position: 'insideTopRight', fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
+                  <Area type='monotone' dataKey='revenue' name='Revenue' stroke='#16a34a' strokeWidth={2} fill='url(#revenueGrad)' />
+                  <Area type='monotone' dataKey='expenses' name='Expenses' stroke='#f43f5e' strokeWidth={2} fill='url(#expenseGrad)' />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* ===== User Growth + Top Products ===== */}
+      <div className='grid grid-cols-1 xl:grid-cols-2 gap-6'>
+        {/* User Growth by Role - Stacked Bar */}
+        <motion.div variants={itemVariants}>
+          <Card className='h-full'>
+            <CardHeader>
+              <CardTitle className='text-base'>User Growth by Role</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className='h-[340px]'>
+                <ResponsiveContainer width='100%' height='100%'>
+                  <BarChart data={userGrowthData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+                    <XAxis dataKey='month' className='text-xs' tick={{ fontSize: 12 }} />
+                    <YAxis className='text-xs' tick={{ fontSize: 12 }} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend
+                      wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
+                      iconType='circle'
+                      iconSize={8}
+                    />
+                    <Bar dataKey='Farmers' stackId='a' fill='#16a34a' radius={[0, 0, 0, 0]} />
+                    <Bar dataKey='Consumers' stackId='a' fill='#f59e0b' radius={[0, 0, 0, 0]} />
+                    <Bar dataKey='Experts' stackId='a' fill='#8b5cf6' radius={[0, 0, 0, 0]} />
+                    <Bar dataKey='CC Staff' stackId='a' fill='#14b8a6' radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Top Products Table */}
+        <motion.div variants={itemVariants}>
+          <Card className='h-full'>
+            <CardHeader>
+              <CardTitle className='text-base'>Top Selling Products</CardTitle>
+            </CardHeader>
+            <CardContent className='p-0'>
+              <div className='max-h-[340px] overflow-y-auto'>
+                <Table>
+                  <TableHeader>
+                    <TableRow className='hover:bg-transparent'>
+                      <TableHead className='w-10 text-xs'>#</TableHead>
+                      <TableHead className='text-xs'>Product</TableHead>
+                      <TableHead className='text-xs hidden sm:table-cell'>Category</TableHead>
+                      <TableHead className='text-xs text-right hidden md:table-cell'>Units</TableHead>
+                      <TableHead className='text-xs text-right'>Revenue</TableHead>
+                      <TableHead className='text-xs text-right'>Growth</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {topProducts.map((p) => (
+                      <TableRow key={p.rank} className={cn(
+                        p.rank <= 3 && 'border-l-2 border-l-amber-400'
+                      )}>
+                        <TableCell className='text-xs font-medium text-muted-foreground'>{p.rank}</TableCell>
+                        <TableCell className='text-xs font-medium'>{p.product}</TableCell>
+                        <TableCell className='text-xs text-muted-foreground hidden sm:table-cell'>
+                          <Badge variant='secondary' className='text-[10px] px-1.5 py-0'>{p.category}</Badge>
+                        </TableCell>
+                        <TableCell className='text-xs text-right hidden md:table-cell'>{p.units.toLocaleString('en-IN')}</TableCell>
+                        <TableCell className='text-xs text-right font-medium'>{p.revenue}</TableCell>
+                        <TableCell className='text-xs text-right'>
+                          <span className={cn('inline-flex items-center gap-0.5 font-medium',
+                            p.growth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'
+                          )}>
+                            {p.growth >= 0 ? <ArrowUpRight className='h-3 w-3' /> : <ArrowDownRight className='h-3 w-3' />}
+                            {Math.abs(p.growth)}%
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* ===== Geographic Distribution + Platform Health ===== */}
+      <div className='grid grid-cols-1 lg:grid-cols-5 gap-6'>
+        {/* Geographic Distribution */}
+        <motion.div variants={itemVariants} className='lg:col-span-3'>
+          <Card className='h-full'>
+            <CardHeader>
+              <CardTitle className='text-base'>Geographic Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className='space-y-4'>
+                {districts.map((d) => (
+                  <div key={d.name} className='space-y-1.5'>
+                    <div className='flex items-center justify-between'>
+                      <div className='flex items-center gap-2'>
+                        <MapPin className='h-3.5 w-3.5 text-muted-foreground' />
+                        <span className='text-sm font-medium'>{d.name}</span>
+                      </div>
+                      <div className='flex items-center gap-3 text-xs text-muted-foreground'>
+                        <span>{d.farmers.toLocaleString('en-IN')} farmers</span>
+                        <span className='font-semibold text-foreground'>{d.percentage}%</span>
+                      </div>
+                    </div>
+                    <div className='h-2.5 w-full rounded-full bg-muted overflow-hidden'>
+                      <motion.div
+                        className={cn('h-full rounded-full', d.color)}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${d.percentage}%` }}
+                        transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Platform Health Metrics */}
+        <motion.div variants={itemVariants} className='lg:col-span-2'>
+          <Card className='h-full'>
+            <CardHeader>
+              <CardTitle className='text-base'>Platform Health</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className='grid grid-cols-2 gap-4'>
+                {healthMetrics.map((m) => {
+                  const Icon = m.icon;
+                  const dotColor = m.status === 'green'
+                    ? 'bg-green-500'
+                    : 'bg-amber-500';
+                  const textColor = m.status === 'green'
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-amber-600 dark:text-amber-400';
+                  return (
+                    <div
+                      key={m.label}
+                      className='flex flex-col items-center justify-center p-4 rounded-xl border bg-muted/30'
+                    >
+                      <div className='relative mb-2'>
+                        <div className={cn('h-12 w-12 rounded-full border-2 flex items-center justify-center',
+                          m.status === 'green' ? 'border-green-200 dark:border-green-800' : 'border-amber-200 dark:border-amber-800'
+                        )}>
+                          <Icon className={cn('h-5 w-5', textColor)} />
+                        </div>
+                        <div className={cn('absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full', dotColor)} />
+                      </div>
+                      <span className='text-lg font-bold tracking-tight'>{m.value}</span>
+                      <span className='text-xs text-muted-foreground'>{m.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }

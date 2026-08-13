@@ -6,6 +6,7 @@ import {
   ShoppingCart, Star, Plus, Minus, Trash2, ChevronRight,
   MapPin, Truck, ShieldCheck, Leaf, ArrowLeft, Check, Package, Search,
   CreditCard, Banknote, Smartphone, Sprout, Calendar, Clock, Tag,
+  Circle, Phone, MessageSquare, Download, HelpCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -1346,37 +1347,77 @@ export function CheckoutPage() {
 
 // ============== 7. ORDER TRACKING PAGE ==============
 export function OrderTrackingPage() {
-  const { navigate, routeParams } = useAppStore();
-  const { orders } = useCartStore();
-  const order = orders.find(o => o.id === routeParams.orderId);
+  const { navigate } = useAppStore();
 
-  if (!order) {
-    return (
-      <div className='space-y-6'>
-        <button
-          onClick={() => navigate('marketplace/home')}
-          className='text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors'
-        >
-          <ArrowLeft className='size-4' /> Back
-        </button>
-        <EmptyState
-          icon='📦'
-          title='Order Not Found'
-          description='The order you are looking for does not exist'
-          action='Go to Marketplace'
-          onAction={() => navigate('marketplace/home')}
-        />
-      </div>
-    );
-  }
+  const orderData = {
+    id: 'ORD-2025-1847',
+    date: 'Jan 27, 2025',
+    status: 'Packaging',
+    statusColor: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    address: '42, Green Valley Layout, Sector 12, Nashik, Maharashtra 422013',
+    estimatedDelivery: 'Jan 30, 2025',
+    total: 300,
+    items: [
+      { emoji: '🌾', name: 'Organic Basmati Rice', qty: '2 kg', price: 120 },
+      { emoji: '🌶️', name: 'Organic Red Chilli Powder', qty: '500 g', price: 80 },
+      { emoji: '🥜', name: 'Raw Peanuts', qty: '1 kg', price: 70 },
+    ],
+    deliveryFee: 30,
+    subtotal: 270,
+  };
 
-  const statusColor: Record<string, string> = {
-    placed: 'bg-blue-100 text-blue-700',
-    preparing: 'bg-amber-100 text-amber-700',
-    quality_verified: 'bg-emerald-100 text-emerald-700',
-    out_for_delivery: 'bg-violet-100 text-violet-700',
-    delivered: 'bg-green-100 text-green-700',
-    cancelled: 'bg-red-100 text-red-700',
+  const timelineSteps = [
+    {
+      title: 'Order Placed',
+      description: 'Your order has been confirmed',
+      timestamp: 'Jan 27, 10:30 AM',
+      status: 'completed' as const,
+    },
+    {
+      title: 'Payment Verified',
+      description: 'Payment of ₹270 verified',
+      timestamp: 'Jan 27, 10:32 AM',
+      status: 'completed' as const,
+    },
+    {
+      title: 'Quality Check',
+      description: 'Products passed quality verification',
+      timestamp: 'Jan 28, 09:15 AM',
+      status: 'completed' as const,
+    },
+    {
+      title: 'Packaging',
+      description: 'Your order is being packed at GreenAgri Center',
+      timestamp: 'Jan 29, 11:00 AM',
+      status: 'active' as const,
+    },
+    {
+      title: 'Out for Delivery',
+      description: 'With delivery partner',
+      timestamp: '',
+      status: 'upcoming' as const,
+    },
+    {
+      title: 'Delivered',
+      description: 'Expected by Jan 30, 2025',
+      timestamp: '',
+      status: 'upcoming' as const,
+    },
+  ];
+
+  const timelineVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+      },
+    },
+  };
+
+  const timelineItemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: 'easeOut' } },
   };
 
   return (
@@ -1389,108 +1430,233 @@ export function OrderTrackingPage() {
         <ArrowLeft className='size-4' /> Back
       </button>
 
-      {/* Order Header */}
-      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
-        <div>
-          <h1 className='text-2xl font-bold'>{order.id}</h1>
-          <p className='text-sm text-muted-foreground flex items-center gap-1 mt-1'>
-            <Calendar className='size-3' />
-            Placed on {new Date(order.createdAt).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}
-          </p>
-        </div>
-        <Badge className={cn('w-fit', statusColor[order.status] || 'bg-gray-100 text-gray-700')}>
-          {order.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-        </Badge>
-      </div>
-
-      {/* Order Timeline */}
+      {/* 1. Order Summary Card */}
       <motion.div {...fadeIn}>
         <Card>
-          <CardHeader>
-            <CardTitle className='text-base'>Order Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <OrderTimeline steps={order.trackingSteps} />
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Order Items */}
-      <motion.div {...fadeInUp}>
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-base flex items-center gap-2'>
-              <Package className='size-5 text-primary' /> Order Items
-            </CardTitle>
-          </CardHeader>
-          <CardContent className='space-y-3'>
-            {order.items.map(item => (
-              <div key={item.product.id} className='flex items-center gap-3'>
-                <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center shrink-0', getImageGradient(item.product.category))}>
-                  <span className='text-xl'>{getCategoryIcon(item.product.category)}</span>
-                </div>
-                <div className='flex-1 min-w-0'>
-                  <p className='text-sm font-medium truncate'>{item.product.name}</p>
-                  <p className='text-xs text-muted-foreground'>
-                    Qty: {item.quantity} · ₹{item.product.price.toLocaleString('en-IN')}/{item.product.unit}
-                  </p>
-                </div>
-                <p className='font-semibold text-sm shrink-0'>
-                  ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
+          <CardContent className='p-5 space-y-4'>
+            <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3'>
+              <div>
+                <h1 className='text-xl font-bold'>{orderData.id}</h1>
+                <p className='text-sm text-muted-foreground flex items-center gap-1.5 mt-1'>
+                  <Calendar className='size-3.5' />
+                  Placed on {orderData.date}
                 </p>
               </div>
-            ))}
+              <Badge className={cn('w-fit shrink-0', orderData.statusColor)}>
+                {orderData.status}
+              </Badge>
+            </div>
             <Separator />
-            <div className='flex justify-between font-bold'>
-              <span>Total</span>
-              <span>₹{order.total.toLocaleString('en-IN')}</span>
+            <div className='flex items-start gap-3 text-sm'>
+              <MapPin className='size-4 text-muted-foreground mt-0.5 shrink-0' />
+              <div>
+                <p className='font-medium'>Delivery Address</p>
+                <p className='text-muted-foreground'>{orderData.address}</p>
+              </div>
+            </div>
+            <div className='flex items-center gap-6 text-sm'>
+              <div className='flex items-center gap-1.5 text-muted-foreground'>
+                <Truck className='size-4' />
+                <span>Est. {orderData.estimatedDelivery}</span>
+              </div>
+              <div className='flex items-center gap-1.5 font-semibold'>
+                <span>Total:</span>
+                <span>₹{orderData.total.toLocaleString('en-IN')}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Delivery Info */}
-      <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+      {/* 2. Visual Timeline */}
+      <motion.div {...fadeInUp}>
         <Card>
-          <CardHeader>
-            <CardTitle className='text-base flex items-center gap-2'>
-              <Truck className='size-5 text-primary' /> Delivery Details
-            </CardTitle>
+          <CardHeader className='pb-3'>
+            <CardTitle className='text-base'>Order Progress</CardTitle>
           </CardHeader>
-          <CardContent className='space-y-3'>
-            {order.deliveryAddress && (
-              <div className='flex items-start gap-3 text-sm'>
-                <MapPin className='size-4 text-muted-foreground mt-0.5 shrink-0' />
-                <div>
-                  <p className='font-medium'>Delivery Address</p>
-                  <p className='text-muted-foreground'>{order.deliveryAddress}</p>
-                </div>
-              </div>
-            )}
-            {order.estimatedDelivery && (
-              <div className='flex items-center gap-3 text-sm'>
-                <Clock className='size-4 text-muted-foreground shrink-0' />
-                <div>
-                  <p className='font-medium'>Estimated Delivery</p>
-                  <p className='text-muted-foreground'>
-                    {new Date(order.estimatedDelivery).toLocaleDateString('en-IN', {
-                      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
-                    })}
-                  </p>
-                </div>
-              </div>
-            )}
-            {order.paymentMethod && (
-              <div className='flex items-center gap-3 text-sm'>
-                <CreditCard className='size-4 text-muted-foreground shrink-0' />
-                <div>
-                  <p className='font-medium'>Payment Method</p>
-                  <p className='text-muted-foreground'>{order.paymentMethod}</p>
-                </div>
-              </div>
-            )}
+          <CardContent className='pb-5'>
+            <motion.div
+              variants={timelineVariants}
+              initial='hidden'
+              animate='visible'
+              className='relative'
+            >
+              {timelineSteps.map((step, index) => {
+                const isLast = index === timelineSteps.length - 1;
+                return (
+                  <motion.div
+                    key={step.title}
+                    variants={timelineItemVariants}
+                    className='relative flex gap-4'
+                  >
+                    {/* Vertical Line + Circle */}
+                    <div className='flex flex-col items-center'>
+                      {/* Circle indicator */}
+                      <div className='relative shrink-0'>
+                        {step.status === 'completed' && (
+                          <div className='size-9 rounded-full bg-green-500 flex items-center justify-center'>
+                            <Check className='size-4 text-white' strokeWidth={3} />
+                          </div>
+                        )}
+                        {step.status === 'active' && (
+                          <div className='size-9 rounded-full border-[3px] border-green-500 bg-green-500/10 flex items-center justify-center animate-pulse-ring'>
+                            <div className='size-2.5 rounded-full bg-green-500' />
+                          </div>
+                        )}
+                        {step.status === 'upcoming' && (
+                          <div className='size-9 rounded-full border-2 border-muted-foreground/30 bg-muted flex items-center justify-center'>
+                            <Circle className='size-2.5 text-muted-foreground/40' fill='currentColor' />
+                          </div>
+                        )}
+                      </div>
+                      {/* Connecting line */}
+                      {!isLast && (
+                        <div
+                          className={cn(
+                            'w-0.5 flex-1 min-h-[2rem]',
+                            step.status === 'completed'
+                              ? 'bg-green-500'
+                              : step.status === 'active'
+                                ? 'bg-gradient-to-b from-green-500 to-muted-foreground/20'
+                                : 'bg-muted-foreground/20',
+                          )}
+                        />
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className={cn('pb-7', isLast && 'pb-0')}>
+                      <p
+                        className={cn(
+                          'font-semibold text-sm',
+                          step.status === 'upcoming' && 'text-muted-foreground',
+                        )}
+                      >
+                        {step.title}
+                      </p>
+                      <p
+                        className={cn(
+                          'text-sm mt-0.5',
+                          step.status === 'active' ? 'text-foreground/80' : 'text-muted-foreground',
+                        )}
+                      >
+                        {step.description}
+                      </p>
+                      {step.timestamp && (
+                        <p className='text-xs text-muted-foreground/70 mt-1 flex items-center gap-1'>
+                          <Clock className='size-3' />
+                          {step.timestamp}
+                        </p>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
           </CardContent>
         </Card>
+      </motion.div>
+
+      {/* 3. Order Items Section */}
+      <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+        <Card>
+          <CardHeader className='pb-3'>
+            <CardTitle className='text-base flex items-center gap-2'>
+              <Package className='size-5 text-primary' /> Order Items
+            </CardTitle>
+          </CardHeader>
+          <CardContent className='p-0 pb-0'>
+            <div className='divide-y'>
+              {orderData.items.map((item) => (
+                <div key={item.name} className='flex items-center gap-3 px-5 py-3.5'>
+                  <span className='text-2xl shrink-0'>{item.emoji}</span>
+                  <div className='flex-1 min-w-0'>
+                    <p className='text-sm font-medium truncate'>{item.name}</p>
+                    <p className='text-xs text-muted-foreground'>Qty: {item.qty}</p>
+                  </div>
+                  <p className='font-semibold text-sm shrink-0'>
+                    ₹{item.price.toLocaleString('en-IN')}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className='px-5 py-3.5 space-y-2 bg-muted/30 rounded-b-lg'>
+              <div className='flex justify-between text-sm'>
+                <span className='text-muted-foreground'>Subtotal</span>
+                <span>₹{orderData.subtotal.toLocaleString('en-IN')}</span>
+              </div>
+              <div className='flex justify-between text-sm'>
+                <span className='text-muted-foreground'>Delivery Fee</span>
+                <span>₹{orderData.deliveryFee.toLocaleString('en-IN')}</span>
+              </div>
+              <Separator />
+              <div className='flex justify-between font-bold'>
+                <span>Total</span>
+                <span>₹{orderData.total.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* 4. Delivery Partner Info */}
+      <motion.div {...fadeInUp} transition={{ delay: 0.15 }}>
+        <Card>
+          <CardContent className='p-5'>
+            <div className='flex items-center gap-4'>
+              <div className='size-12 rounded-full bg-primary/10 flex items-center justify-center text-xl shrink-0'>
+                🛵
+              </div>
+              <div className='flex-1 min-w-0'>
+                <p className='font-semibold text-sm'>Ravi Kumar</p>
+                <p className='text-xs text-muted-foreground flex items-center gap-1'>
+                  <Phone className='size-3' /> +91 98765 43210 · Scooter
+                </p>
+              </div>
+              <div className='flex gap-2 shrink-0'>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  className='gap-1.5'
+                  onClick={() => toast.success('Calling Ravi Kumar...')}
+                >
+                  <Phone className='size-3.5' /> Call
+                </Button>
+                <Button
+                  size='sm'
+                  className='gap-1.5'
+                  onClick={() => toast.success('Opening chat with Ravi Kumar...')}
+                >
+                  <MessageSquare className='size-3.5' /> Chat
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* 5. Action Buttons */}
+      <motion.div {...fadeInUp} transition={{ delay: 0.2 }} className='flex flex-col sm:flex-row gap-3'>
+        <Button
+          variant='outline'
+          className='gap-2'
+          onClick={() => toast.info('Our support team will contact you shortly.')}
+        >
+          <HelpCircle className='size-4' /> Need Help?
+        </Button>
+        <Button
+          variant='outline'
+          className='gap-2 text-destructive hover:text-destructive hover:bg-destructive/10'
+          onClick={() => toast.info('Cancellation request submitted.')}
+        >
+          Cancel Order
+        </Button>
+        <Button
+          className='gap-2 ml-auto'
+          onClick={() => toast.success('Invoice downloaded')}
+        >
+          <Download className='size-4' /> Download Invoice
+        </Button>
       </motion.div>
     </div>
   );
