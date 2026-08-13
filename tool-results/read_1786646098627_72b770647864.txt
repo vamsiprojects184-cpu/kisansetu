@@ -1,0 +1,408 @@
+     1→     1→     1→import type {
+     2→     2→     2→  User, Farm, Crop, CropRecommendation, SoilHealth, WeatherData, DailyForecast,
+     3→     3→     3→  MarketPrice, MarketPrediction, Product, CollectionCenter, DiseaseDetection,
+     4→     4→     4→  FertilizerRecommendation, IrrigationStatus, QualityCheck, Order, Notification,
+     5→     5→     5→  AdminStats, ChatMessage, CropStage
+     6→     6→     6→} from '@/types';
+     7→     7→     7→
+     8→     8→     8→// ============== DEMO USERS ==============
+     9→     9→     9→export const demoUsers: Record<string, User> = {
+    10→    10→    10→  farmer: {
+    11→    11→    11→    id: 'f1', name: 'Vamsi Krishna', email: 'vamsi@farm.ai', phone: '+91 9876543210',
+    12→    12→    12→    role: 'farmer', language: 'en', location: 'Siddipet, Telangana',
+    13→    13→    13→    state: 'Telangana', district: 'Siddipet', village: 'Gajwel',
+    14→    14→    14→    isOnboarded: true, joinedDate: '2024-06-15',
+    15→    15→    15→  },
+    16→    16→    16→  consumer: {
+    17→    17→    17→    id: 'c1', name: 'Priya Sharma', email: 'priya@gmail.com', phone: '+91 9123456789',
+    18→    18→    18→    role: 'consumer', language: 'en', location: 'Hyderabad, Telangana',
+    19→    19→    19→    state: 'Telangana', district: 'Hyderabad', isOnboarded: true, joinedDate: '2024-09-01',
+    20→    20→    20→  },
+    21→    21→    21→  collection_center: {
+    22→    22→    22→    id: 'cc1', name: 'Rajesh Kumar', email: 'rajesh@greenagri.in', phone: '+91 9988776655',
+    23→    23→    23→    role: 'collection_center', language: 'en', location: 'Warangal, Telangana',
+    24→    24→    24→    state: 'Telangana', district: 'Warangal', isOnboarded: true, joinedDate: '2024-03-10',
+    25→    25→    25→  },
+    26→    26→    26→  expert: {
+    27→    27→    27→    id: 'e1', name: 'Dr. Anitha Reddy', email: 'anitha@agri-expert.in', phone: '+91 9876501234',
+    28→    28→    28→    role: 'expert', language: 'en', location: 'Hyderabad, Telangana',
+    29→    29→    29→    state: 'Telangana', district: 'Hyderabad', isOnboarded: true, joinedDate: '2024-01-20',
+    30→    30→    30→  },
+    31→    31→    31→  admin: {
+    32→    32→    32→    id: 'a1', name: 'Admin User', email: 'admin@krishiai.com', phone: '+91 9000000001',
+    33→    33→    33→    role: 'admin', language: 'en', location: 'Hyderabad, Telangana',
+    34→    34→    34→    state: 'Telangana', district: 'Hyderabad', isOnboarded: true, joinedDate: '2023-01-01',
+    35→    35→    35→  },
+    36→    36→    36→};
+    37→    37→    37→
+    38→    38→    38→// ============== FARMS ==============
+    39→    39→    39→export const mockFarms: Farm[] = [
+    40→    40→    40→  {
+    41→    41→    41→    id: 'farm1', name: 'Green Valley Farm', farmerId: 'f1', location: 'Gajwel, Siddipet',
+    42→    42→    42→    state: 'Telangana', district: 'Siddipet', village: 'Gajwel', totalAcres: 5,
+    43→    43→    43→    irrigationAvailable: true, soilType: 'Red Sandy Loam', soilHealthScore: 82,
+    44→    44→    44→    activeCrops: [], createdAt: '2024-06-15',
+    45→    45→    45→  },
+    46→    46→    46→  {
+    47→    47→    47→    id: 'farm2', name: 'Cherry Blossom Acres', farmerId: 'f1', location: 'Wargal, Siddipet',
+    48→    48→    48→    state: 'Telangana', district: 'Siddipet', village: 'Wargal', totalAcres: 3,
+    49→    49→    49→    irrigationAvailable: true, soilType: 'Black Cotton Soil', soilHealthScore: 75,
+    50→    50→    50→    activeCrops: [], createdAt: '2024-08-01',
+    51→    51→    51→  },
+    52→    52→    52→];
+    53→    53→    53→
+    54→    54→    54→// ============== CROPS ==============
+    55→    55→    55→export const mockCrops: Crop[] = [
+    56→    56→    56→  {
+    57→    57→    57→    id: 'crop1', name: 'Tomato', nameLocal: 'టమాట', icon: '🍅', stage: 'flowering', health: 'healthy',
+    58→    58→    58→    plantedDate: '2024-11-01', expectedHarvestDate: '2025-02-15', daysToHarvest: 42,
+    59→    59→    59→    acres: 2, variety: 'Hybrid GT-4', expectedYield: 12000, expectedRevenue: 120000,
+    60→    60→    60→  },
+    61→    61→    61→  {
+    62→    62→    62→    id: 'crop2', name: 'Rice', nameLocal: 'వరి', icon: '🌾', stage: 'vegetative', health: 'healthy',
+    63→    63→    63→    plantedDate: '2024-10-15', expectedHarvestDate: '2025-02-28', daysToHarvest: 68,
+    64→    64→    64→    acres: 3, variety: 'BPT-5204 (Samba Masuri)', expectedYield: 7500, expectedRevenue: 150000,
+    65→    65→    65→  },
+    66→    66→    66→  {
+    67→    67→    67→    id: 'crop3', name: 'Chilli', nameLocal: 'మిర్చి', icon: '🌶️', stage: 'fruiting', health: 'moderate',
+    68→    68→    68→    plantedDate: '2024-09-01', expectedHarvestDate: '2025-01-15', daysToHarvest: 15,
+    69→    69→    69→    acres: 1.5, variety: 'Guntur Chilli', expectedYield: 3000, expectedRevenue: 90000,
+    70→    70→    70→  },
+    71→    71→    71→];
+    72→    72→    72→
+    73→    73→    73→mockFarms[0].activeCrops = [mockCrops[0], mockCrops[1]];
+    74→    74→    74→mockFarms[1].activeCrops = [mockCrops[2]];
+    75→    75→    75→
+    76→    76→    76→// ============== SOIL HEALTH ==============
+    77→    77→    77→export const mockSoilHealth: SoilHealth = {
+    78→    78→    78→  score: 82, grade: 'good',
+    79→    79→    79→  nitrogen: { value: 245, status: 'low', label: 'Low' },
+    80→    80→    80→  phosphorus: { value: 32, status: 'optimal', label: 'Optimal' },
+    81→    81→    81→  potassium: { value: 380, status: 'optimal', label: 'Optimal' },
+    82→    82→    82→  ph: 6.8, organicCarbon: 0.72, moisture: 34,
+    83→    83→    83→  lastTestDate: '2024-12-15',
+    84→    84→    84→  recommendations: [
+    85→    85→    85→    'Add organic compost to improve nitrogen levels',
+    86→    86→    86→    'Apply vermicompost at 2 tonnes per acre',
+    87→    87→    87→    'Consider green manuring with dhaincha crop',
+    88→    88→    88→    'Retest soil after 45 days of treatment',
+    89→    89→    89→  ],
+    90→    90→    90→  suitableCrops: ['Tomato', 'Brinjal', 'Chilli', 'Okra', 'Cotton'],
+    91→    91→    91→};
+    92→    92→    92→
+    93→    93→    93→// ============== WEATHER ==============
+    94→    94→    94→export const mockWeather: WeatherData = {
+    95→    95→    95→  temperature: 28, feelsLike: 30, condition: 'Partly Cloudy', icon: '⛅',
+    96→    96→    96→  humidity: 65, windSpeed: 12, windDirection: 'NE', rainProbability: 20,
+    97→    97→    97→  uvIndex: 6, location: 'Siddipet, Telangana',
+    98→    98→    98→};
+    99→    99→    99→
+   100→   100→   100→export const mockForecast: DailyForecast[] = [
+   101→   101→   101→  { date: '2025-01-06', day: 'Today', high: 32, low: 22, condition: 'Partly Cloudy', icon: '⛅', rainProbability: 20 },
+   102→   102→   102→  { date: '2025-01-07', day: 'Tue', high: 30, low: 21, condition: 'Light Rain', icon: '🌧️', rainProbability: 75, farmingAlert: 'Rain expected. Avoid fertilizer application.' },
+   103→   103→   103→  { date: '2025-01-08', day: 'Wed', high: 28, low: 20, condition: 'Heavy Rain', icon: '⛈️', rainProbability: 90, farmingAlert: 'Heavy rainfall expected. Avoid irrigation and field operations.' },
+   104→   104→   104→  { date: '2025-01-09', day: 'Thu', high: 27, low: 19, condition: 'Rainy', icon: '🌧️', rainProbability: 80 },
+   105→   105→   105→  { date: '2025-01-10', day: 'Fri', high: 29, low: 20, condition: 'Cloudy', icon: '☁️', rainProbability: 35 },
+   106→   106→   106→  { date: '2025-01-11', day: 'Sat', high: 31, low: 21, condition: 'Sunny', icon: '☀️', rainProbability: 10 },
+   107→   107→   107→  { date: '2025-01-12', day: 'Sun', high: 33, low: 22, condition: 'Sunny', icon: '☀️', rainProbability: 5 },
+   108→   108→   108→];
+   109→   109→   109→
+   110→   110→   110→// ============== CROP RECOMMENDATIONS ==============
+   111→   111→   111→export const mockCropRecommendations: CropRecommendation[] = [
+   112→   112→   112→  {
+   113→   113→   113→    id: 'rec1', cropName: 'Tomato', icon: '🍅', suitability: 92, expectedRevenue: '₹1.2L',
+   114→   114→   114→    expectedYield: '12,000 kg/acre', waterRequirement: 'medium', risk: 'medium',
+   115→   115→   115→    growingDuration: '90-120 days', season: 'rabi',
+   116→   116→   116→    reasons: ['Soil pH (6.8) is ideal for tomato cultivation', 'Current season favorable for tomato', 'Strong market demand in nearby cities', 'Your experience with tomato cultivation'],
+   117→   117→   117→    marketOpportunity: 'High demand in Hyderabad markets. Price trend is upward due to seasonal shortage.',
+   118→   118→   118→    investment: '₹25,000-30,000 per acre',
+   119→   119→   119→  },
+   120→   120→   120→  {
+   121→   121→   121→    id: 'rec2', cropName: 'Brinjal', icon: '🍆', suitability: 88, expectedRevenue: '₹95K',
+   122→   122→   122→    expectedYield: '8,000 kg/acre', waterRequirement: 'medium', risk: 'low',
+   123→   123→   123→    growingDuration: '100-130 days', season: 'rabi',
+   124→   124→   124→    reasons: ['Soil type is well-suited for brinjal', 'Low disease risk in current conditions', 'Consistent market demand year-round', 'Good companion crop with tomato'],
+   125→   125→   125→    marketOpportunity: 'Stable prices with consistent demand. Less price fluctuation compared to tomato.',
+   126→   126→   126→    investment: '₹20,000-25,000 per acre',
+   127→   127→   127→  },
+   128→   128→   128→  {
+   129→   129→   129→    id: 'rec3', cropName: 'Cotton', icon: '🧵', suitability: 85, expectedRevenue: '₹1.5L',
+   130→   130→   130→    expectedYield: '1,500 kg/acre', waterRequirement: 'low', risk: 'medium',
+   131→   131→   131→    growingDuration: '150-180 days', season: 'kharif',
+   132→   132→   132→    reasons: ['Red sandy loam soil is excellent for cotton', 'Low water requirement matches your irrigation', 'MSP guarantee provides price safety', 'Good previou yield history in your region'],
+   133→   133→   133→    marketOpportunity: 'Government MSP of ₹7,521/quintal. Strong demand from textile mills.',
+   134→   134→   134→    investment: '₹35,000-40,000 per acre',
+   135→   135→   135→  },
+   136→   136→   136→  {
+   137→   137→   137→    id: 'rec4', cropName: 'Maize', icon: '🌽', suitability: 80, expectedRevenue: '₹75K',
+   138→   138→   138→    expectedYield: '3,500 kg/acre', waterRequirement: 'medium', risk: 'low',
+   139→   139→   139→    growingDuration: '90-100 days', season: 'rabi',
+   140→   140→   140→    reasons: ['Quick growing cycle allows double cropping', 'Low pest and disease pressure', 'Good market for poultry feed industry', 'Improves soil health as rotation crop'],
+   141→   141→   141→    marketOpportunity: 'Steady demand from poultry and starch industries. Multiple harvests possible.',
+   142→   142→   142→    investment: '₹18,000-22,000 per acre',
+   143→   143→   143→  },
+   144→   144→   144→  {
+   145→   145→   145→    id: 'rec5', cropName: 'Onion', icon: '🧅', suitability: 78, expectedRevenue: '₹1.1L',
+   146→   146→   146→    expectedYield: '15,000 kg/acre', waterRequirement: 'medium', risk: 'high',
+   147→   147→   147→    growingDuration: '120-150 days', season: 'rabi',
+   148→   148→   148→    reasons: ['High profit potential in current market', 'Your soil drainage is suitable', 'Good storage capability after harvest', 'Regional climate favors onion cultivation'],
+   149→   149→   149→    marketOpportunity: 'Price volatility is high - can range from ₹15-80/kg. Timing of harvest is critical.',
+   150→   150→   150→    investment: '₹22,000-28,000 per acre',
+   151→   151→   151→  },
+   152→   152→   152→  {
+   153→   153→   153→    id: 'rec6', cropName: 'Okra (Bhindi)', icon: '🥬', suitability: 76, expectedRevenue: '₹65K',
+   154→   154→   154→    expectedYield: '6,000 kg/acre', waterRequirement: 'medium', risk: 'low',
+   155→   155→   155→    growingDuration: '50-65 days', season: 'year_round',
+   156→   156→   156→    reasons: ['Short duration crop for quick returns', 'Continuous harvesting over 2-3 months', 'Low investment requirement', 'Good demand throughout the year'],
+   157→   157→   157→    marketOpportunity: 'Consistent demand. Can be harvested multiple times from single planting.',
+   158→   158→   158→    investment: '₹12,000-15,000 per acre',
+   159→   159→   159→  },
+   160→   160→   160→];
+   161→   161→   161→
+   162→   162→   162→// ============== MARKET PRICES ==============
+   163→   163→   163→export const mockMarketPrices: MarketPrice[] = [
+   164→   164→   164→  { crop: 'Tomato', price: 28, unit: 'kg', change: 2.5, changePercent: 8, market: 'Hyderabad', date: '2025-01-06' },
+   165→   165→   165→  { crop: 'Rice', price: 32, unit: 'kg', change: -0.5, changePercent: -1.5, market: 'Warangal', date: '2025-01-06' },
+   166→   166→   166→  { crop: 'Chilli', price: 180, unit: 'kg', change: 12, changePercent: 7, market: 'Guntur', date: '2025-01-06' },
+   167→   167→   167→  { crop: 'Onion', price: 35, unit: 'kg', change: -8, changePercent: -18, market: 'Hyderabad', date: '2025-01-06' },
+   168→   168→   168→  { crop: 'Cotton', price: 7521, unit: 'quintal', change: 120, changePercent: 1.6, market: 'Adilabad', date: '2025-01-06' },
+   169→   169→   169→  { crop: 'Maize', price: 22, unit: 'kg', change: 1, changePercent: 4.8, market: 'Karimnagar', date: '2025-01-06' },
+   170→   170→   170→  { crop: 'Brinjal', price: 25, unit: 'kg', change: 3, changePercent: 12, market: 'Hyderabad', date: '2025-01-06' },
+   171→   171→   171→  { crop: 'Potato', price: 20, unit: 'kg', change: -2, changePercent: -9, market: 'Hyderabad', date: '2025-01-06' },
+   172→   172→   172→];
+   173→   173→   173→
+   174→   174→   174→export const mockMarketPrediction: MarketPrediction = {
+   175→   175→   175→  outlook: 'Tomato prices may increase over the next 7-14 days due to reduced supply from Maharashtra and Karnataka regions. Cold wave conditions in northern markets are driving demand up.',
+   176→   176→   176→  direction: 'up', confidence: 'high', timeframe: '7-14 days',
+   177→   177→   177→  factors: ['Reduced supply from Maharashtra', 'Cold wave increasing demand', 'Transport disruptions in Karnataka', 'Festival season demand pickup'],
+   178→   178→   178→};
+   179→   179→   179→
+   180→   180→   180→export const priceHistory = {
+   181→   181→   181→  tomato: [
+   182→   182→   182→    { week: 'W1', price: 22 }, { week: 'W2', price: 20 }, { week: 'W3', price: 18 },
+   183→   183→   183→    { week: 'W4', price: 21 }, { week: 'W5', price: 24 }, { week: 'W6', price: 25.5 },
+   184→   184→   184→    { week: 'W7', price: 28 },
+   185→   185→   185→  ],
+   186→   186→   186→  chilli: [
+   187→   187→   187→    { week: 'W1', price: 160 }, { week: 'W2', price: 155 }, { week: 'W3', price: 148 },
+   188→   188→   188→    { week: 'W4', price: 152 }, { week: 'W5', price: 165 }, { week: 'W6', price: 172 },
+   189→   189→   189→    { week: 'W7', price: 180 },
+   190→   190→   190→  ],
+   191→   191→   191→  onion: [
+   192→   192→   192→    { week: 'W1', price: 50 }, { week: 'W2', price: 48 }, { week: 'W3', price: 42 },
+   193→   193→   193→    { week: 'W4', price: 38 }, { week: 'W5', price: 40 }, { week: 'W6', price: 37 },
+   194→   194→   194→    { week: 'W7', price: 35 },
+   195→   195→   195→  ],
+   196→   196→   196→};
+   197→   197→   197→
+   198→   198→   198→// ============== SEED PRODUCTS ==============
+   199→   199→   199→export const mockSeedProducts: Product[] = [
+   200→   200→   200→  { id: 's1', name: 'Tomato Hybrid GT-4 Seeds', category: 'Vegetables', price: 450, unit: 'packet', rating: 4.5, reviewCount: 234, inStock: true, isCertified: true, germination: '95%', description: 'High-yielding hybrid tomato seeds suitable for rabi season. Resistant to common diseases.' },
+   201→   201→   201→  { id: 's2', name: 'Rice BPT-5204 Seeds', category: 'Grains', price: 380, unit: 'kg', rating: 4.7, reviewCount: 567, inStock: true, isCertified: true, germination: '92%', description: 'Premium Samba Masuri variety. Fine grain quality with excellent cooking properties.' },
+   202→   202→   202→  { id: 's3', name: 'Guntur Chilli Seeds', category: 'Vegetables', price: 520, unit: 'packet', rating: 4.3, reviewCount: 189, inStock: true, isCertified: true, germination: '88%', description: 'Authentic Guntur chilli variety known for high pungency and bright red color.' },
+   203→   203→   203→  { id: 's4', name: 'Cotton Bt Hybrid Seeds', category: 'Fibers', price: 820, unit: 'packet', rating: 4.6, reviewCount: 321, inStock: true, isCertified: true, germination: '90%', description: 'Bt cotton hybrid with high boll weight and excellent fiber quality.' },
+   204→   204→   204→  { id: 's5', name: 'Maize Hybrid 900M Seeds', category: 'Grains', price: 350, unit: 'packet', rating: 4.4, reviewCount: 145, inStock: true, isCertified: true, germination: '93%', description: 'High-yielding maize hybrid suitable for both rabi and kharif seasons.' },
+   205→   205→   205→  { id: 's6', name: 'Brinjal Purple Long Seeds', category: 'Vegetables', price: 280, unit: 'packet', rating: 4.2, reviewCount: 98, inStock: true, isCertified: true, germination: '90%', description: 'Long purple brinjal variety with excellent shelf life and taste.' },
+   206→   206→   206→  { id: 's7', name: 'Onion N-53 Seeds', category: 'Vegetables', price: 320, unit: 'packet', rating: 4.1, reviewCount: 76, inStock: true, isCertified: true, germination: '85%', description: 'Medium-sized onion variety with good storage quality.' },
+   207→   207→   207→  { id: 's8', name: 'Okra Pusa Sawani Seeds', category: 'Vegetables', price: 200, unit: 'packet', rating: 4.5, reviewCount: 210, inStock: true, isCertified: true, germination: '92%', description: 'Popular okra variety with tender pods and high yield potential.' },
+   208→   208→   208→  { id: 's9', name: 'Organic Tomato Seeds', category: 'Organic', price: 580, unit: 'packet', rating: 4.8, reviewCount: 56, inStock: true, isCertified: true, germination: '88%', description: 'Certified organic tomato seeds. No chemical treatment.' },
+   209→   209→   209→  { id: 's10', name: 'Watermelon Sugar Baby Seeds', category: 'Fruits', price: 390, unit: 'packet', rating: 4.3, reviewCount: 87, inStock: false, isCertified: true, germination: '87%', description: 'Compact watermelon variety perfect for small farms. Sweet and early maturing.' },
+   210→   210→   210→];
+   211→   211→   211→
+   212→   212→   212→// ============== CONSUMER PRODUCTS ==============
+   213→   213→   213→export const mockConsumerProducts: Product[] = [
+   214→   214→   214→  { id: 'p1', name: 'Fresh Tomatoes', category: 'Vegetables', price: 40, unit: 'kg', rating: 4.6, reviewCount: 89, farmer: 'Green Valley Farm', farmerLocation: 'Siddipet, Telangana', qualityScore: 91, harvestDate: '2025-01-05', inStock: true, isCertified: true, description: 'Farm-fresh tomatoes, hand-picked at peak ripeness.' },
+   215→   215→   215→  { id: 'p2', name: 'Premium Basmati Rice', category: 'Grains', price: 85, unit: 'kg', rating: 4.8, reviewCount: 234, farmer: 'Rajesh Farms', farmerLocation: 'Karimnagar, Telangana', qualityScore: 95, harvestDate: '2024-12-20', inStock: true, isCertified: true, description: 'Aromatic basmati rice, aged for 6 months for perfect flavor.' },
+   216→   216→   216→  { id: 'p3', name: 'Red Chilli Powder', category: 'Spices', price: 320, unit: 'kg', rating: 4.7, reviewCount: 456, farmer: 'Spice Coop', farmerLocation: 'Guntur, Andhra Pradesh', qualityScore: 93, harvestDate: '2025-01-01', inStock: true, isCertified: true, description: 'Pure Guntur chilli powder, no additives. Rich red color and heat.' },
+   217→   217→   217→  { id: 'p4', name: 'Fresh Brinjal', category: 'Vegetables', price: 35, unit: 'kg', rating: 4.4, reviewCount: 67, farmer: 'Green Valley Farm', farmerLocation: 'Siddipet, Telangana', qualityScore: 88, harvestDate: '2025-01-05', inStock: true, isCertified: true, description: 'Fresh purple brinjal, harvested daily from local farms.' },
+   218→   218→   218→  { id: 'p5', name: 'Organic Onions', category: 'Vegetables', price: 45, unit: 'kg', rating: 4.5, reviewCount: 123, farmer: 'Organic Acres', farmerLocation: 'Nizamabad, Telangana', qualityScore: 90, harvestDate: '2025-01-04', inStock: true, isCertified: true, description: 'Certified organic onions, naturally grown without chemicals.' },
+   219→   219→   219→  { id: 'p6', name: 'Farm Fresh Eggs', category: 'Dairy', price: 80, unit: 'dozen', rating: 4.7, reviewCount: 345, farmer: 'Happy Hens Farm', farmerLocation: 'Medak, Telangana', qualityScore: 94, harvestDate: '2025-01-06', inStock: true, isCertified: true, description: 'Free-range country eggs from healthy, naturally fed hens.' },
+   220→   220→   220→  { id: 'p7', name: 'Fresh Green Chillies', category: 'Vegetables', price: 60, unit: 'kg', rating: 4.3, reviewCount: 78, farmer: 'Green Valley Farm', farmerLocation: 'Siddipet, Telangana', qualityScore: 87, harvestDate: '2025-01-05', inStock: true, isCertified: true, description: 'Fresh green chillies, medium spicy, perfect for daily cooking.' },
+   221→   221→   221→  { id: 'p8', name: 'Raw Cotton (Kapas)', category: 'Fibers', price: 7500, unit: 'quintal', rating: 4.6, reviewCount: 34, farmer: 'Cotton Belt Farm', farmerLocation: 'Adilabad, Telangana', qualityScore: 92, harvestDate: '2024-12-15', inStock: true, isCertified: true, description: 'Premium quality raw cotton, high staple length.' },
+   222→   222→   222→];
+   223→   223→   223→
+   224→   224→   224→// ============== COLLECTION CENTERS ==============
+   225→   225→   225→export const mockCollectionCenters: CollectionCenter[] = [
+   226→   226→   226→  {
+   227→   227→   227→    id: 'cc1', name: 'GreenAgri Collection Center', address: 'Main Road, Warangal Urban, Telangana',
+   228→   228→   228→    distance: 4.2, isOpen: true, acceptedCrops: ['Tomato', 'Chilli', 'Onion', 'Brinjal'],
+   229→   229→   229→    operatingHours: '6:00 AM - 8:00 PM', currentCapacity: 65, maxCapacity: 100, phone: '+91 98765 43210',
+   230→   230→   230→  },
+   231→   231→   231→  {
+   232→   232→   232→    id: 'cc2', name: 'Krishna Agri Hub', address: 'Station Road, Karimnagar, Telangana',
+   233→   233→   233→    distance: 12.5, isOpen: true, acceptedCrops: ['Rice', 'Maize', 'Cotton'],
+   234→   234→   234→    operatingHours: '7:00 AM - 6:00 PM', currentCapacity: 40, maxCapacity: 80, phone: '+91 87654 32109',
+   235→   235→   235→  },
+   236→   236→   236→  {
+   237→   237→   237→    id: 'cc3', name: 'Farm Fresh Mandi', address: 'Market Yard, Siddipet, Telangana',
+   238→   238→   238→    distance: 2.1, isOpen: false, acceptedCrops: ['Tomato', 'Brinjal', 'Okra', 'Onion'],
+   239→   239→   239→    operatingHours: '5:00 AM - 2:00 PM', currentCapacity: 80, maxCapacity: 100, phone: '+91 76543 21098',
+   240→   240→   240→  },
+   241→   241→   241→  {
+   242→   242→   242→    id: 'cc4', name: 'Telangana Agri Market', address: 'Industrial Area, Hyderabad, Telangana',
+   243→   243→   243→    distance: 45, isOpen: true, acceptedCrops: ['All Vegetables', 'All Grains', 'Spices'],
+   244→   244→   244→    operatingHours: '6:00 AM - 10:00 PM', currentCapacity: 30, maxCapacity: 200, phone: '+91 65432 10987',
+   245→   245→   245→  },
+   246→   246→   246→];
+   247→   247→   247→
+   248→   248→   248→// ============== DISEASE DETECTION ==============
+   249→   249→   249→export const mockDiseaseResult: DiseaseDetection = {
+   250→   250→   250→  id: 'd1', diseaseName: 'Early Blight', confidence: 91, severity: 'moderate',
+   251→   251→   251→  cropName: 'Tomato',
+   252→   252→   252→  description: 'Early blight is a common fungal disease affecting tomato plants, caused by Alternaria solani. It typically appears as dark, concentric ring-shaped spots on older leaves.',
+   253→   253→   253→  causes: ['High humidity conditions', 'Overhead irrigation', 'Poor air circulation', 'Nitrogen deficiency'],
+   254→   254→   254→  recommendedActions: [
+   255→   255→   255→    'Remove and destroy affected leaves immediately',
+   256→   256→   256→    'Apply copper-based fungicide (Bordeaux mixture)',
+   257→   257→   257→    'Improve air circulation by proper plant spacing',
+   258→   258→   258→    'Avoid overhead irrigation - use drip irrigation instead',
+   259→   259→   259→    'Apply neem oil spray as organic treatment',
+   260→   260→   260→  ],
+   261→   261→   261→  preventionTips: [
+   262→   262→   262→    'Practice crop rotation (3-year cycle)',
+   263→   263→   263→    'Use resistant tomato varieties',
+   264→   264→   264→    'Ensure proper plant spacing (60cm between plants)',
+   265→   265→   265→    'Apply preventive fungicide before rainy season',
+   266→   266→   266→    'Keep foliage dry during irrigation',
+   267→   267→   267→  ],
+   268→   268→   268→  detectedAt: '2025-01-06T10:30:00', needsExpertReview: false,
+   269→   269→   269→};
+   270→   270→   270→
+   271→   271→   271→// ============== FERTILIZER RECOMMENDATIONS ==============
+   272→   272→   272→export const mockFertilizerRecs: FertilizerRecommendation[] = [
+   273→   273→   273→  {
+   274→   274→   274→    id: 'fr1', stage: 'planting', nutrient: 'DAP (Di-ammonium Phosphate)', quantity: '50 kg/acre',
+   275→   275→   275→    applicationMethod: 'Basal application - mix into soil before planting', timing: 'At planting',
+   276→   276→   276→    product: 'Indian Potash Limited DAP',
+   277→   277→   277→  },
+   278→   278→   278→  {
+   279→   279→   279→    id: 'fr2', stage: 'vegetative', nutrient: 'Urea', quantity: '25 kg/acre',
+   280→   280→   280→    applicationMethod: 'Top dressing - apply around plant base and water', timing: '20 days after planting',
+   281→   281→   281→    warning: 'Do not apply during rainy conditions to prevent leaching',
+   282→   282→   282→    product: 'IFFCO Urea',
+   283→   283→   283→  },
+   284→   284→   284→  {
+   285→   285→   285→    id: 'fr3', stage: 'flowering', nutrient: 'NPK 10:26:26', quantity: '30 kg/acre',
+   286→   286→   286→    applicationMethod: 'Side dressing along rows, then irrigate', timing: 'At first flowering',
+   287→   287→   287→    warning: 'Excess nitrogen can reduce fruit set',
+   288→   288→   288→    product: 'Coromandel International',
+   289→   289→   289→  },
+   290→   290→   290→  {
+   291→   291→   291→    id: 'fr4', stage: 'fruiting', nutrient: 'Potash (MOP)', quantity: '20 kg/acre',
+   292→   292→   292→    applicationMethod: 'Dissolve in water and apply through drip irrigation', timing: 'At fruit setting stage',
+   293→   293→   293→    product: 'Tata Potash',
+   294→   294→   294→  },
+   295→   295→   295→  {
+   296→   296→   296→    id: 'fr5', stage: 'harvest', nutrient: 'None required', quantity: '-',
+   297→   297→   297→    applicationMethod: '-', timing: 'Pre-harvest',
+   298→   298→   298→    warning: 'Stop all fertilizer application 15 days before harvest',
+   299→   299→   299→    product: '-',
+   300→   300→   300→  },
+   301→   301→   301→];
+   302→   302→   302→
+   303→   303→   303→// ============== IRRIGATION STATUS ==============
+   304→   304→   304→export const mockIrrigationStatus: IrrigationStatus = {
+   305→   305→   305→  required: true, recommendedWater: 1200, bestTime: '6:00 AM – 8:00 AM',
+   306→   306→   306→  soilMoisture: 32,
+   307→   307→   307→  factors: {
+   308→   308→   308→    soilMoisture: { value: 32, status: 'Low' },
+   309→   309→   309→    temperature: { value: 28, status: 'Normal' },
+   310→   310→   310→    rainProbability: { value: 20, status: 'Low' },
+   311→   311→   311→    cropStage: { value: 'Flowering', status: 'Critical' },
+   312→   312→   312→  },
+   313→   313→   313→  aiExplanation: 'Your tomato crop is in the flowering stage which requires consistent moisture. Soil moisture is below optimal at 32%. With low rain probability tomorrow, irrigation is recommended. Drip irrigation at 1200 liters will maintain ideal soil moisture for fruit set.',
+   314→   314→   314→};
+   315→   315→   315→
+   316→   316→   316→// ============== ORDERS ==============
+   317→   317→   317→export const mockOrders: Order[] = [
+   318→   318→   318→  {
+   319→   319→   319→    id: 'ORD-2025-001',
+   320→   320→   320→    items: [{ product: mockConsumerProducts[0], quantity: 5 }, { product: mockConsumerProducts[3], quantity: 2 }],
+   321→   321→   321→    total: 270, status: 'delivered', createdAt: '2024-12-28',
+   322→   322→   322→    deliveryAddress: 'Flat 302, Green Towers, Madhapur, Hyderabad',
+   323→   323→   323→    deliveryMethod: 'Express Delivery', paymentMethod: 'UPI',
+   324→   324→   324→    estimatedDelivery: '2024-12-30',
+   325→   325→   325→    trackingSteps: [
+   326→   326→   326→      { status: 'placed', label: 'Order Placed', completed: true, time: 'Dec 28, 10:30 AM' },
+   327→   327→   327→      { status: 'preparing', label: 'Preparing', completed: true, time: 'Dec 28, 11:00 AM' },
+   328→   328→   328→      { status: 'quality_verified', label: 'Quality Verified', completed: true, time: 'Dec 28, 2:00 PM' },
+   329→   329→   329→      { status: 'out_for_delivery', label: 'Out for Delivery', completed: true, time: 'Dec 30, 8:00 AM' },
+   330→   330→   330→      { status: 'delivered', label: 'Delivered', completed: true, time: 'Dec 30, 10:30 AM' },
+   331→   331→   331→    ],
+   332→   332→   332→  },
+   333→   333→   333→  {
+   334→   334→   334→    id: 'ORD-2025-002',
+   335→   335→   335→    items: [{ product: mockConsumerProducts[5], quantity: 3 }],
+   336→   336→   336→    total: 240, status: 'out_for_delivery', createdAt: '2025-01-05',
+   337→   337→   337→    deliveryAddress: 'Flat 302, Green Towers, Madhapur, Hyderabad',
+   338→   338→   338→    deliveryMethod: 'Standard Delivery', paymentMethod: 'Cash on Delivery',
+   339→   339→   339→    estimatedDelivery: '2025-01-07',
+   340→   340→   340→    trackingSteps: [
+   341→   341→   341→      { status: 'placed', label: 'Order Placed', completed: true, time: 'Jan 5, 3:00 PM' },
+   342→   342→   342→      { status: 'preparing', label: 'Preparing', completed: true, time: 'Jan 5, 3:30 PM' },
+   343→   343→   343→      { status: 'quality_verified', label: 'Quality Verified', completed: true, time: 'Jan 6, 9:00 AM' },
+   344→   344→   344→      { status: 'out_for_delivery', label: 'Out for Delivery', completed: false, time: 'Jan 7, 8:00 AM' },
+   345→   345→   345→      { status: 'delivered', label: 'Delivered', completed: false },
+   346→   346→   346→    ],
+   347→   347→   347→  },
+   348→   348→   348→];
+   349→   349→   349→
+   350→   350→   350→// ============== QUALITY CHECKS ==============
+   351→   351→   351→export const mockQualityChecks: QualityCheck[] = [
+   352→   352→   352→  {
+   353→   353→   353→    id: 'qc1', productName: 'Tomato', farmerName: 'Vamsi Krishna', qualityScore: 91,
+   354→   354→   354→    grade: 'premium', freshness: 94, sizeConsistency: 88, appearance: 92, damageCheck: 90,
+   355→   355→   355→    verifiedAt: '2025-01-06', status: 'verified',
+   356→   356→   356→  },
+   357→   357→   357→  {
+   358→   358→   358→    id: 'qc2', productName: 'Chilli', farmerName: 'Ramesh Reddy', qualityScore: 78,
+   359→   359→   359→    grade: 'standard', freshness: 82, sizeConsistency: 70, appearance: 80, damageCheck: 80,
+   360→   360→   360→    verifiedAt: '2025-01-06', status: 'verified',
+   361→   361→   361→  },
+   362→   362→   362→  {
+   363→   363→   363→    id: 'qc3', productName: 'Brinjal', farmerName: 'Suresh Kumar', qualityScore: 0,
+   364→   364→   364→    grade: 'standard', freshness: 0, sizeConsistency: 0, appearance: 0, damageCheck: 0,
+   365→   365→   365→    verifiedAt: '', status: 'pending',
+   366→   366→   366→  },
+   367→   367→   367→];
+   368→   368→   368→
+   369→   369→   369→// ============== NOTIFICATIONS ==============
+   370→   370→   370→export const mockNotifications: Notification[] = [
+   371→   371→   371→  { id: 'n1', title: 'Weather Alert', message: 'Heavy rainfall expected tomorrow. Avoid fertilizer application.', type: 'warning', read: false, createdAt: '2025-01-06T09:00:00', icon: '🌧️' },
+   372→   372→   372→  { id: 'n2', title: 'Irrigation Reminder', message: 'Your tomato crop needs irrigation today. Best time: 6-8 AM.', type: 'alert', read: false, createdAt: '2025-01-06T08:00:00', icon: '💧' },
+   373→   373→   373→  { id: 'n3', title: 'Market Update', message: 'Tomato prices increased by 8% in Hyderabad market today.', type: 'success', read: false, createdAt: '2025-01-06T07:00:00', icon: '📈' },
+   374→   374→   374→  { id: 'n4', title: 'Order Delivered', message: 'Your order ORD-2025-001 has been delivered successfully.', type: 'success', read: true, createdAt: '2025-01-05T10:30:00', icon: '✅' },
+   375→   375→   375→  { id: 'n5', title: 'New AI Advisory', message: 'Dr. Reddy has published a new advisory on managing early blight in tomato.', type: 'info', read: true, createdAt: '2025-01-04T14:00:00', icon: '🔬' },
+   376→   376→   376→];
+   377→   377→   377→
+   378→   378→   378→// ============== ADMIN STATS ==============
+   379→   379→   379→export const mockAdminStats: AdminStats = {
+   380→   380→   380→  totalFarmers: 2847, activeFarms: 4231, totalUsers: 8934, totalOrders: 12450,
+   381→   381→   381→  marketplaceVolume: 2450000, diseaseReports: 156, collectionCenters: 24, revenue: 1850000,
+   382→   382→   382→  growth: { farmers: 12.5, orders: 18.3, revenue: 22.1 },
+   383→   383→   383→};
+   384→   384→   384→
+   385→   385→   385→// ============== AI CHAT MOCK ==============
+   386→   386→   386→export const mockChatResponses: Record<string, string> = {
+   387→   387→   387→  default: "I'd be happy to help with your farm! Could you please tell me more about what you'd like to know?",
+   388→   388→   388→  'what should i grow': 'Based on your soil health score of 82 and the current rabi season, I recommend **Tomato** (92% suitability) or **Brinjal** (88% suitability). Both match your soil type well and have strong market demand. Would you like detailed crop plans?',
+   389→   389→   389→  'is irrigation needed today': 'Yes, irrigation is recommended today. Your tomato crop is in the flowering stage and soil moisture is at 32% (below optimal). I recommend **1,200 liters** of water between **6:00 AM - 8:00 AM** using drip irrigation. Rain probability is only 20% tomorrow, so no natural relief expected.',
+   390→   390→   390→  'why are my leaves yellow': 'Yellowing leaves (chlorosis) can be caused by several factors: 1) **Nitrogen deficiency** - your soil test showed low nitrogen, 2) **Overwatering** - check soil drainage, 3) **Pest infestation** - inspect for mites or aphids. I recommend checking the leaves closely. Would you like to scan the leaves for disease detection?',
+   391→   391→   391→  'show today market prices': 'Here are today\'s prices in Hyderabad market: 🍅 Tomato ₹28/kg (↑8%), 🌶️ Chilli ₹180/kg (↑7%), 🧅 Onion ₹35/kg (↓18%), 🍆 Brinjal ₹25/kg (↑12%). AI predicts tomato prices may increase further in the next 7-14 days.',
+   392→   392→   392→  'hello': 'Good morning, Vamsi! 👋 How can I help with your farm today? You can ask me about crop recommendations, weather, market prices, disease detection, or any farming question.',
+   393→   393→   393→};
+   394→   394→   394→
+   395→   395→   395→export const mockChatHistory: ChatMessage[] = [
+   396→   396→   396→  { id: 'm1', role: 'assistant', content: 'Good morning, Vamsi! 👋 How can I help with your farm today?', timestamp: '2025-01-06T08:00:00' },
+   397→   397→   397→];
+   398→   398→   398→
+   399→   399→   399→// ============== EXPERT DISEASE CASES ==============
+   400→   400→   400→export const mockDiseaseCases = [
+   401→   401→   401→  { id: 'dc1', cropName: 'Tomato', farmerName: 'Ramesh Reddy', location: 'Warangal', confidence: 54, status: 'pending' as const, submittedAt: '2025-01-06T09:30:00' },
+   402→   402→   402→  { id: 'dc2', cropName: 'Rice', farmerName: 'Lakshmi Devi', location: 'Karimnagar', confidence: 42, status: 'pending' as const, submittedAt: '2025-01-06T08:15:00' },
+   403→   403→   403→  { id: 'dc3', cropName: 'Cotton', farmerName: 'Suresh Babu', location: 'Adilabad', confidence: 71, status: 'reviewed' as const, submittedAt: '2025-01-05T14:00:00' },
+   404→   404→   404→];
+   405→   405→   405→
+   406→   406→   406→// ============== HELPER ==============
+   407→   407→   407→export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+   408→   408→   408→

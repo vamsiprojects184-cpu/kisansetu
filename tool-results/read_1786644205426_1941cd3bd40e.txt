@@ -1,0 +1,1018 @@
+     1→'use client';
+     2→
+     3→import React, { useState } from 'react';
+     4→import { motion } from 'framer-motion';
+     5→import {
+     6→  Leaf, Bug, Mic, CloudSun, TrendingUp, ShoppingCart,
+     7→  MapPin, Droplets, Sprout, Clock, ChevronRight, Plus,
+     8→  Bell, ArrowLeft, Edit3, Check, X, LogOut, CreditCard,
+     9→  Package, Tractor, Activity,
+    10→  BarChart3, ThermometerSun, Layers, ArrowUpRight, ArrowDownRight,
+    11→} from 'lucide-react';
+    12→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    13→import { Button } from '@/components/ui/button';
+    14→import { Badge } from '@/components/ui/badge';
+    15→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    16→import { Input } from '@/components/ui/input';
+    17→import { Switch } from '@/components/ui/switch';
+    18→import { Separator } from '@/components/ui/separator';
+    19→import {
+    20→  WeatherCard, CropCard, MarketPriceCard, AIInsightCard,
+    21→  CircularProgress, SectionWrapper, PageHeader, fadeIn, fadeInUp,
+    22→} from '@/components/shared/SharedComponents';
+    23→import { useAppStore } from '@/store/use-app-store';
+    24→import { useAuthStore } from '@/store/use-auth-store';
+    25→import { useCartStore } from '@/store/use-cart-store';
+    26→import {
+    27→  mockWeather, mockCrops, mockFarms, mockMarketPrices,
+    28→  mockNotifications, mockSoilHealth,
+    29→} from '@/data/mock-data';
+    30→import type { RoutePath, OrderStatus } from '@/types';
+    31→import { cn } from '@/lib/utils';
+    32→import { toast } from 'sonner';
+    33→import {
+    34→  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+    35→  ResponsiveContainer,
+    36→} from 'recharts';
+    37→
+    38→// ============== HELPER ==============
+    39→const statusColor = (status: OrderStatus) => {
+    40→  const map: Record<OrderStatus, string> = {
+    41→    placed: 'bg-blue-100 text-blue-700',
+    42→    preparing: 'bg-amber-100 text-amber-700',
+    43→    quality_verified: 'bg-purple-100 text-purple-700',
+    44→    out_for_delivery: 'bg-orange-100 text-orange-700',
+    45→    delivered: 'bg-emerald-100 text-emerald-700',
+    46→    cancelled: 'bg-red-100 text-red-700',
+    47→  };
+    48→  return map[status] || 'bg-gray-100 text-gray-700';
+    49→};
+    50→
+    51→const statusLabel = (status: OrderStatus) => {
+    52→  const map: Record<OrderStatus, string> = {
+    53→    placed: 'Placed',
+    54→    preparing: 'Preparing',
+    55→    quality_verified: 'Quality Verified',
+    56→    out_for_delivery: 'Out for Delivery',
+    57→    delivered: 'Delivered',
+    58→    cancelled: 'Cancelled',
+    59→  };
+    60→  return map[status] || status;
+    61→};
+    62→
+    63→const notifIcon = (type: string) => {
+    64→  const map: Record<string, React.ReactNode> = {
+    65→    info: <Bell className='h-5 w-5 text-blue-500' />,
+    66→    warning: <CloudSun className='h-5 w-5 text-amber-500' />,
+    67→    success: <Check className='h-5 w-5 text-emerald-500' />,
+    68→    alert: <Activity className='h-5 w-5 text-red-500' />,
+    69→  };
+    70→  return map[type] || <Bell className='h-5 w-5 text-muted-foreground' />;
+    71→};
+    72→
+    73→// ============== 1. FARMER DASHBOARD ==============
+    74→export function FarmerDashboard() {
+    75→  const { navigate } = useAppStore();
+    76→
+    77→  const quickActions = [
+    78→    { label: 'Test Soil', icon: <Leaf className='h-6 w-6' />, route: 'farmer/soil-health' as RoutePath, color: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-200' },
+    79→    { label: 'Scan Crop', icon: <Bug className='h-6 w-6' />, route: 'farmer/disease-detection' as RoutePath, color: 'bg-orange-50 text-orange-600 hover:bg-orange-100 border-orange-200' },
+    80→    { label: 'Ask AI', icon: <Mic className='h-6 w-6' />, route: 'farmer/dashboard' as RoutePath, color: 'bg-purple-50 text-purple-600 hover:bg-purple-100 border-purple-200' },
+    81→    { label: 'Check Weather', icon: <CloudSun className='h-6 w-6' />, route: 'farmer/weather' as RoutePath, color: 'bg-sky-50 text-sky-600 hover:bg-sky-100 border-sky-200' },
+    82→    { label: 'Market Prices', icon: <TrendingUp className='h-6 w-6' />, route: 'farmer/market-prices' as RoutePath, color: 'bg-amber-50 text-amber-600 hover:bg-amber-100 border-amber-200' },
+    83→    { label: 'Sell Products', icon: <ShoppingCart className='h-6 w-6' />, route: 'farmer/sell' as RoutePath, color: 'bg-rose-50 text-rose-600 hover:bg-rose-100 border-rose-200' },
+    84→  ];
+    85→
+    86→  const upcomingTasks = [
+    87→    { text: 'Apply fertilizer to Tomato field', due: 'Tomorrow', icon: <Sprout className='h-4 w-4 text-emerald-500' /> },
+    88→    { text: 'Check irrigation schedule for Rice', due: 'Today, 6:00 PM', icon: <Droplets className='h-4 w-4 text-sky-500' /> },
+    89→    { text: 'Visit collection center for payment collection', due: 'Jan 8, 2025', icon: <CreditCard className='h-4 w-4 text-amber-500' /> },
+    90→  ];
+    91→
+    92→  return (
+    93→    <div className='space-y-6'>
+    94→      {/* Greeting */}
+    95→      <motion.div {...fadeInUp}>
+    96→        <h1 className='text-2xl font-bold tracking-tight'>Good Morning, Vamsi 👋</h1>
+    97→        <p className='text-muted-foreground mt-1'>Your farm is looking healthy today.</p>
+    98→      </motion.div>
+    99→
+   100→      {/* Summary Cards Row */}
+   101→      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+   102→        <WeatherCard
+   103→          temperature={mockWeather.temperature}
+   104→          condition={mockWeather.condition}
+   105→          icon={mockWeather.icon}
+   106→          rainProbability={mockWeather.rainProbability}
+   107→          humidity={mockWeather.humidity}
+   108→        />
+   109→
+   110→        <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.1 }}>
+   111→          <Card className='h-full'>
+   112→            <CardContent className='p-4 flex items-center gap-4'>
+   113→              <CircularProgress value={82} size={90} strokeWidth={8} label='82' sublabel='/ 100' />
+   114→              <div className='space-y-1'>
+   115→                <p className='text-sm text-muted-foreground'>Soil Health</p>
+   116→                <p className='text-lg font-semibold'>Good</p>
+   117→                <p className='text-xs text-muted-foreground'>Last tested: Dec 15</p>
+   118→                <Button
+   119→                  variant='link' className='text-primary p-0 h-auto text-sm'
+   120→                  onClick={() => navigate('farmer/soil-health')}
+   121→                >
+   122→                  View details →
+   123→                </Button>
+   124→              </div>
+   125→            </CardContent>
+   126→          </Card>
+   127→        </motion.div>
+   128→
+   129→        <AIInsightCard
+   130→          title='Weather Warning'
+   131→          message='Heavy rainfall expected tomorrow. Avoid fertilizer application and field operations. Consider covering sensitive crops.'
+   132→          type='warning'
+   133→          action='View forecast'
+   134→          onAction={() => navigate('farmer/weather')}
+   135→        />
+   136→      </div>
+   137→
+   138→      {/* Active Crops */}
+   139→      <SectionWrapper
+   140→        title='Active Crops'
+   141→        subtitle={`${mockCrops.length} crops across ${mockFarms.length} farms`}
+   142→        action={
+   143→          <Button variant='ghost' size='sm' className='text-primary' onClick={() => navigate('farmer/my-farm')}>
+   144→            View all <ChevronRight className='h-4 w-4 ml-1' />
+   145→          </Button>
+   146→        }
+   147→      >
+   148→        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+   149→          {mockCrops.map((crop) => (
+   150→            <CropCard
+   151→              key={crop.id}
+   152→              name={crop.name}
+   153→              icon={crop.icon}
+   154→              stage={crop.stage}
+   155→              health={crop.health}
+   156→              daysToHarvest={crop.daysToHarvest}
+   157→              onClick={() => navigate('farmer/farm-details')}
+   158→            />
+   159→          ))}
+   160→        </div>
+   161→      </SectionWrapper>
+   162→
+   163→      {/* Quick Actions */}
+   164→      <SectionWrapper title='Quick Actions' subtitle='Common farming tasks at your fingertips'>
+   165→        <div className='grid grid-cols-2 md:grid-cols-3 gap-3'>
+   166→          {quickActions.map((action) => (
+   167→            <motion.button
+   168→              key={action.label}
+   169→              whileHover={{ scale: 1.03 }}
+   170→              whileTap={{ scale: 0.97 }}
+   171→              onClick={() => navigate(action.route)}
+   172→              className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-colors ${action.color}`}
+   173→            >
+   174→              {action.icon}
+   175→              <span className='font-medium text-sm'>{action.label}</span>
+   176→            </motion.button>
+   177→          ))}
+   178→        </div>
+   179→      </SectionWrapper>
+   180→
+   181→      {/* Market Prices */}
+   182→      <SectionWrapper
+   183→        title='Market Prices'
+   184→        subtitle='Today&apos;s prices from nearby markets'
+   185→        action={
+   186→          <Button variant='ghost' size='sm' className='text-primary' onClick={() => navigate('farmer/market-prices')}>
+   187→            See all <ChevronRight className='h-4 w-4 ml-1' />
+   188→          </Button>
+   189→        }
+   190→      >
+   191→        <div className='grid grid-cols-2 lg:grid-cols-4 gap-3'>
+   192→          {mockMarketPrices.slice(0, 4).map((mp) => (
+   193→            <MarketPriceCard
+   194→              key={mp.crop}
+   195→              crop={mp.crop}
+   196→              price={mp.price}
+   197→              unit={mp.unit}
+   198→              change={mp.change}
+   199→              changePercent={mp.changePercent}
+   200→            />
+   201→          ))}
+   202→        </div>
+   203→      </SectionWrapper>
+   204→
+   205→      {/* Upcoming Tasks */}
+   206→      <SectionWrapper title='Upcoming Tasks' subtitle='Don&apos;t forget these important tasks'>
+   207→        <Card>
+   208→          <CardContent className='p-0'>
+   209→            <div className='divide-y'>
+   210→              {upcomingTasks.map((task, idx) => (
+   211→                <motion.div
+   212→                  key={idx}
+   213→                  initial={{ opacity: 0, x: -10 }}
+   214→                  animate={{ opacity: 1, x: 0 }}
+   215→                  transition={{ delay: idx * 0.1 }}
+   216→                  className='flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors'
+   217→                >
+   218→                  <div className='p-2 rounded-lg bg-muted'>{task.icon}</div>
+   219→                  <div className='flex-1 min-w-0'>
+   220→                    <p className='font-medium text-sm'>{task.text}</p>
+   221→                    <p className='text-xs text-muted-foreground'>{task.due}</p>
+   222→                  </div>
+   223→                  <ChevronRight className='h-4 w-4 text-muted-foreground' />
+   224→                </motion.div>
+   225→              ))}
+   226→            </div>
+   227→          </CardContent>
+   228→        </Card>
+   229→      </SectionWrapper>
+   230→    </div>
+   231→  );
+   232→}
+   233→
+   234→// ============== 2. MY FARM PAGE ==============
+   235→export function MyFarmPage() {
+   236→  const { navigate } = useAppStore();
+   237→
+   238→  const soilColor = (score: number) => {
+   239→    if (score >= 80) return 'bg-emerald-100 text-emerald-700';
+   240→    if (score >= 60) return 'bg-amber-100 text-amber-700';
+   241→    return 'bg-red-100 text-red-700';
+   242→  };
+   243→
+   244→  return (
+   245→    <div className='space-y-6'>
+   246→      <PageHeader title='My Farms' subtitle={`${mockFarms.length} farms registered`} />
+   247→
+   248→      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+   249→        {mockFarms.map((farm, idx) => (
+   250→          <motion.div
+   251→            key={farm.id}
+   252→            initial={{ opacity: 0, y: 20 }}
+   253→            animate={{ opacity: 1, y: 0 }}
+   254→            transition={{ delay: idx * 0.1 }}
+   255→          >
+   256→            <Card
+   257→              className='hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer h-full'
+   258→              onClick={() => navigate('farmer/farm-details')}
+   259→            >
+   260→              <CardHeader className='pb-2'>
+   261→                <div className='flex items-start justify-between'>
+   262→                  <div>
+   263→                    <CardTitle className='text-base'>{farm.name}</CardTitle>
+   264→                    <p className='text-sm text-muted-foreground flex items-center gap-1 mt-1'>
+   265→                      <MapPin className='h-3 w-3' /> {farm.location}
+   266→                    </p>
+   267→                  </div>
+   268→                  <Badge className={soilColor(farm.soilHealthScore)} variant='secondary'>
+   269→                    {farm.soilHealthScore}/100
+   270→                  </Badge>
+   271→                </div>
+   272→              </CardHeader>
+   273→              <CardContent className='pt-0'>
+   274→                <div className='grid grid-cols-2 gap-3 text-sm'>
+   275→                  <div className='flex items-center gap-2'>
+   276→                    <Layers className='h-4 w-4 text-muted-foreground' />
+   277→                    <span>{farm.totalAcres} acres</span>
+   278→                  </div>
+   279→                  <div className='flex items-center gap-2'>
+   280→                    <Sprout className='h-4 w-4 text-muted-foreground' />
+   281→                    <span>{farm.activeCrops.length} active crops</span>
+   282→                  </div>
+   283→                  <div className='flex items-center gap-2'>
+   284→                    <Droplets className='h-4 w-4 text-muted-foreground' />
+   285→                    <span>{farm.irrigationAvailable ? 'Irrigated' : 'Rain-fed'}</span>
+   286→                  </div>
+   287→                  <div className='flex items-center gap-2'>
+   288→                    <Tractor className='h-4 w-4 text-muted-foreground' />
+   289→                    <span>{farm.soilType}</span>
+   290→                  </div>
+   291→                </div>
+   292→                <div className='flex items-center justify-end mt-3 text-primary text-sm font-medium'>
+   293→                  View details <ChevronRight className='h-4 w-4 ml-1' />
+   294→                </div>
+   295→              </CardContent>
+   296→            </Card>
+   297→          </motion.div>
+   298→        ))}
+   299→
+   300→        {/* Add New Farm Card */}
+   301→        <motion.div
+   302→          initial={{ opacity: 0, y: 20 }}
+   303→          animate={{ opacity: 1, y: 0 }}
+   304→          transition={{ delay: mockFarms.length * 0.1 }}
+   305→        >
+   306→          <Card
+   307→            className='border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-muted/30 transition-all cursor-pointer h-full flex items-center justify-center min-h-[180px]'
+   308→            onClick={() => toast.success('Add farm feature coming soon!')}
+   309→          >
+   310→            <CardContent className='flex flex-col items-center gap-2 text-muted-foreground'>
+   311→              <div className='p-3 rounded-full bg-muted'>
+   312→                <Plus className='h-6 w-6' />
+   313→              </div>
+   314→              <p className='font-medium'>Add New Farm</p>
+   315→              <p className='text-xs text-muted-foreground'>Register a new farm</p>
+   316→            </CardContent>
+   317→          </Card>
+   318→        </motion.div>
+   319→      </div>
+   320→    </div>
+   321→  );
+   322→}
+   323→
+   324→// ============== 3. FARM DETAILS PAGE ==============
+   325→export function FarmDetailsPage() {
+   326→  const { navigate } = useAppStore();
+   327→  const farm = mockFarms[0];
+   328→  const [activeTab, setActiveTab] = useState('overview');
+   329→
+   330→  const monthlyData = [
+   331→    { month: 'Aug', yield: 1200, revenue: 28000 },
+   332→    { month: 'Sep', yield: 1450, revenue: 34000 },
+   333→    { month: 'Oct', yield: 1100, revenue: 26000 },
+   334→    { month: 'Nov', yield: 1600, revenue: 38000 },
+   335→    { month: 'Dec', yield: 1350, revenue: 32000 },
+   336→    { month: 'Jan', yield: 1800, revenue: 42000 },
+   337→  ];
+   338→
+   339→  const activities = [
+   340→    { date: 'Dec 28, 2024', text: 'Applied pesticide to Tomato field', icon: <Bug className='h-4 w-4 text-orange-500' /> },
+   341→    { date: 'Dec 15, 2024', text: 'Soil health test completed — Score: 82', icon: <Activity className='h-4 w-4 text-emerald-500' /> },
+   342→    { date: 'Dec 1, 2024', text: 'Irrigated Rice field — 1200L', icon: <Droplets className='h-4 w-4 text-sky-500' /> },
+   343→    { date: 'Nov 15, 2024', text: 'Applied fertilizer to Tomato field', icon: <Sprout className='h-4 w-4 text-green-500' /> },
+   344→    { date: 'Nov 1, 2024', text: 'Planted Tomato (Hybrid GT-4)', icon: <Leaf className='h-4 w-4 text-emerald-600' /> },
+   345→    { date: 'Oct 15, 2024', text: 'Planted Rice (BPT-5204)', icon: <Leaf className='h-4 w-4 text-emerald-600' /> },
+   346→    { date: 'Oct 1, 2024', text: 'Land preparation completed', icon: <Tractor className='h-4 w-4 text-amber-600' /> },
+   347→    { date: 'Jun 15, 2024', text: 'Farm registered on KrishiAI', icon: <Check className='h-4 w-4 text-primary' /> },
+   348→  ];
+   349→
+   350→  return (
+   351→    <div className='space-y-6'>
+   352→      {/* Header with back */}
+   353→      <div>
+   354→        <button
+   355→          onClick={() => navigate('farmer/my-farm')}
+   356→          className='text-muted-foreground hover:text-foreground mb-2 text-sm flex items-center gap-1 transition-colors'
+   357→        >
+   358→          <ArrowLeft className='h-4 w-4' /> Back to My Farms
+   359→        </button>
+   360→        <div className='flex items-center justify-between'>
+   361→          <div>
+   362→            <h1 className='text-2xl font-bold tracking-tight'>{farm.name}</h1>
+   363→            <p className='text-muted-foreground text-sm flex items-center gap-1 mt-1'>
+   364→              <MapPin className='h-3.5 w-3.5' /> {farm.location}, {farm.district}, {farm.state}
+   365→            </p>
+   366→          </div>
+   367→          <Badge variant='secondary' className='bg-emerald-100 text-emerald-700'>
+   368→            Active
+   369→          </Badge>
+   370→        </div>
+   371→      </div>
+   372→
+   373→      {/* Tabs */}
+   374→      <Tabs value={activeTab} onValueChange={setActiveTab}>
+   375→        <TabsList className='grid w-full grid-cols-5'>
+   376→          <TabsTrigger value='overview'>Overview</TabsTrigger>
+   377→          <TabsTrigger value='crops'>Crops</TabsTrigger>
+   378→          <TabsTrigger value='soil'>Soil</TabsTrigger>
+   379→          <TabsTrigger value='activities'>Activities</TabsTrigger>
+   380→          <TabsTrigger value='analytics'>Analytics</TabsTrigger>
+   381→        </TabsList>
+   382→
+   383→        {/* Overview Tab */}
+   384→        <TabsContent value='overview' className='mt-4'>
+   385→          <div className='grid grid-cols-2 lg:grid-cols-4 gap-4'>
+   386→            <motion.div {...fadeIn} transition={{ delay: 0 }}>
+   387→              <Card>
+   388→                <CardContent className='p-4 text-center'>
+   389→                  <Layers className='h-6 w-6 mx-auto text-primary mb-2' />
+   390→                  <p className='text-2xl font-bold'>{farm.totalAcres}</p>
+   391→                  <p className='text-sm text-muted-foreground'>Total Acres</p>
+   392→                </CardContent>
+   393→              </Card>
+   394→            </motion.div>
+   395→            <motion.div {...fadeIn} transition={{ delay: 0.05 }}>
+   396→              <Card>
+   397→                <CardContent className='p-4 text-center'>
+   398→                  <Droplets className='h-6 w-6 mx-auto text-sky-500 mb-2' />
+   399→                  <p className='text-2xl font-bold'>{farm.irrigationAvailable ? 'Yes' : 'No'}</p>
+   400→                  <p className='text-sm text-muted-foreground'>Irrigation</p>
+   401→                </CardContent>
+   402→              </Card>
+   403→            </motion.div>
+   404→            <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
+   405→              <Card>
+   406→                <CardContent className='p-4 text-center'>
+   407→                  <ThermometerSun className='h-6 w-6 mx-auto text-amber-500 mb-2' />
+   408→                  <p className='text-lg font-bold'>{farm.soilType}</p>
+   409→                  <p className='text-sm text-muted-foreground'>Soil Type</p>
+   410→                </CardContent>
+   411→              </Card>
+   412→            </motion.div>
+   413→            <motion.div {...fadeIn} transition={{ delay: 0.15 }}>
+   414→              <Card>
+   415→                <CardContent className='p-4 text-center'>
+   416→                  <Activity className='h-6 w-6 mx-auto text-emerald-500 mb-2' />
+   417→                  <p className='text-2xl font-bold'>{farm.soilHealthScore}/100</p>
+   418→                  <p className='text-sm text-muted-foreground'>Soil Score</p>
+   419→                </CardContent>
+   420→              </Card>
+   421→            </motion.div>
+   422→          </div>
+   423→        </TabsContent>
+   424→
+   425→        {/* Crops Tab */}
+   426→        <TabsContent value='crops' className='mt-4'>
+   427→          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+   428→            {farm.activeCrops.map((crop) => (
+   429→              <CropCard
+   430→                key={crop.id}
+   431→                name={crop.name}
+   432→                icon={crop.icon}
+   433→                stage={crop.stage}
+   434→                health={crop.health}
+   435→                daysToHarvest={crop.daysToHarvest}
+   436→              />
+   437→            ))}
+   438→          </div>
+   439→        </TabsContent>
+   440→
+   441→        {/* Soil Tab */}
+   442→        <TabsContent value='soil' className='mt-4'>
+   443→          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+   444→            <Card>
+   445→              <CardHeader>
+   446→                <CardTitle className='text-base'>Soil Health Summary</CardTitle>
+   447→              </CardHeader>
+   448→              <CardContent className='flex flex-col items-center pb-6'>
+   449→                <CircularProgress
+   450→                  value={mockSoilHealth.score}
+   451→                  size={140}
+   452→                  strokeWidth={10}
+   453→                  label={String(mockSoilHealth.score)}
+   454→                  sublabel={mockSoilHealth.grade.toUpperCase()}
+   455→                />
+   456→              </CardContent>
+   457→            </Card>
+   458→            <Card>
+   459→              <CardHeader>
+   460→                <CardTitle className='text-base'>Nutrient Levels</CardTitle>
+   461→              </CardHeader>
+   462→              <CardContent className='space-y-4'>
+   463→                <NutrientBar label='Nitrogen (N)' value={245} status={mockSoilHealth.nitrogen.status} />
+   464→                <NutrientBar label='Phosphorus (P)' value={32} status={mockSoilHealth.phosphorus.status} />
+   465→                <NutrientBar label='Potassium (K)' value={380} status={mockSoilHealth.potassium.status} />
+   466→                <Separator className='my-2' />
+   467→                <div className='grid grid-cols-2 gap-3 text-sm'>
+   468→                  <div>
+   469→                    <p className='text-muted-foreground'>pH Level</p>
+   470→                    <p className='font-semibold'>{mockSoilHealth.ph}</p>
+   471→                  </div>
+   472→                  <div>
+   473→                    <p className='text-muted-foreground'>Organic Carbon</p>
+   474→                    <p className='font-semibold'>{mockSoilHealth.organicCarbon}%</p>
+   475→                  </div>
+   476→                  <div>
+   477→                    <p className='text-muted-foreground'>Moisture</p>
+   478→                    <p className='font-semibold'>{mockSoilHealth.moisture}%</p>
+   479→                  </div>
+   480→                  <div>
+   481→                    <p className='text-muted-foreground'>Last Tested</p>
+   482→                    <p className='font-semibold'>{mockSoilHealth.lastTestDate}</p>
+   483→                  </div>
+   484→                </div>
+   485→              </CardContent>
+   486→            </Card>
+   487→          </div>
+   488→        </TabsContent>
+   489→
+   490→        {/* Activities Tab */}
+   491→        <TabsContent value='activities' className='mt-4'>
+   492→          <Card>
+   493→            <CardContent className='p-0'>
+   494→              <div className='divide-y'>
+   495→                {activities.map((activity, idx) => (
+   496→                  <motion.div
+   497→                    key={idx}
+   498→                    initial={{ opacity: 0, x: -10 }}
+   499→                    animate={{ opacity: 1, x: 0 }}
+   500→                    transition={{ delay: idx * 0.05 }}
+   501→                    className='flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors'
+   502→                  >
+   503→                    <div className='p-2 rounded-lg bg-muted'>{activity.icon}</div>
+   504→                    <div className='flex-1 min-w-0'>
+   505→                      <p className='font-medium text-sm'>{activity.text}</p>
+   506→                      <p className='text-xs text-muted-foreground'>{activity.date}</p>
+   507→                    </div>
+   508→                  </motion.div>
+   509→                ))}
+   510→              </div>
+   511→            </CardContent>
+   512→          </Card>
+   513→        </TabsContent>
+   514→
+   515→        {/* Analytics Tab */}
+   516→        <TabsContent value='analytics' className='mt-4'>
+   517→          <Card>
+   518→            <CardHeader>
+   519→              <CardTitle className='text-base'>Monthly Farm Performance</CardTitle>
+   520→            </CardHeader>
+   521→            <CardContent>
+   522→              <div className='h-[300px]'>
+   523→                <ResponsiveContainer width='100%' height='100%'>
+   524→                  <BarChart data={monthlyData}>
+   525→                    <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+   526→                    <XAxis dataKey='month' className='text-xs' />
+   527→                    <YAxis className='text-xs' />
+   528→                    <Tooltip
+   529→                      contentStyle={{
+   530→                        backgroundColor: 'hsl(var(--card))',
+   531→                        border: '1px solid hsl(var(--border))',
+   532→                        borderRadius: '8px',
+   533→                        fontSize: '12px',
+   534→                      }}
+   535→                    />
+   536→                    <Bar dataKey='yield' name='Yield (kg)' fill='#16a34a' radius={[4, 4, 0, 0]} />
+   537→                    <Bar dataKey='revenue' name='Revenue (₹)' fill='#f59e0b' radius={[4, 4, 0, 0]} />
+   538→                  </BarChart>
+   539→                </ResponsiveContainer>
+   540→              </div>
+   541→            </CardContent>
+   542→          </Card>
+   543→        </TabsContent>
+   544→      </Tabs>
+   545→    </div>
+   546→  );
+   547→}
+   548→
+   549→// Helper component for nutrient bar
+   550→function NutrientBar({ label, value, status }: { label: string; value: number; status: string }) {
+   551→  const statusColor = status === 'optimal'
+   552→    ? 'bg-emerald-500'
+   553→    : status === 'low'
+   554→    ? 'bg-amber-500'
+   555→    : 'bg-red-500';
+   556→  const barWidth = Math.min(100, (value / 500) * 100);
+   557→  return (
+   558→    <div>
+   559→      <div className='flex items-center justify-between text-sm mb-1'>
+   560→        <span>{label}</span>
+   561→        <span className='text-muted-foreground'>{value} kg/ha</span>
+   562→      </div>
+   563→      <div className='h-2 rounded-full bg-muted overflow-hidden'>
+   564→        <div className={`h-full rounded-full ${statusColor} transition-all`} style={{ width: `${barWidth}%` }} />
+   565→      </div>
+   566→    </div>
+   567→  );
+   568→}
+   569→
+   570→// ============== 4. FARMER PROFILE PAGE ==============
+   571→export function FarmerProfilePage() {
+   572→  const { user, updateUser, logout } = useAuthStore();
+   573→  const [isEditing, setIsEditing] = useState(false);
+   574→  const [editData, setEditData] = useState({
+   575→    phone: user?.phone || '',
+   576→    email: user?.email || '',
+   577→    location: user?.location || '',
+   578→    state: user?.state || '',
+   579→    district: user?.district || '',
+   580→    village: user?.village || '',
+   581→    language: user?.language || 'en',
+   582→  });
+   583→  const [notifications, setNotifications] = useState(true);
+   584→  const [darkMode, setDarkMode] = useState(false);
+   585→
+   586→  const handleSave = () => {
+   587→    updateUser(editData);
+   588→    setIsEditing(false);
+   589→    toast.success('Profile updated successfully!');
+   590→  };
+   591→
+   592→  const handleCancel = () => {
+   593→    setEditData({
+   594→      phone: user?.phone || '',
+   595→      email: user?.email || '',
+   596→      location: user?.location || '',
+   597→      state: user?.state || '',
+   598→      district: user?.district || '',
+   599→      village: user?.village || '',
+   600→      language: user?.language || 'en',
+   601→    });
+   602→    setIsEditing(false);
+   603→  };
+   604→
+   605→  const handleLogout = () => {
+   606→    logout();
+   607→    toast.success('Logged out successfully');
+   608→  };
+   609→
+   610→  const fields = [
+   611→    { label: 'Phone', key: 'phone' as const, icon: <Clock className='h-4 w-4 text-muted-foreground' /> },
+   612→    { label: 'Email', key: 'email' as const, icon: <Bell className='h-4 w-4 text-muted-foreground' /> },
+   613→    { label: 'Location', key: 'location' as const, icon: <MapPin className='h-4 w-4 text-muted-foreground' /> },
+   614→    { label: 'State', key: 'state' as const, icon: <MapPin className='h-4 w-4 text-muted-foreground' /> },
+   615→    { label: 'District', key: 'district' as const, icon: <MapPin className='h-4 w-4 text-muted-foreground' /> },
+   616→    { label: 'Village', key: 'village' as const, icon: <MapPin className='h-4 w-4 text-muted-foreground' /> },
+   617→  ];
+   618→
+   619→  return (
+   620→    <div className='space-y-6 max-w-2xl'>
+   621→      <PageHeader title='Profile' subtitle='Manage your account settings' />
+   622→
+   623→      {/* Avatar & Name */}
+   624→      <motion.div {...fadeIn}>
+   625→        <Card>
+   626→          <CardContent className='p-6'>
+   627→            <div className='flex items-center gap-4'>
+   628→              <div className='w-16 h-16 rounded-full gradient-green flex items-center justify-center text-white text-2xl font-bold'>
+   629→                {user?.name?.charAt(0) || 'F'}
+   630→              </div>
+   631→              <div className='flex-1'>
+   632→                <h2 className='text-xl font-bold'>{user?.name || 'Farmer'}</h2>
+   633→                <p className='text-sm text-muted-foreground'>{user?.role || 'farmer'}</p>
+   634→                <p className='text-xs text-muted-foreground mt-0.5'>Member since {user?.joinedDate || '2024'}</p>
+   635→              </div>
+   636→              {!isEditing ? (
+   637→                <Button variant='outline' size='sm' onClick={() => setIsEditing(true)}>
+   638→                  <Edit3 className='h-4 w-4 mr-1' /> Edit
+   639→                </Button>
+   640→              ) : (
+   641→                <div className='flex gap-2'>
+   642→                  <Button size='sm' onClick={handleSave}>
+   643→                    <Check className='h-4 w-4 mr-1' /> Save
+   644→                  </Button>
+   645→                  <Button variant='outline' size='sm' onClick={handleCancel}>
+   646→                    <X className='h-4 w-4 mr-1' /> Cancel
+   647→                  </Button>
+   648→                </div>
+   649→              )}
+   650→            </div>
+   651→          </CardContent>
+   652→        </Card>
+   653→      </motion.div>
+   654→
+   655→      {/* Profile Info */}
+   656→      <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
+   657→        <Card>
+   658→          <CardHeader>
+   659→            <CardTitle className='text-base'>Personal Information</CardTitle>
+   660→          </CardHeader>
+   661→          <CardContent className='space-y-4'>
+   662→            {fields.map((field) => (
+   663→              <div key={field.key} className='flex items-center gap-3'>
+   664→                <div className='w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0'>
+   665→                  {field.icon}
+   666→                </div>
+   667→                {isEditing ? (
+   668→                  <Input
+   669→                    className='flex-1'
+   670→                    value={editData[field.key]}
+   671→                    onChange={(e) => setEditData({ ...editData, [field.key]: e.target.value })}
+   672→                    placeholder={field.label}
+   673→                  />
+   674→                ) : (
+   675→                  <div className='flex-1'>
+   676→                    <p className='text-xs text-muted-foreground'>{field.label}</p>
+   677→                    <p className='text-sm font-medium'>{user?.[field.key as keyof typeof user] || '-'}</p>
+   678→                  </div>
+   679→                )}
+   680→              </div>
+   681→            ))}
+   682→          </CardContent>
+   683→        </Card>
+   684→      </motion.div>
+   685→
+   686→      {/* Language Preference */}
+   687→      <motion.div {...fadeIn} transition={{ delay: 0.15 }}>
+   688→        <Card>
+   689→          <CardHeader>
+   690→            <CardTitle className='text-base'>Language Preference</CardTitle>
+   691→          </CardHeader>
+   692→          <CardContent>
+   693→            {isEditing ? (
+   694→              <div className='flex gap-2'>
+   695→                {['en', 'te', 'hi'].map((lang) => (
+   696→                  <Button
+   697→                    key={lang}
+   698→                    variant={editData.language === lang ? 'default' : 'outline'}
+   699→                    size='sm'
+   700→                    onClick={() => setEditData({ ...editData, language: lang })}
+   701→                  >
+   702→                    {lang === 'en' ? 'English' : lang === 'te' ? 'తెలుగు' : 'हिंदी'}
+   703→                  </Button>
+   704→                ))}
+   705→              </div>
+   706→            ) : (
+   707→              <p className='text-sm'>
+   708→                {user?.language === 'en' ? 'English' : user?.language === 'te' ? 'తెలుగు' : 'हिंदी'}
+   709→              </p>
+   710→            )}
+   711→          </CardContent>
+   712→        </Card>
+   713→      </motion.div>
+   714→
+   715→      {/* Settings */}
+   716→      <motion.div {...fadeIn} transition={{ delay: 0.2 }}>
+   717→        <Card>
+   718→          <CardHeader>
+   719→            <CardTitle className='text-base'>Settings</CardTitle>
+   720→          </CardHeader>
+   721→          <CardContent className='space-y-4'>
+   722→            <div className='flex items-center justify-between'>
+   723→              <div className='flex items-center gap-3'>
+   724→                <div className='w-8 h-8 rounded-lg bg-muted flex items-center justify-center'>
+   725→                  <Bell className='h-4 w-4 text-muted-foreground' />
+   726→                </div>
+   727→                <div>
+   728→                  <p className='text-sm font-medium'>Push Notifications</p>
+   729→                  <p className='text-xs text-muted-foreground'>Receive weather alerts and reminders</p>
+   730→                </div>
+   731→              </div>
+   732→              <Switch checked={notifications} onCheckedChange={setNotifications} />
+   733→            </div>
+   734→            <Separator />
+   735→            <div className='flex items-center justify-between'>
+   736→              <div className='flex items-center gap-3'>
+   737→                <div className='w-8 h-8 rounded-lg bg-muted flex items-center justify-center'>
+   738→                  <BarChart3 className='h-4 w-4 text-muted-foreground' />
+   739→                </div>
+   740→                <div>
+   741→                  <p className='text-sm font-medium'>Dark Mode</p>
+   742→                  <p className='text-xs text-muted-foreground'>Toggle dark theme</p>
+   743→                </div>
+   744→              </div>
+   745→              <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+   746→            </div>
+   747→          </CardContent>
+   748→        </Card>
+   749→      </motion.div>
+   750→
+   751→      {/* Logout */}
+   752→      <motion.div {...fadeIn} transition={{ delay: 0.25 }}>
+   753→        <Button
+   754→          variant='outline'
+   755→          className='w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30'
+   756→          onClick={handleLogout}
+   757→        >
+   758→          <LogOut className='h-4 w-4 mr-2' /> Logout
+   759→        </Button>
+   760→      </motion.div>
+   761→    </div>
+   762→  );
+   763→}
+   764→
+   765→// ============== 5. NOTIFICATIONS PAGE ==============
+   766→export function NotificationsPage() {
+   767→  const { notifications, markNotificationRead } = useAppStore();
+   768→
+   769→  const handleMarkAllRead = () => {
+   770→    notifications.forEach((n) => {
+   771→      if (!n.read) markNotificationRead(n.id);
+   772→    });
+   773→    toast.success('All notifications marked as read');
+   774→  };
+   775→
+   776→  const typeBg = (type: string) => {
+   777→    const map: Record<string, string> = {
+   778→      info: 'bg-blue-50',
+   779→      warning: 'bg-amber-50',
+   780→      success: 'bg-emerald-50',
+   781→      alert: 'bg-red-50',
+   782→    };
+   783→    return map[type] || 'bg-gray-50';
+   784→  };
+   785→
+   786→  const typeBorder = (type: string) => {
+   787→    const map: Record<string, string> = {
+   788→      info: 'border-l-blue-500',
+   789→      warning: 'border-l-amber-500',
+   790→      success: 'border-l-emerald-500',
+   791→      alert: 'border-l-red-500',
+   792→    };
+   793→    return map[type] || 'border-l-gray-500';
+   794→  };
+   795→
+   796→  return (
+   797→    <div className='space-y-6'>
+   798→      <div className='flex items-center justify-between'>
+   799→        <div>
+   800→          <h1 className='text-2xl font-bold tracking-tight'>Notifications</h1>
+   801→          <p className='text-sm text-muted-foreground mt-1'>Stay updated with your farm alerts</p>
+   802→        </div>
+   803→        <Button variant='outline' size='sm' onClick={handleMarkAllRead}>
+   804→          <Check className='h-4 w-4 mr-1' /> Mark all as read
+   805→        </Button>
+   806→      </div>
+   807→
+   808→      <Card>
+   809→        <CardContent className='p-0'>
+   810→          <div className='divide-y max-h-[70vh] overflow-y-auto scrollbar-thin'>
+   811→            {notifications.map((notif, idx) => (
+   812→              <motion.div
+   813→                key={notif.id}
+   814→                initial={{ opacity: 0, x: -10 }}
+   815→                animate={{ opacity: 1, x: 0 }}
+   816→                transition={{ delay: idx * 0.05 }}
+   817→                onClick={() => !notif.read && markNotificationRead(notif.id)}
+   818→                className={cn(
+   819→                  'flex items-start gap-3 p-4 cursor-pointer transition-colors hover:bg-muted/50 border-l-4',
+   820→                  typeBorder(notif.type),
+   821→                  !notif.read ? typeBg(notif.type) : 'opacity-60'
+   822→                )}
+   823→              >
+   824→                <div className='text-2xl mt-0.5'>{notif.icon || '🔔'}</div>
+   825→                <div className='flex-1 min-w-0'>
+   826→                  <div className='flex items-center gap-2'>
+   827→                    <h3 className={cn('text-sm font-semibold', !notif.read && 'text-foreground')}>
+   828→                      {notif.title}
+   829→                    </h3>
+   830→                    {!notif.read && <span className='w-2 h-2 rounded-full bg-primary' />}
+   831→                  </div>
+   832→                  <p className='text-sm text-muted-foreground mt-0.5'>{notif.message}</p>
+   833→                  <p className='text-xs text-muted-foreground mt-1 flex items-center gap-1'>
+   834→                    <Clock className='h-3 w-3' />
+   835→                    {new Date(notif.createdAt).toLocaleString('en-IN', {
+   836→                      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+   837→                    })}
+   838→                  </p>
+   839→                </div>
+   840→              </motion.div>
+   841→            ))}
+   842→          </div>
+   843→        </CardContent>
+   844→      </Card>
+   845→    </div>
+   846→  );
+   847→}
+   848→
+   849→// ============== 6. FARMER ORDERS PAGE ==============
+   850→export function FarmerOrdersPage() {
+   851→  const { navigate } = useAppStore();
+   852→  const { orders } = useCartStore();
+   853→  const [tab, setTab] = useState<'active' | 'completed'>('active');
+   854→
+   855→  const activeOrders = orders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled');
+   856→  const completedOrders = orders.filter((o) => o.status === 'delivered' || o.status === 'cancelled');
+   857→  const displayOrders = tab === 'active' ? activeOrders : completedOrders;
+   858→
+   859→  return (
+   860→    <div className='space-y-6'>
+   861→      <PageHeader title='My Orders' subtitle={`${orders.length} total orders`} />
+   862→
+   863→      <Tabs value={tab} onValueChange={(v) => setTab(v as 'active' | 'completed')}>
+   864→        <TabsList>
+   865→          <TabsTrigger value='active'>Active ({activeOrders.length})</TabsTrigger>
+   866→          <TabsTrigger value='completed'>Completed ({completedOrders.length})</TabsTrigger>
+   867→        </TabsList>
+   868→
+   869→        <TabsContent value={tab} className='mt-4'>
+   870→          {displayOrders.length === 0 ? (
+   871→            <Card>
+   872→              <CardContent className='py-12 text-center text-muted-foreground'>
+   873→                <Package className='h-10 w-10 mx-auto mb-3 opacity-40' />
+   874→                <p className='font-medium'>No {tab} orders</p>
+   875→                <p className='text-sm mt-1'>Your {tab} orders will appear here</p>
+   876→              </CardContent>
+   877→            </Card>
+   878→          ) : (
+   879→            <div className='space-y-3'>
+   880→              {displayOrders.map((order, idx) => (
+   881→                <motion.div
+   882→                  key={order.id}
+   883→                  initial={{ opacity: 0, y: 10 }}
+   884→                  animate={{ opacity: 1, y: 0 }}
+   885→                  transition={{ delay: idx * 0.08 }}
+   886→                >
+   887→                  <Card
+   888→                    className='hover:shadow-md transition-all cursor-pointer'
+   889→                    onClick={() => navigate('marketplace/order-tracking', { orderId: order.id })}
+   890→                  >
+   891→                    <CardContent className='p-4'>
+   892→                      <div className='flex items-start justify-between mb-2'>
+   893→                        <div>
+   894→                          <div className='flex items-center gap-2'>
+   895→                            <p className='font-semibold text-sm'>{order.id}</p>
+   896→                            <Badge className={statusColor(order.status)} variant='secondary'>
+   897→                              {statusLabel(order.status)}
+   898→                            </Badge>
+   899→                          </div>
+   900→                          <p className='text-xs text-muted-foreground mt-0.5'>
+   901→                            {new Date(order.createdAt).toLocaleDateString('en-IN', {
+   902→                              month: 'short', day: 'numeric', year: 'numeric',
+   903→                            })}
+   904→                          </p>
+   905→                        </div>
+   906→                        <div className='text-right'>
+   907→                          <p className='font-bold'>₹{order.total.toLocaleString('en-IN')}</p>
+   908→                          <p className='text-xs text-muted-foreground'>{order.items.length} item{order.items.length > 1 ? 's' : ''}</p>
+   909→                        </div>
+   910→                      </div>
+   911→                      <div className='flex flex-wrap gap-2 mt-2'>
+   912→                        {order.items.map((item) => (
+   913→                          <Badge key={item.product.id} variant='outline' className='text-xs'>
+   914→                            {item.product.name} × {item.quantity}
+   915→                          </Badge>
+   916→                        ))}
+   917→                      </div>
+   918→                    </CardContent>
+   919→                  </Card>
+   920→                </motion.div>
+   921→              ))}
+   922→            </div>
+   923→          )}
+   924→        </TabsContent>
+   925→      </Tabs>
+   926→    </div>
+   927→  );
+   928→}
+   929→
+   930→// ============== 7. FARMER PAYMENTS PAGE ==============
+   931→export function FarmerPaymentsPage() {
+   932→  const transactions = [
+   933→    { id: 't1', description: 'Payment received for Tomatoes', amount: 12500, date: 'Jan 5, 2025', type: 'credit' as const },
+   934→    { id: 't2', description: 'Payment received for Chilli', amount: 8500, date: 'Dec 28, 2024', type: 'credit' as const },
+   935→    { id: 't3', description: 'Seed purchase — Tomato Hybrid GT-4', amount: -450, date: 'Dec 15, 2024', type: 'debit' as const },
+   936→    { id: 't4', description: 'Payment received for Brinjal', amount: 6200, date: 'Dec 10, 2024', type: 'credit' as const },
+   937→    { id: 't5', description: 'Fertilizer purchase — DAP', amount: -1200, date: 'Dec 5, 2024', type: 'debit' as const },
+   938→    { id: 't6', description: 'Payment received for Rice', amount: 18000, date: 'Nov 25, 2024', type: 'credit' as const },
+   939→  ];
+   940→
+   941→  const handleWithdraw = () => {
+   942→    toast.success('Withdrawal request submitted! Amount will be credited in 2-3 business days.');
+   943→  };
+   944→
+   945→  return (
+   946→    <div className='space-y-6'>
+   947→      <PageHeader title='Payments' subtitle='Track your earnings and transactions' />
+   948→
+   949→      {/* Balance Card */}
+   950→      <motion.div {...fadeInUp}>
+   951→        <Card className='gradient-green text-white border-0'>
+   952→          <CardContent className='p-6'>
+   953→            <p className='text-white/80 text-sm'>Total Earnings</p>
+   954→            <p className='text-4xl font-bold mt-1'>₹45,000</p>
+   955→            <p className='text-white/70 text-sm mt-2'>Available for withdrawal</p>
+   956→            <div className='flex gap-3 mt-4'>
+   957→              <Button
+   958→                variant='secondary'
+   959→                className='bg-white/20 hover:bg-white/30 text-white border-0'
+   960→                onClick={handleWithdraw}
+   961→              >
+   962→                <CreditCard className='h-4 w-4 mr-2' /> Withdraw
+   963→              </Button>
+   964→              <Button
+   965→                variant='secondary'
+   966→                className='bg-white/20 hover:bg-white/30 text-white border-0'
+   967→              >
+   968→                <BarChart3 className='h-4 w-4 mr-2' /> Statement
+   969→              </Button>
+   970→            </div>
+   971→          </CardContent>
+   972→        </Card>
+   973→      </motion.div>
+   974→
+   975→      {/* Recent Transactions */}
+   976→      <SectionWrapper title='Recent Transactions' subtitle='Your latest payment activity'>
+   977→        <Card>
+   978→          <CardContent className='p-0'>
+   979→            <div className='divide-y max-h-96 overflow-y-auto scrollbar-thin'>
+   980→              {transactions.map((tx, idx) => (
+   981→                <motion.div
+   982→                  key={tx.id}
+   983→                  initial={{ opacity: 0, x: -10 }}
+   984→                  animate={{ opacity: 1, x: 0 }}
+   985→                  transition={{ delay: idx * 0.06 }}
+   986→                  className='flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors'
+   987→                >
+   988→                  <div className={cn(
+   989→                    'p-2 rounded-lg',
+   990→                    tx.type === 'credit' ? 'bg-emerald-50' : 'bg-red-50'
+   991→                  )}>
+   992→                    {tx.type === 'credit'
+   993→                      ? <ArrowDownRight className='h-4 w-4 text-emerald-600' />
+   994→                      : <ArrowUpRight className='h-4 w-4 text-red-500' />
+   995→                    }
+   996→                  </div>
+   997→                  <div className='flex-1 min-w-0'>
+   998→                    <p className='font-medium text-sm'>{tx.description}</p>
+   999→                    <p className='text-xs text-muted-foreground'>{tx.date}</p>
+  1000→                  </div>
+  1001→                  <p className={cn(
+  1002→                    'font-semibold text-sm',
+  1003→                    tx.type === 'credit' ? 'text-emerald-600' : 'text-red-500'
+  1004→                  )}>
+  1005→                    {tx.type === 'credit' ? '+' : ''}₹{Math.abs(tx.amount).toLocaleString('en-IN')}
+  1006→                  </p>
+  1007→                </motion.div>
+  1008→              ))}
+  1009→            </div>
+  1010→          </CardContent>
+  1011→        </Card>
+  1012→      </SectionWrapper>
+  1013→    </div>
+  1014→  );
+  1015→}
+  1016→
+  1017→
+  1018→
