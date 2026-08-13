@@ -414,23 +414,44 @@ export function LoginPage() {
   const { login, loginWithPhone, loginWithEmail, isLoading } = useAuthStore();
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   const handleDemoLogin = async (role: UserRole) => {
-    await login(role);
-    navigate(roleDashboardMap[role]);
+    setLoginError('');
+    try {
+      await login(role);
+      navigate(roleDashboardMap[role]);
+    } catch (e) {
+      setLoginError('Backend unavailable. Using offline mode.');
+    }
   };
 
   const handlePhoneLogin = async () => {
-    if (phone.length >= 10) {
-      await loginWithPhone(`+91 ${phone}`);
-      navigate('farmer/dashboard');
+    setLoginError('');
+    if (phone.length >= 10 && password.length > 0) {
+      try {
+        await loginWithPhone(`+91 ${phone}`, password);
+        const user = useAuthStore.getState().user;
+        const route = user?.role === 'consumer' ? 'consumer/dashboard' : 'farmer/dashboard';
+        navigate(route);
+      } catch {
+        setLoginError('Invalid phone or password');
+      }
     }
   };
 
   const handleEmailLogin = async () => {
-    if (email.includes('@')) {
-      await loginWithEmail(email);
-      navigate('farmer/dashboard');
+    setLoginError('');
+    if (email.includes('@') && password.length > 0) {
+      try {
+        await loginWithEmail(email, password);
+        const user = useAuthStore.getState().user;
+        const route = user?.role === 'consumer' ? 'consumer/dashboard' : 'farmer/dashboard';
+        navigate(route);
+      } catch {
+        setLoginError('Invalid email or password');
+      }
     }
   };
 
@@ -476,6 +497,7 @@ export function LoginPage() {
                   onKeyDown={(e) => e.key === 'Enter' && handlePhoneLogin()}
                 />
               </div>
+              <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handlePhoneLogin()} className="mt-2" />
             </div>
 
             {/* OR Divider */}
@@ -498,6 +520,7 @@ export function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleEmailLogin()}
               />
+              <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleEmailLogin()} className="mt-2" />
             </div>
 
             {/* Submit */}
@@ -518,6 +541,7 @@ export function LoginPage() {
                 </>
               )}
             </Button>
+            {loginError && <p className="text-sm text-destructive text-center -mt-2">{loginError}</p>}
 
             {/* Demo Login Section */}
             <div className="pt-2">
@@ -582,28 +606,35 @@ const languages = [
 
 export function RegisterPage() {
   const { navigate } = useAppStore();
-  const { login, isLoading } = useAuthStore();
+  const { register, isLoading } = useAuthStore();
   const [step, setStep] = useState(1);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [selectedLang, setSelectedLang] = useState('en');
+  const [regError, setRegError] = useState('');
 
   const totalSteps = 4;
 
   const handleComplete = async () => {
+    setRegError('');
     if (selectedRole) {
-      await login(selectedRole);
-      if (selectedRole === 'farmer') {
-        navigate('onboarding');
-      } else {
-        navigate(roleDashboardMap[selectedRole]);
+      try {
+        await register({ name, email, phone: '+91 ' + phone, password, role: selectedRole });
+        if (selectedRole === 'farmer') {
+          navigate('onboarding');
+        } else {
+          navigate(roleDashboardMap[selectedRole]);
+        }
+      } catch (e: any) {
+        setRegError(e.message || 'Registration failed');
       }
     }
   };
 
-  const canProceedStep2 = name.trim().length > 0 && phone.length >= 10;
+  const canProceedStep2 = name.trim().length > 0 && phone.length >= 10 && email.includes('@') && password.length >= 4;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -770,8 +801,23 @@ export function RegisterPage() {
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-password" className="text-sm font-medium">
+                      Password
+                    </Label>
+                    <Input
+                      id="reg-password"
+                      type="password"
+                      placeholder="Create a password (min 4 chars)"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
                 </CardContent>
               </Card>
+
+              {regError && <p className="text-sm text-destructive text-center">{regError}</p>}
 
               <Button
                 className="w-full mt-6 h-11 font-semibold rounded-xl"

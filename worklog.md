@@ -1,84 +1,75 @@
 # KrishiAI - AI-Powered Agriculture Platform
 
-## Project Status
-- **Phase**: Core build COMPLETE - all 40+ pages, layouts, and infrastructure created
-- **Stack**: Next.js 16, Tailwind CSS 4, shadcn/ui, Zustand, Framer Motion, Recharts, Lucide
-- **Architecture**: Single-page application with client-side routing via Zustand store
-- **Verification**: Browser-tested landing, login, farmer dashboard, marketplace, admin dashboard ✅
-- **Dev Server**: Running clean, all 200 responses, no errors
+## Current Status
+- **Phase**: Full-stack build with Java backend + Next.js frontend
+- **Backend**: Java 21 (HttpServer + SQLite + Gson) running on port 8080
+- **Frontend**: Next.js 16 with client-side SPA routing, connected via API proxy
+- **Database**: Real SQLite with 15 tables, seed data for all entities
+- **Authentication**: Real login/register with SHA-256 hashed passwords, JWT-like token sessions
+- **Dev Server**: Compiling and serving pages, API proxy routes working
 
-## Completed Work
+## Completed This Session
 
-### Core Infrastructure
-- Types (`src/types/index.ts`) - Complete type definitions for all entities
-- Mock Data (`src/data/mock-data.ts`) - Realistic Indian agricultural data (farmer Vamsi Krishna, Telangana)
-- Zustand Stores: useAuthStore, useAppStore, useCartStore
-- Client-side SPA router in `src/app/page.tsx` mapping 40+ routes to components
+### Java Backend (mini-services/krishi-backend/)
+- 15 Java source files compiled successfully
+- 50+ REST API endpoints across 10 service classes
+- Real SQLite database with 15 tables (users, farms, crops, products, orders, cart_items, collection_centers, quality_checks, soil_health, disease_scans, notifications, chat_messages, market_prices, payouts, activities)
+- Seed data: 5 users (all with password `demo123`), 2 farms, 3 crops, 18 products, 4 collection centers, 8 market prices, 5 notifications, quality checks, payouts
+- Thread pool executor (20 threads) for concurrent request handling
+- Auto-restart run.sh script
+- Fixed: register SQL column count bug, removed root catch-all context
+- Added: ActivityService, PayoutService, AdminService
 
-### Design System
-- Custom green/earth agriculture theme (globals.css)
-- Gradient utilities (gradient-green, gradient-warm, gradient-hero)
-- Custom scrollbar, float/pulse-green animations
-- Consistent spacing, border-radius, typography
+### Frontend API Layer (src/services/api.ts)
+- Complete TypeScript API service with 30+ methods
+- Token management with localStorage persistence
+- Fetch helper with auth header injection
+- Covers: auth, farms, crops, products, orders, cart, market, collection centers, notifications, soil health, disease, chat, admin, quality checks, payouts, activities
 
-### Layouts (2 files)
-- FarmerLayout - Sidebar nav (15 items) + topbar + mobile bottom nav (5 items including AI button)
-- DashboardLayout - Generic for consumer, CC, expert, admin (role-specific nav configs)
+### Next.js API Proxy (src/app/api/backend/[...path]/route.ts)
+- Catches all /api/backend/* requests and proxies to Java backend on port 8080
+- Supports GET, POST, PUT, DELETE methods
+- CORS headers
+- Graceful 503 error when backend is unavailable
 
-### Shared Components
-- StatCard, WeatherCard, CropCard, MarketPriceCard, AIInsightCard
-- CircularProgress, QualityScore, OrderTimeline, SectionWrapper
-- PageHeader, LoadingState, EmptyState, SkeletonCard
+### Auth System Updates
+- useAuthStore now uses real API calls (apiLogin, apiRegister)
+- Falls back to mock data when backend is down
+- Password fields added to login and register forms
+- Error display for failed login/registration
+- Session restore capability (restoreSession method)
 
-### Auth Pages (4 components)
-- LandingPage - Hero, problems (6), features (8), farming journey timeline, footer
-- LoginPage - Phone/email + 5 demo role buttons
-- RegisterPage - 4-step (role, details, language, success)
-- OnboardingPage - 6-step farmer onboarding with animations
-
-### Farmer Pages (14 components)
-- Dashboard, My Farm, Farm Details (5 tabs + recharts), Profile
-- Notifications, Orders, Payments
-- Soil Health, Crop Recommendations, Disease Detection
-- Fertilizer (growth timeline), Irrigation (factor cards), Weather (7-day), Market Prices (recharts)
-- Sell Products (5-step), Collection Centers (browse + detail)
-
-### Marketplace (7 components)
-- Home (hero, categories, 3 sections), Seeds, Products
-- Product Detail, Cart, Checkout (3-step), Order Tracking
-
-### Other Roles
-- Consumer: Dashboard, Orders, Profile
-- Collection Center: Dashboard, Inventory, Incoming, Quality Check, Payouts
-- Expert: Dashboard, Disease Cases (expandable form), Advisories (publish form)
-- Admin: Dashboard (recharts), Users (table), Farmers, Products, Orders, Collection Centers, Analytics (3 charts)
-
-### AI Assistant
-- Floating chat panel with mock responses
-- Voice button UI, typing indicators, suggestion chips
-- Keyword-matched responses for common farming queries
-
-## Route Architecture
-- 40+ client-side routes managed by useAppStore Zustand store
-- Role-based layout switching (FarmerLayout vs DashboardLayout)
-- Public routes: landing, login, register
-- Protected routes auto-redirect based on user role
+### Login Credentials (all passwords: demo123)
+- Farmer: vamsi@farm.ai
+- Consumer: priya@gmail.com
+- Collection Center: rajesh@greenagri.in
+- Expert: anitha@agri-expert.in
+- Admin: admin@krishiai.com
 
 ## Verification Results
-- ✅ Landing page renders with all sections
-- ✅ Login page with demo role buttons working
-- ✅ Farmer dashboard: greeting, weather, soil, AI insight, crops, quick actions, market prices, tasks
-- ✅ My Farm page with farm cards
-- ✅ Marketplace with product cards and Add to Cart
-- ✅ Admin dashboard with stats, recharts, recent activity
-- ✅ All dev server responses 200, no console errors
+- ✅ Landing page renders correctly
+- ✅ Login with demo buttons works (with fallback to mock data)
+- ✅ Farmer dashboard loads with weather, soil, crops, market prices
+- ✅ API proxy routes working (503 when backend down is expected)
+- ✅ Registration form now has password field
+- ✅ All lint checks pass
+- ✅ Dev server compiling without errors
 
-## Unresolved / Next Phase Recommendations
-- Mobile responsiveness fine-tuning across all pages
-- More detailed marketplace product images (currently gradient placeholders)
-- Onboarding flow could save data to localStorage for persistence
-- Admin analytics could use more detailed chart configurations
-- Expert disease case review form could be more detailed
-- Collection center quality check could have more interactive scoring
-- Voice assistant currently mocks - real TTS/ASR integration point
-- Some pages may need more content depth for production demo
+## Issues & Notes
+- Java backend has stability issues in sandbox environment (process killed by sandbox)
+- Backend needs to be restarted via `cd mini-services/krishi-backend && nohup bash run.sh > /tmp/java-backend.log 2>&1 & disown`
+- The auto-restart run.sh helps maintain availability
+- Frontend gracefully degrades when backend is unavailable
+- API proxy returns proper 503 errors when Java backend is down
+
+## Next Phase Recommendations
+1. **Wire marketplace pages to real API** (products, cart, checkout, orders)
+2. **Wire farmer pages to real API** (farms, crops, soil health, notifications)
+3. **Wire admin pages to real API** (users, stats, analytics)
+4. **Add real-time cart sync** with backend (cart_items table)
+5. **Add real order creation flow** (POST /api/orders)
+6. **Add disease scan creation** (POST /api/disease-scans)
+7. **Add chat integration** (POST /api/chat with keyword-based AI responses)
+8. **Improve Java backend stability** (connection pooling, better error handling)
+9. **Add more seed data** for a richer demo experience
+10. **Style improvements and mobile optimization**
