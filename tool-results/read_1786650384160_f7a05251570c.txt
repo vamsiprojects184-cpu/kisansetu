@@ -1,0 +1,653 @@
+     1→'use client';
+     2→
+     3→import React, { useState } from 'react';
+     4→import { motion } from 'framer-motion';
+     5→import {
+     6→  Users, Tractor, Package, ShoppingCart, Building2, TrendingUp,
+     7→  Bug, DollarSign, ArrowUpRight, Search, BarChart3, MapPin,
+     8→  Star, Eye, Shield, Activity, AlertTriangle, Info,
+     9→  ChevronLeft, ChevronRight,
+    10→} from 'lucide-react';
+    11→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    12→import { Button } from '@/components/ui/button';
+    13→import { Badge } from '@/components/ui/badge';
+    14→import { Input } from '@/components/ui/input';
+    15→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    16→import { Progress } from '@/components/ui/progress';
+    17→import {
+    18→  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+    19→} from '@/components/ui/table';
+    20→import {
+    21→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    22→} from '@/components/ui/select';
+    23→import {
+    24→  mockAdminStats, mockCollectionCenters, mockConsumerProducts,
+    25→  mockSeedProducts, mockQualityChecks, mockDiseaseCases,
+    26→} from '@/data/mock-data';
+    27→import {
+    28→  PageHeader, StatCard, fadeIn, fadeInUp, staggerContainer,
+    29→  SectionWrapper,
+    30→} from '@/components/shared/SharedComponents';
+    31→import { toast } from 'sonner';
+    32→import {
+    33→  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    34→  LineChart, Line, PieChart, Pie, Cell, Legend,
+    35→} from 'recharts';
+    36→import { cn } from '@/lib/utils';
+    37→
+    38→// ============== ADMIN DASHBOARD ==============
+    39→export function AdminDashboard() {
+    40→  const s = mockAdminStats;
+    41→
+    42→  const chartData = [
+    43→    { month: 'Jul', users: 5200, farmers: 1800 },
+    44→    { month: 'Aug', users: 5800, farmers: 2050 },
+    45→    { month: 'Sep', users: 6500, farmers: 2200 },
+    46→    { month: 'Oct', users: 7200, farmers: 2400 },
+    47→    { month: 'Nov', users: 8100, farmers: 2600 },
+    48→    { month: 'Dec', users: 8934, farmers: 2847 },
+    49→  ];
+    50→
+    51→  const recentActivity = [
+    52→    { id: 1, text: 'New farmer Vamsi Krishna registered', time: '5 min ago', icon: '👨‍🌾', type: 'info' },
+    53→    { id: 2, text: 'Order #ORD-2025-015 delivered successfully', time: '15 min ago', icon: '✅', type: 'success' },
+    54→    { id: 3, text: '3 new disease cases submitted for review', time: '1 hour ago', icon: '🔬', type: 'warning' },
+    55→    { id: 4, text: 'Collection Center Warangal reached 80% capacity', time: '2 hours ago', icon: '📦', type: 'alert' },
+    56→    { id: 5, text: 'Monthly revenue report generated', time: '3 hours ago', icon: '📊', type: 'info' },
+    57→  ];
+    58→
+    59→  const alerts = [
+    60→    { id: 1, title: 'High pending payouts', message: '₹1.2L in pending farmer payouts need attention', severity: 'warning' },
+    61→    { id: 2, title: 'Server load alert', message: 'Platform load at 85% capacity during peak hours', severity: 'alert' },
+    62→    { id: 3, title: 'New feature deployed', message: 'AI disease detection v2.1 is now live', severity: 'info' },
+    63→  ];
+    64→
+    65→  const severityBg = (s: string) =>
+    66→    ({ warning: 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800', alert: 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800', info: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800' }[s] || 'bg-gray-50 border-gray-200');
+    67→
+    68→  return (
+    69→    <div className='space-y-6'>
+    70→      <motion.div {...fadeInUp}>
+    71→        <h1 className='text-2xl font-bold tracking-tight'>Admin Dashboard</h1>
+    72→        <p className='text-muted-foreground mt-1'>Platform overview and management</p>
+    73→      </motion.div>
+    74→
+    75→      <div className='grid grid-cols-2 lg:grid-cols-4 gap-4'>
+    76→        <StatCard title='Total Farmers' value={s.totalFarmers.toLocaleString()} icon={<Tractor className='size-5' />} trend={{ value: s.growth.farmers, isPositive: true }} />
+    77→        <StatCard title='Active Farms' value={s.activeFarms.toLocaleString()} icon={<Building2 className='size-5' />} trend={{ value: 8, isPositive: true }} />
+    78→        <StatCard title='Total Orders' value={s.totalOrders.toLocaleString()} icon={<ShoppingCart className='size-5' />} trend={{ value: s.growth.orders, isPositive: true }} />
+    79→        <StatCard title='Revenue' value={`₹${(s.revenue / 100000).toFixed(1)}L`} icon={<DollarSign className='size-5' />} trend={{ value: s.growth.revenue, isPositive: true }} />
+    80→      </div>
+    81→
+    82→      <Card>
+    83→        <CardHeader>
+    84→          <CardTitle className='text-base'>Monthly User Growth</CardTitle>
+    85→        </CardHeader>
+    86→        <CardContent>
+    87→          <div className='h-[300px]'>
+    88→            <ResponsiveContainer width='100%' height='100%'>
+    89→              <BarChart data={chartData}>
+    90→                <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+    91→                <XAxis dataKey='month' className='text-xs' />
+    92→                <YAxis className='text-xs' />
+    93→                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
+    94→                <Bar dataKey='farmers' name='Farmers' fill='#16a34a' radius={[4, 4, 0, 0]} />
+    95→                <Bar dataKey='users' name='Total Users' fill='#f59e0b' radius={[4, 4, 0, 0]} />
+    96→              </BarChart>
+    97→            </ResponsiveContainer>
+    98→          </div>
+    99→        </CardContent>
+   100→      </Card>
+   101→
+   102→      <div className='grid grid-cols-1 lg:grid-cols-3 gap-4'>
+   103→        <Card className='lg:col-span-2'>
+   104→          <CardHeader>
+   105→            <CardTitle className='text-base'>Recent Activity</CardTitle>
+   106→          </CardHeader>
+   107→          <CardContent className='p-0'>
+   108→            <div className='divide-y'>
+   109→              {recentActivity.map((activity, idx) => (
+   110→                <motion.div key={activity.id} {...fadeIn} transition={{ delay: idx * 0.05 }} className='flex items-center gap-3 p-3 px-4'>
+   111→                  <span className='text-lg'>{activity.icon}</span>
+   112→                  <div className='flex-1 min-w-0'>
+   113→                    <p className='text-sm'>{activity.text}</p>
+   114→                  </div>
+   115→                  <span className='text-xs text-muted-foreground shrink-0'>{activity.time}</span>
+   116→                </motion.div>
+   117→              ))}
+   118→            </div>
+   119→          </CardContent>
+   120→        </Card>
+   121→
+   122→        <Card>
+   123→          <CardHeader>
+   124→            <CardTitle className='text-base'>Alerts</CardTitle>
+   125→          </CardHeader>
+   126→          <CardContent className='space-y-3'>
+   127→            {alerts.map(alert => (
+   128→              <div key={alert.id} className={cn('rounded-xl border p-3', severityBg(alert.severity))}>
+   129→                <div className='flex items-start gap-2'>
+   130→                  {alert.severity === 'warning' && <AlertTriangle className='size-4 text-amber-600 mt-0.5 shrink-0' />}
+   131→                  {alert.severity === 'alert' && <AlertTriangle className='size-4 text-red-600 mt-0.5 shrink-0' />}
+   132→                  {alert.severity === 'info' && <Info className='size-4 text-emerald-600 mt-0.5 shrink-0' />}
+   133→                  <div>
+   134→                    <p className='text-sm font-medium'>{alert.title}</p>
+   135→                    <p className='text-xs mt-0.5 opacity-80'>{alert.message}</p>
+   136→                  </div>
+   137→                </div>
+   138→              </div>
+   139→            ))}
+   140→          </CardContent>
+   141→        </Card>
+   142→      </div>
+   143→    </div>
+   144→  );
+   145→}
+   146→
+   147→// ============== ADMIN USERS ==============
+   148→export function AdminUsers() {
+   149→  const [searchQuery, setSearchQuery] = useState('');
+   150→  const [roleFilter, setRoleFilter] = useState('all');
+   151→  const [currentPage, setCurrentPage] = useState(1);
+   152→  const perPage = 5;
+   153→
+   154→  const users = [
+   155→    { id: 'u1', name: 'Vamsi Krishna', email: 'vamsi@farm.ai', role: 'Farmer', status: 'active', joined: 'Jun 15, 2024' },
+   156→    { id: 'u2', name: 'Priya Sharma', email: 'priya@gmail.com', role: 'Consumer', status: 'active', joined: 'Sep 1, 2024' },
+   157→    { id: 'u3', name: 'Rajesh Kumar', email: 'rajesh@greenagri.in', role: 'Collection Center', status: 'active', joined: 'Mar 10, 2024' },
+   158→    { id: 'u4', name: 'Dr. Anitha Reddy', email: 'anitha@agri-expert.in', role: 'Expert', status: 'active', joined: 'Jan 20, 2024' },
+   159→    { id: 'u5', name: 'Ramesh Reddy', email: 'ramesh@farm.in', role: 'Farmer', status: 'inactive', joined: 'Aug 22, 2024' },
+   160→    { id: 'u6', name: 'Lakshmi Devi', email: 'lakshmi@farm.in', role: 'Farmer', status: 'active', joined: 'Jul 5, 2024' },
+   161→    { id: 'u7', name: 'Rahul Verma', email: 'rahul@gmail.com', role: 'Consumer', status: 'active', joined: 'Oct 12, 2024' },
+   162→    { id: 'u8', name: 'Suresh Babu', email: 'suresh@farm.in', role: 'Farmer', status: 'active', joined: 'Nov 3, 2024' },
+   163→  ];
+   164→
+   165→  const filtered = users.filter(u => {
+   166→    const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+   167→      u.email.toLowerCase().includes(searchQuery.toLowerCase());
+   168→    const matchesRole = roleFilter === 'all' || u.role.toLowerCase() === roleFilter;
+   169→    return matchesSearch && matchesRole;
+   170→  });
+   171→
+   172→  const totalPages = Math.ceil(filtered.length / perPage);
+   173→  const paginated = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+   174→
+   175→  const roleColor = (r: string) =>
+   176→    ({ Farmer: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300', Consumer: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', 'Collection Center': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', Expert: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' }[r] || 'bg-gray-100 text-gray-700');
+   177→
+   178→  return (
+   179→    <div className='space-y-6'>
+   180→      <PageHeader title='All Users' subtitle={`${users.length} registered users`} />
+   181→
+   182→      <div className='flex flex-col sm:flex-row gap-3'>
+   183→        <div className='relative flex-1 max-w-sm'>
+   184→          <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+   185→          <Input placeholder='Search by name or email...' value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} className='pl-10' />
+   186→        </div>
+   187→        <Select value={roleFilter} onValueChange={(val) => { setRoleFilter(val); setCurrentPage(1); }}>
+   188→          <SelectTrigger className='w-[180px]'>
+   189→            <SelectValue placeholder='Filter by role' />
+   190→          </SelectTrigger>
+   191→          <SelectContent>
+   192→            <SelectItem value='all'>All Roles</SelectItem>
+   193→            <SelectItem value='farmer'>Farmer</SelectItem>
+   194→            <SelectItem value='consumer'>Consumer</SelectItem>
+   195→            <SelectItem value='collection center'>Collection Center</SelectItem>
+   196→            <SelectItem value='expert'>Expert</SelectItem>
+   197→          </SelectContent>
+   198→        </Select>
+   199→      </div>
+   200→
+   201→      <Card>
+   202→        <CardContent className='p-0'>
+   203→          <Table>
+   204→            <TableHeader>
+   205→              <TableRow>
+   206→                <TableHead>Name</TableHead>
+   207→                <TableHead className='hidden sm:table-cell'>Email</TableHead>
+   208→                <TableHead>Role</TableHead>
+   209→                <TableHead>Status</TableHead>
+   210→                <TableHead className='hidden md:table-cell'>Joined</TableHead>
+   211→                <TableHead className='text-right'>Actions</TableHead>
+   212→              </TableRow>
+   213→            </TableHeader>
+   214→            <TableBody>
+   215→              {paginated.map((u, idx) => (
+   216→                <TableRow key={u.id}>
+   217→                  <TableCell>
+   218→                    <div className='flex items-center gap-2'>
+   219→                      <div className='w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs'>
+   220→                        {u.name.charAt(0)}
+   221→                      </div>
+   222→                      <span className='font-medium text-sm'>{u.name}</span>
+   223→                    </div>
+   224→                  </TableCell>
+   225→                  <TableCell className='hidden sm:table-cell text-muted-foreground text-sm'>{u.email}</TableCell>
+   226→                  <TableCell>
+   227→                    <Badge variant='secondary' className={roleColor(u.role)}>{u.role}</Badge>
+   228→                  </TableCell>
+   229→                  <TableCell>
+   230→                    <Badge variant='secondary' className={u.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}>
+   231→                      {u.status}
+   232→                    </Badge>
+   233→                  </TableCell>
+   234→                  <TableCell className='hidden md:table-cell text-muted-foreground text-sm'>{u.joined}</TableCell>
+   235→                  <TableCell className='text-right'>
+   236→                    <Button variant='ghost' size='sm' onClick={() => toast.info(`Viewing ${u.name}`)}>
+   237→                      <Eye className='size-4' />
+   238→                    </Button>
+   239→                  </TableCell>
+   240→                </TableRow>
+   241→              ))}
+   242→            </TableBody>
+   243→          </Table>
+   244→        </CardContent>
+   245→      </Card>
+   246→
+   247→      {totalPages > 1 && (
+   248→        <div className='flex items-center justify-center gap-2'>
+   249→          <Button variant='outline' size='sm' disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+   250→            <ChevronLeft className='size-4' />
+   251→          </Button>
+   252→          <span className='text-sm text-muted-foreground'>
+   253→            Page {currentPage} of {totalPages}
+   254→          </span>
+   255→          <Button variant='outline' size='sm' disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+   256→            <ChevronRight className='size-4' />
+   257→          </Button>
+   258→        </div>
+   259→      )}
+   260→    </div>
+   261→  );
+   262→}
+   263→
+   264→// ============== ADMIN FARMERS ==============
+   265→export function AdminFarmers() {
+   266→  const [searchQuery, setSearchQuery] = useState('');
+   267→
+   268→  const farmers = [
+   269→    { id: 'f1', name: 'Vamsi Krishna', location: 'Siddipet, Telangana', farmCount: 2, soilScore: 82, crops: 'Tomato, Rice', status: 'active' },
+   270→    { id: 'f2', name: 'Ramesh Reddy', location: 'Warangal, Telangana', farmCount: 1, soilScore: 71, crops: 'Chilli', status: 'active' },
+   271→    { id: 'f3', name: 'Lakshmi Devi', location: 'Karimnagar, Telangana', farmCount: 2, soilScore: 88, crops: 'Cotton, Maize', status: 'active' },
+   272→    { id: 'f4', name: 'Suresh Babu', location: 'Adilabad, Telangana', farmCount: 1, soilScore: 65, crops: 'Onion', status: 'inactive' },
+   273→    { id: 'f5', name: 'Anita Reddy', location: 'Nizamabad, Telangana', farmCount: 3, soilScore: 91, crops: 'Rice, Tomato', status: 'active' },
+   274→    { id: 'f6', name: 'Krishna Murthy', location: 'Khammam, Telangana', farmCount: 1, soilScore: 76, crops: 'Cotton', status: 'active' },
+   275→  ];
+   276→
+   277→  const filtered = farmers.filter(f =>
+   278→    f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+   279→    f.location.toLowerCase().includes(searchQuery.toLowerCase())
+   280→  );
+   281→
+   282→  const soilColor = (score: number) =>
+   283→    score >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+   284→    : score >= 60 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+   285→    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
+   286→
+   287→  return (
+   288→    <div className='space-y-6'>
+   289→      <PageHeader title='All Farmers' subtitle={`${farmers.length} registered farmers`} />
+   290→
+   291→      <div className='relative max-w-sm'>
+   292→        <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+   293→        <Input placeholder='Search farmers...' value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className='pl-10' />
+   294→      </div>
+   295→
+   296→      <Card>
+   297→        <CardContent className='p-0'>
+   298→          <Table>
+   299→            <TableHeader>
+   300→              <TableRow>
+   301→                <TableHead>Name</TableHead>
+   302→                <TableHead className='hidden sm:table-cell'>Location</TableHead>
+   303→                <TableHead>Farms</TableHead>
+   304→                <TableHead>Soil Score</TableHead>
+   305→                <TableHead className='hidden md:table-cell'>Crops</TableHead>
+   306→                <TableHead>Status</TableHead>
+   307→              </TableRow>
+   308→            </TableHeader>
+   309→            <TableBody>
+   310→              {filtered.map((f, idx) => (
+   311→                <motion.tr key={f.id} {...fadeIn} transition={{ delay: idx * 0.03 }}>
+   312→                  <TableCell>
+   313→                    <div className='flex items-center gap-2'>
+   314→                      <div className='w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-300 text-xs font-semibold'>
+   315→                        {f.name.charAt(0)}
+   316→                      </div>
+   317→                      <span className='font-medium text-sm'>{f.name}</span>
+   318→                    </div>
+   319→                  </TableCell>
+   320→                  <TableCell className='hidden sm:table-cell text-muted-foreground text-sm'>{f.location}</TableCell>
+   321→                  <TableCell className='text-sm'>{f.farmCount}</TableCell>
+   322→                  <TableCell>
+   323→                    <Badge variant='secondary' className={soilColor(f.soilScore)}>
+   324→                      {f.soilScore}
+   325→                    </Badge>
+   326→                  </TableCell>
+   327→                  <TableCell className='hidden md:table-cell'>
+   328→                    <div className='flex gap-1 flex-wrap'>
+   329→                      {f.crops.split(', ').map(c => (
+   330→                        <Badge key={c} variant='outline' className='text-xs'>{c}</Badge>
+   331→                      ))}
+   332→                    </div>
+   333→                  </TableCell>
+   334→                  <TableCell>
+   335→                    <Badge variant='secondary' className={f.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}>
+   336→                      {f.status}
+   337→                    </Badge>
+   338→                  </TableCell>
+   339→                </motion.tr>
+   340→              ))}
+   341→            </TableBody>
+   342→          </Table>
+   343→        </CardContent>
+   344→      </Card>
+   345→    </div>
+   346→  );
+   347→}
+   348→
+   349→// ============== ADMIN PRODUCTS ==============
+   350→export function AdminProducts() {
+   351→  const [searchQuery, setSearchQuery] = useState('');
+   352→
+   353→  const allProducts = [...mockConsumerProducts, ...mockSeedProducts];
+   354→  const filtered = allProducts.filter(p =>
+   355→    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+   356→    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+   357→  );
+   358→
+   359→  return (
+   360→    <div className='space-y-6'>
+   361→      <PageHeader title='All Products' subtitle={`${allProducts.length} products in marketplace`} />
+   362→
+   363→      <div className='relative max-w-sm'>
+   364→        <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+   365→        <Input placeholder='Search products...' value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className='pl-10' />
+   366→      </div>
+   367→
+   368→      <Card>
+   369→        <CardContent className='p-0'>
+   370→          <Table>
+   371→            <TableHeader>
+   372→              <TableRow>
+   373→                <TableHead>Name</TableHead>
+   374→                <TableHead className='hidden sm:table-cell'>Category</TableHead>
+   375→                <TableHead>Price</TableHead>
+   376→                <TableHead className='hidden md:table-cell'>Stock</TableHead>
+   377→                <TableHead className='hidden lg:table-cell'>Rating</TableHead>
+   378→                <TableHead className='hidden lg:table-cell'>Seller</TableHead>
+   379→                <TableHead>Status</TableHead>
+   380→              </TableRow>
+   381→            </TableHeader>
+   382→            <TableBody>
+   383→              {filtered.map((p, idx) => (
+   384→                <TableRow key={p.id}>
+   385→                  <TableCell>
+   386→                    <div className='flex items-center gap-2'>
+   387→                      <span className='text-lg'>
+   388→                        {p.category.includes('Vegetable') ? '🥬' : p.category.includes('Grain') ? '🌾' : p.category.includes('Spice') ? '🌶️' : p.category.includes('Fiber') ? '🧵' : p.category.includes('Dairy') ? '🥚' : p.category.includes('Fruit') ? '🍉' : p.category.includes('Organic') ? '🌿' : '📦'}
+   389→                      </span>
+   390→                      <span className='font-medium text-sm truncate max-w-[150px]'>{p.name}</span>
+   391→                    </div>
+   392→                  </TableCell>
+   393→                  <TableCell className='hidden sm:table-cell text-muted-foreground text-sm'>{p.category}</TableCell>
+   394→                  <TableCell className='text-sm font-medium'>₹{p.price.toLocaleString('en-IN')}<span className='text-muted-foreground'>/{p.unit}</span></TableCell>
+   395→                  <TableCell className='hidden md:table-cell'>
+   396→                    <Badge variant='secondary' className={p.inStock ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}>
+   397→                      {p.inStock ? 'In Stock' : 'Out'}
+   398→                    </Badge>
+   399→                  </TableCell>
+   400→                  <TableCell className='hidden lg:table-cell'>
+   401→                    <span className='flex items-center gap-1 text-sm'>
+   402→                      <Star className='size-3 text-amber-500 fill-amber-500' /> {p.rating}
+   403→                    </span>
+   404→                  </TableCell>
+   405→                  <TableCell className='hidden lg:table-cell text-muted-foreground text-sm'>{p.farmer || 'N/A'}</TableCell>
+   406→                  <TableCell>
+   407→                    <Badge variant='secondary' className={p.inStock ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}>
+   408→                      {p.inStock ? 'Active' : 'Inactive'}
+   409→                    </Badge>
+   410→                  </TableCell>
+   411→                </TableRow>
+   412→              ))}
+   413→            </TableBody>
+   414→          </Table>
+   415→        </CardContent>
+   416→      </Card>
+   417→    </div>
+   418→  );
+   419→}
+   420→
+   421→// ============== ADMIN ORDERS ==============
+   422→export function AdminOrders() {
+   423→  const [activeTab, setActiveTab] = useState('all');
+   424→
+   425→  const orders = [
+   426→    { id: 'ORD-2025-001', customer: 'Priya Sharma', items: 'Tomato × 5, Brinjal × 2', total: 270, status: 'Delivered', date: 'Dec 28, 2024' },
+   427→    { id: 'ORD-2025-002', customer: 'Rahul Verma', items: 'Eggs × 3', total: 240, status: 'Out for Delivery', date: 'Jan 5, 2025' },
+   428→    { id: 'ORD-2025-003', customer: 'Anita Desai', items: 'Rice × 2, Chilli Powder × 1', total: 520, status: 'Placed', date: 'Jan 6, 2025' },
+   429→    { id: 'ORD-2025-004', customer: 'Meena Kumari', items: 'Onion × 10', total: 450, status: 'Preparing', date: 'Jan 6, 2025' },
+   430→    { id: 'ORD-2025-005', customer: 'Rajesh Patel', items: 'Tomato × 3, Eggs × 2', total: 280, status: 'Cancelled', date: 'Jan 4, 2025' },
+   431→    { id: 'ORD-2025-006', customer: 'Sunitha Reddy', items: 'Brinjal × 4', total: 140, status: 'Quality Verified', date: 'Jan 6, 2025' },
+   432→  ];
+   433→
+   434→  const statusColor = (s: string) =>
+   435→    ({ Delivered: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300', 'Out for Delivery': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300', Placed: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', Preparing: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', Cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', 'Quality Verified': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' }[s] || 'bg-gray-100 text-gray-700');
+   436→
+   437→  const filtered = activeTab === 'all' ? orders : orders.filter(o => o.status.toLowerCase().replace(/ /g, '_') === activeTab);
+   438→
+   439→  return (
+   440→    <div className='space-y-6'>
+   441→      <PageHeader title='All Orders' subtitle={`${orders.length} total orders`} />
+   442→
+   443→      <Tabs value={activeTab} onValueChange={setActiveTab}>
+   444→        <TabsList className='flex-wrap'>
+   445→          <TabsTrigger value='all'>All</TabsTrigger>
+   446→          <TabsTrigger value='placed'>Placed</TabsTrigger>
+   447→          <TabsTrigger value='preparing'>Preparing</TabsTrigger>
+   448→          <TabsTrigger value='quality_verified'>QC Done</TabsTrigger>
+   449→          <TabsTrigger value='out_for_delivery'>Shipping</TabsTrigger>
+   450→          <TabsTrigger value='delivered'>Delivered</TabsTrigger>
+   451→        </TabsList>
+   452→
+   453→        <TabsContent value={activeTab} className='mt-4'>
+   454→          <Card>
+   455→            <CardContent className='p-0'>
+   456→              <Table>
+   457→                <TableHeader>
+   458→                  <TableRow>
+   459→                    <TableHead>Order ID</TableHead>
+   460→                    <TableHead>Customer</TableHead>
+   461→                    <TableHead className='hidden md:table-cell'>Items</TableHead>
+   462→                    <TableHead>Total</TableHead>
+   463→                    <TableHead>Status</TableHead>
+   464→                    <TableHead className='hidden sm:table-cell'>Date</TableHead>
+   465→                  </TableRow>
+   466→                </TableHeader>
+   467→                <TableBody>
+   468→                  {filtered.map((o, idx) => (
+   469→                    <TableRow key={o.id}>
+   470→                      <TableCell className='font-medium text-sm'>{o.id}</TableCell>
+   471→                      <TableCell className='text-sm'>{o.customer}</TableCell>
+   472→                      <TableCell className='hidden md:table-cell text-muted-foreground text-sm truncate max-w-[200px]'>{o.items}</TableCell>
+   473→                      <TableCell className='font-semibold text-sm'>₹{o.total.toLocaleString('en-IN')}</TableCell>
+   474→                      <TableCell>
+   475→                        <Badge variant='secondary' className={statusColor(o.status)}>{o.status}</Badge>
+   476→                      </TableCell>
+   477→                      <TableCell className='hidden sm:table-cell text-muted-foreground text-sm'>{o.date}</TableCell>
+   478→                    </TableRow>
+   479→                  ))}
+   480→                </TableBody>
+   481→              </Table>
+   482→            </CardContent>
+   483→          </Card>
+   484→        </TabsContent>
+   485→      </Tabs>
+   486→    </div>
+   487→  );
+   488→}
+   489→
+   490→// ============== ADMIN COLLECTION CENTERS ==============
+   491→export function AdminCollectionCenters() {
+   492→  return (
+   493→    <div className='space-y-6'>
+   494→      <PageHeader title='Collection Centers' subtitle={`${mockCollectionCenters.length} centers registered`} action={
+   495→        <Button onClick={() => toast.success('Add center form coming soon!')}>
+   496→          <Building2 className='size-4 mr-1' /> Add Center
+   497→        </Button>
+   498→      } />
+   499→
+   500→      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+   501→        {mockCollectionCenters.map((c, idx) => (
+   502→          <motion.div key={c.id} {...fadeIn} transition={{ delay: idx * 0.08 }}>
+   503→            <Card className='hover:shadow-md transition-all'>
+   504→              <CardContent className='p-4 sm:p-6'>
+   505→                <div className='flex items-start justify-between mb-3'>
+   506→                  <div>
+   507→                    <h3 className='font-semibold text-sm'>{c.name}</h3>
+   508→                    <p className='text-xs text-muted-foreground flex items-center gap-1 mt-0.5'>
+   509→                      <MapPin className='size-3' /> {c.address}
+   510→                    </p>
+   511→                  </div>
+   512→                  <Badge variant='secondary' className={
+   513→                    c.isOpen
+   514→                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+   515→                      : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+   516→                  }>
+   517→                    {c.isOpen ? 'Open' : 'Closed'}
+   518→                  </Badge>
+   519→                </div>
+   520→
+   521→                <div className='space-y-2 mb-3'>
+   522→                  <div className='flex justify-between text-xs'>
+   523→                    <span className='text-muted-foreground'>Capacity Usage</span>
+   524→                    <span className='font-medium'>{c.currentCapacity}/{c.maxCapacity} tons</span>
+   525→                  </div>
+   526→                  <Progress value={(c.currentCapacity / c.maxCapacity) * 100} className='h-2' />
+   527→                </div>
+   528→
+   529→                <div className='flex flex-wrap gap-1.5'>
+   530→                  {c.acceptedCrops.slice(0, 4).map(cr => (
+   531→                    <Badge key={cr} variant='outline' className='text-xs'>{cr}</Badge>
+   532→                  ))}
+   533→                  {c.acceptedCrops.length > 4 && (
+   534→                    <Badge variant='outline' className='text-xs'>+{c.acceptedCrops.length - 4}</Badge>
+   535→                  )}
+   536→                </div>
+   537→              </CardContent>
+   538→            </Card>
+   539→          </motion.div>
+   540→        ))}
+   541→      </div>
+   542→    </div>
+   543→  );
+   544→}
+   545→
+   546→// ============== ADMIN ANALYTICS ==============
+   547→export function AdminAnalytics() {
+   548→  const monthlyOrders = [
+   549→    { month: 'Jul', orders: 6200 }, { month: 'Aug', orders: 7800 },
+   550→    { month: 'Sep', orders: 8900 }, { month: 'Oct', orders: 9800 },
+   551→    { month: 'Nov', orders: 11000 }, { month: 'Dec', orders: 12450 },
+   552→  ];
+   553→
+   554→  const revenueByCategory = [
+   555→    { category: 'Vegetables', revenue: 520000 },
+   556→    { category: 'Grains', revenue: 380000 },
+   557→    { category: 'Spices', revenue: 290000 },
+   558→    { category: 'Fibers', revenue: 210000 },
+   559→    { category: 'Dairy', revenue: 180000 },
+   560→    { category: 'Seeds', revenue: 270000 },
+   561→  ];
+   562→
+   563→  const userDistribution = [
+   564→    { name: 'Farmers', value: 2847, color: '#16a34a' },
+   565→    { name: 'Consumers', value: 4231, color: '#f59e0b' },
+   566→    { name: 'Collection Centers', value: 24, color: '#8b5cf6' },
+   567→    { name: 'Experts', value: 18, color: '#ef4444' },
+   568→    { name: 'Admins', value: 6, color: '#06b6d4' },
+   569→  ];
+   570→
+   571→  const tooltipStyle = {
+   572→    backgroundColor: 'hsl(var(--card))',
+   573→    border: '1px solid hsl(var(--border))',
+   574→    borderRadius: '8px',
+   575→    fontSize: '12px',
+   576→  };
+   577→
+   578→  return (
+   579→    <div className='space-y-6'>
+   580→      <PageHeader title='Platform Analytics' subtitle='Detailed insights and metrics' />
+   581→
+   582→      <Card>
+   583→        <CardHeader>
+   584→          <CardTitle className='text-base'>Monthly Orders</CardTitle>
+   585→        </CardHeader>
+   586→        <CardContent>
+   587→          <div className='h-[300px]'>
+   588→            <ResponsiveContainer width='100%' height='100%'>
+   589→              <LineChart data={monthlyOrders}>
+   590→                <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+   591→                <XAxis dataKey='month' className='text-xs' />
+   592→                <YAxis className='text-xs' />
+   593→                <Tooltip contentStyle={tooltipStyle} />
+   594→                <Line type='monotone' dataKey='orders' name='Orders' stroke='#16a34a' strokeWidth={2} dot={{ fill: '#16a34a', r: 4 }} />
+   595→              </LineChart>
+   596→            </ResponsiveContainer>
+   597→          </div>
+   598→        </CardContent>
+   599→      </Card>
+   600→
+   601→      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+   602→        <Card>
+   603→          <CardHeader>
+   604→            <CardTitle className='text-base'>Revenue by Category</CardTitle>
+   605→          </CardHeader>
+   606→          <CardContent>
+   607→            <div className='h-[300px]'>
+   608→              <ResponsiveContainer width='100%' height='100%'>
+   609→                <BarChart data={revenueByCategory} layout='vertical'>
+   610→                  <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
+   611→                  <XAxis type='number' className='text-xs' tickFormatter={(v) => `₹${(v / 1000)}K`} />
+   612→                  <YAxis dataKey='category' type='category' className='text-xs' width={80} />
+   613→                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`₹${v.toLocaleString('en-IN')}`, 'Revenue']} />
+   614→                  <Bar dataKey='revenue' name='Revenue' fill='#16a34a' radius={[0, 4, 4, 0]} />
+   615→                </BarChart>
+   616→              </ResponsiveContainer>
+   617→            </div>
+   618→          </CardContent>
+   619→        </Card>
+   620→
+   621→        <Card>
+   622→          <CardHeader>
+   623→            <CardTitle className='text-base'>User Distribution by Role</CardTitle>
+   624→          </CardHeader>
+   625→          <CardContent>
+   626→            <div className='h-[300px]'>
+   627→              <ResponsiveContainer width='100%' height='100%'>
+   628→                <PieChart>
+   629→                  <Pie
+   630→                    data={userDistribution}
+   631→                    cx='50%'
+   632→                    cy='50%'
+   633→                    innerRadius={60}
+   634→                    outerRadius={100}
+   635→                    dataKey='value'
+   636→                    paddingAngle={2}
+   637→                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+   638→                  >
+   639→                    {userDistribution.map((entry, idx) => (
+   640→                      <Cell key={idx} fill={entry.color} />
+   641→                    ))}
+   642→                  </Pie>
+   643→                  <Tooltip contentStyle={tooltipStyle} />
+   644→                </PieChart>
+   645→              </ResponsiveContainer>
+   646→            </div>
+   647→          </CardContent>
+   648→        </Card>
+   649→      </div>
+   650→    </div>
+   651→  );
+   652→}
+   653→

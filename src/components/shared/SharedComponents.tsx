@@ -44,7 +44,7 @@ interface StatCardProps {
 export function StatCard({ title, value, subtitle, icon, trend, className, onClick }: StatCardProps) {
   return (
     <motion.div {...fadeIn}>
-      <Card className={cn('hover:shadow-md transition-shadow cursor-pointer', className)} onClick={onClick}>
+      <Card className={cn('hover-lift cursor-pointer border-l-4 border-l-primary/60', className)} onClick={onClick}>
         <CardContent className='p-4'>
           <div className='flex items-start justify-between'>
             <div className='space-y-1'>
@@ -57,7 +57,7 @@ export function StatCard({ title, value, subtitle, icon, trend, className, onCli
                 </p>
               )}
             </div>
-            <div className='p-2 rounded-xl bg-primary/10 text-primary'>{icon}</div>
+            <div className='p-2.5 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary'>{icon}</div>
           </div>
         </CardContent>
       </Card>
@@ -205,11 +205,13 @@ export function AIInsightCard({ title, message, type = 'info', action, onAction 
 export function LoadingState() {
   return (
     <div className='flex items-center justify-center min-h-[60vh]'>
-      <div className='text-center space-y-4'>
-        <div className='inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-green animate-pulse'>
-          <span className='text-3xl'>🌱</span>
+      <div className='w-full max-w-sm space-y-4 px-4'>
+        <div className='animate-shimmer h-5 w-1/3 rounded-md' />
+        <div className='animate-shimmer h-8 w-2/3 rounded-md' />
+        <div className='animate-shimmer h-4 w-1/2 rounded-md' />
+        <div className='pt-4 text-center'>
+          <p className='text-sm text-muted-foreground'>Loading...</p>
         </div>
-        <p className='text-muted-foreground'>Loading...</p>
       </div>
     </div>
   );
@@ -264,17 +266,17 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, action, onBack }: PageHeaderProps) {
   return (
-    <div className='flex items-center justify-between mb-6'>
-      <div>
+    <div className='flex items-center justify-between mb-6 pb-4 border-b border-border/60'>
+      <div className='space-y-0.5'>
         {onBack && (
           <button onClick={onBack} className='text-muted-foreground hover:text-foreground mb-1 text-sm flex items-center gap-1'>
             ← Back
           </button>
         )}
         <h1 className='text-2xl font-bold tracking-tight'>{title}</h1>
-        {subtitle && <p className='text-muted-foreground text-sm mt-1'>{subtitle}</p>}
+        {subtitle && <p className='text-muted-foreground text-sm mt-0.5'>{subtitle}</p>}
       </div>
-      {action}
+      {action && <div className='flex-shrink-0 ml-4'>{action}</div>}
     </div>
   );
 }

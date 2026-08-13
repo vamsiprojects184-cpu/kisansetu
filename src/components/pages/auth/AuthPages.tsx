@@ -37,6 +37,15 @@ import {
   Zap,
   Target,
   CircleDot,
+  CloudSun,
+  FlaskConical,
+  Eye,
+  Scissors,
+  Banknote,
+  ThumbsUp,
+  Quote,
+  Heart,
+  HelpCircle,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -52,6 +61,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/accordion';
+import { Separator } from '@/components/ui/separator';
 
 import { useAuthStore } from '@/store/use-auth-store';
 import { useAppStore } from '@/store/use-app-store';
@@ -124,6 +141,67 @@ export function LandingPage() {
     { value: '10,000+', label: 'Farmers', icon: <Users className="size-5" /> },
     { value: '5,000+', label: 'Farms', icon: <MapPinned className="size-5" /> },
     { value: '50+', label: 'Districts', icon: <Building2 className="size-5" /> },
+  ];
+
+  const enhancedStats = [
+    { value: '10,000+', label: 'Farmers', icon: <Users className="size-6" /> },
+    { value: '5,000+', label: 'Farms', icon: <Sprout className="size-6" /> },
+    { value: '50+', label: 'Districts', icon: <MapPin className="size-6" /> },
+    { value: '98%', label: 'Satisfaction', icon: <ThumbsUp className="size-6" /> },
+  ];
+
+  const testimonials = [
+    {
+      name: 'Rajesh Kumar',
+      location: 'Warangal, Telangana',
+      role: 'Paddy Farmer',
+      quote: 'KrishiAI ne meri fasal ki bimari ka pata lagaya aur meri padaai bachai. Ab main har mahine ₹15,000 zyada kama raha hoon.',
+      rating: 5,
+      initials: 'RK',
+    },
+    {
+      name: 'Sunita Devi',
+      location: 'Guntur, Andhra Pradesh',
+      role: 'Chilli Farmer',
+      quote: 'Market price prediction ne mujhe sahi time pe sell karne mein madad ki. Pehle middlemen sab kha jaate the, ab direct customers se milta hai.',
+      rating: 5,
+      initials: 'SD',
+    },
+    {
+      name: 'Venkatesh Reddy',
+      location: 'Kurnool, Andhra Pradesh',
+      role: 'Cotton Farmer',
+      quote: 'Soil health test ke baad maine apna fertilizer plan badla aur production 40% badh gayi. Yeh app sahi mein game changer hai.',
+      rating: 4,
+      initials: 'VR',
+    },
+  ];
+
+  const faqs = [
+    {
+      question: 'What is KrishiAI?',
+      answer: 'KrishiAI is an AI-powered agriculture platform designed specifically for Indian farmers. It provides soil health analysis, crop disease detection, market price predictions, and a direct farm-to-consumer marketplace — all accessible through your smartphone.',
+    },
+    {
+      question: 'How does crop disease detection work?',
+      answer: 'Simply take a photo of the affected leaf or crop using your phone camera. Our AI model analyzes the image in seconds and identifies the disease along with recommended treatments and preventive measures.',
+    },
+    {
+      question: 'Is KrishiAI free to use?',
+      answer: 'Yes! KrishiAI offers a free tier with essential features like basic soil analysis, disease detection, and weather alerts. Premium features such as advanced market analytics and expert consultations are available on affordable subscription plans.',
+    },
+    {
+      question: 'Which languages does KrishiAI support?',
+      answer: 'KrishiAI currently supports Hindi, Telugu, Tamil, and English. We are actively adding more regional languages including Marathi, Kannada, and Bengali to serve farmers across India.',
+    },
+    {
+      question: 'How can I sell my produce on KrishiAI?',
+      answer: 'After registering as a farmer, you can list your produce on the marketplace with photos and details. Consumers and collection centers can browse and place orders directly. We handle quality checks and logistics support.',
+    },
+    {
+      question: 'How is my data protected?',
+      answer: 'We take data privacy seriously. All your farm data, personal information, and financial details are encrypted and stored securely. We never share your data with third parties without your explicit consent.',
+    },
   ];
 
   return (
@@ -334,6 +412,139 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* ===== STATS COUNTER SECTION ===== */}
+      <section className="py-14 sm:py-16 px-4 sm:px-6 bg-emerald-50 dark:bg-emerald-950/30 border-y border-emerald-100 dark:border-emerald-900/40">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: '-50px' }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4"
+          >
+            {enhancedStats.map((stat, i) => (
+              <motion.div
+                key={i}
+                variants={fadeInUp}
+                className="flex flex-col items-center text-center"
+              >
+                <div className="size-14 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-700 dark:text-emerald-400 mb-3">
+                  {stat.icon}
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-emerald-800 dark:text-emerald-300">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-emerald-600 dark:text-emerald-400/70 mt-0.5">
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== TESTIMONIALS SECTION ===== */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-background">
+        <div className="max-w-6xl mx-auto">
+          <motion.div {...fadeInUp} className="text-center mb-10 sm:mb-14">
+            <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
+              <Heart className="size-3.5 mr-1" />
+              Farmer Stories
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+              Trusted by 10,000+ Farmers Across India
+            </h2>
+            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+              Hear from real farmers who have transformed their livelihoods with KrishiAI.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: '-50px' }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6"
+          >
+            {testimonials.map((t, i) => (
+              <motion.div key={i} variants={fadeInUp}>
+                <Card className="h-full border hover:shadow-md transition-all duration-300">
+                  <CardContent className="p-6">
+                    <Quote className="size-8 text-primary/20 mb-3" />
+                    <p className="text-sm sm:text-base leading-relaxed text-foreground/80 mb-5">
+                      "{t.quote}"
+                    </p>
+                    <div className="flex items-center gap-1 mb-4">
+                      {Array.from({ length: 5 }).map((_, si) => (
+                        <Star
+                          key={si}
+                          className={
+                            si < t.rating
+                              ? 'size-4 fill-amber-400 text-amber-400'
+                              : 'size-4 text-muted-foreground/30'
+                          }
+                        />
+                      ))}
+                    </div>
+                    <Separator className="mb-4" />
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-10">
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                          {t.initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold text-sm">{t.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t.role} · {t.location}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== FAQ SECTION ===== */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-muted/40">
+        <div className="max-w-3xl mx-auto">
+          <motion.div {...fadeInUp} className="text-center mb-10 sm:mb-14">
+            <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
+              <HelpCircle className="size-3.5 mr-1" />
+              Got Questions?
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+              Frequently Asked Questions
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              Find answers to the most common questions about KrishiAI.
+            </p>
+          </motion.div>
+
+          <motion.div
+            {...fadeInUp}
+            whileInView="animate"
+            viewport={{ once: true, margin: '-50px' }}
+          >
+            <Accordion type="single" collapsible className="w-full">
+              {faqs.map((faq, i) => (
+                <AccordionItem key={i} value={`faq-${i}`}>
+                  <AccordionTrigger className="text-left text-sm sm:text-base font-medium">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground text-sm leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ===== CTA SECTION ===== */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 gradient-green">
         <motion.div
@@ -358,17 +569,101 @@ export function LandingPage() {
       </section>
 
       {/* ===== FOOTER ===== */}
-      <footer className="bg-foreground text-background py-8 sm:py-10 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="size-8 rounded-lg gradient-green flex items-center justify-center text-white font-bold text-sm">
-              K
+      <footer className="bg-foreground text-background mt-auto">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10">
+            {/* About Column */}
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="size-9 rounded-lg gradient-green flex items-center justify-center text-white font-bold text-sm">
+                  K
+                </div>
+                <span className="font-bold text-lg">KrishiAI</span>
+              </div>
+              <p className="text-sm text-background/60 leading-relaxed">
+                AI-powered agriculture platform empowering Indian farmers with smart tools for better yields and fair prices.
+              </p>
+              {/* Social Media Icons */}
+              <div className="flex items-center gap-3 mt-5">
+                <a href="#" aria-label="Instagram" className="size-9 rounded-full bg-background/10 hover:bg-background/20 flex items-center justify-center transition-colors">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                </a>
+                <a href="#" aria-label="Twitter" className="size-9 rounded-full bg-background/10 hover:bg-background/20 flex items-center justify-center transition-colors">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="#" aria-label="YouTube" className="size-9 rounded-full bg-background/10 hover:bg-background/20 flex items-center justify-center transition-colors">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="#" aria-label="Facebook" className="size-9 rounded-full bg-background/10 hover:bg-background/20 flex items-center justify-center transition-colors">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+              </div>
             </div>
-            <span className="font-bold text-lg">KrishiAI</span>
+
+            {/* Quick Links Column */}
+            <div>
+              <h3 className="font-semibold text-sm uppercase tracking-wider mb-4 text-background/80">
+                Quick Links
+              </h3>
+              <ul className="space-y-2.5">
+                <li><button onClick={() => navigate('login')} className="text-sm text-background/60 hover:text-background transition-colors">Login</button></li>
+                <li><button onClick={() => navigate('register')} className="text-sm text-background/60 hover:text-background transition-colors">Register</button></li>
+                <li><button onClick={() => navigate('marketplace/home')} className="text-sm text-background/60 hover:text-background transition-colors">Marketplace</button></li>
+                <li><button onClick={() => navigate('login')} className="text-sm text-background/60 hover:text-background transition-colors">Features</button></li>
+              </ul>
+            </div>
+
+            {/* For Farmers Column */}
+            <div>
+              <h3 className="font-semibold text-sm uppercase tracking-wider mb-4 text-background/80">
+                For Farmers
+              </h3>
+              <ul className="space-y-2.5">
+                <li><span className="text-sm text-background/60">Soil Health</span></li>
+                <li><span className="text-sm text-background/60">Disease Detection</span></li>
+                <li><span className="text-sm text-background/60">Market Prices</span></li>
+                <li><span className="text-sm text-background/60">Sell Produce</span></li>
+              </ul>
+            </div>
+
+            {/* Contact Column */}
+            <div>
+              <h3 className="font-semibold text-sm uppercase tracking-wider mb-4 text-background/80">
+                Contact
+              </h3>
+              <ul className="space-y-2.5">
+                <li className="flex items-center gap-2 text-sm text-background/60">
+                  <Mail className="size-3.5" />
+                  hello@krishiai.com
+                </li>
+                <li className="flex items-center gap-2 text-sm text-background/60">
+                  <Phone className="size-3.5" />
+                  +91 98765 43210
+                </li>
+                <li className="flex items-start gap-2 text-sm text-background/60">
+                  <MapPin className="size-3.5 mt-0.5" />
+                  Hyderabad, Telangana, India
+                </li>
+              </ul>
+            </div>
           </div>
-          <p className="text-sm text-background/60">
-            © 2025 KrishiAI. Empowering Indian Farmers with AI.
-          </p>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-background/10">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-background/50">
+              © 2025 KrishiAI. Made with ❤️ for Indian Farmers.
+            </p>
+            <div className="flex items-center gap-4">
+              <button className="text-xs text-background/50 hover:text-background/80 transition-colors">
+                Privacy Policy
+              </button>
+              <button className="text-xs text-background/50 hover:text-background/80 transition-colors">
+                Terms of Service
+              </button>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
@@ -1512,102 +1807,3 @@ export function OnboardingPage() {
   );
 }
 
-// ==================== EXTRA ICONS (for timeline) ====================
-// These are simple placeholder components using Lucide
-function FlaskConical({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M9 3h6" />
-      <path d="M10 9V3h4v6l5 8.5a2 2 0 0 1-1.7 3H6.7a2 2 0 0 1-1.7-3L10 9Z" />
-    </svg>
-  );
-}
-
-function CloudSun({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M12 2v2" />
-      <path d="m4.93 4.93 1.41 1.41" />
-      <path d="M20 12h2" />
-      <path d="m19.07 4.93-1.41 1.41" />
-      <path d="M15.947 12.65a4 4 0 0 0-5.925-4.128" />
-      <path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z" />
-    </svg>
-  );
-}
-
-function Eye({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function Scissors({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <circle cx="6" cy="6" r="3" />
-      <path d="M8.12 8.12 12 12" />
-      <path d="M20 4 8.12 15.88" />
-      <circle cx="6" cy="18" r="3" />
-      <path d="M14.8 14.8 20 20" />
-    </svg>
-  );
-}
-
-function Banknote({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect width="20" height="12" x="2" y="6" rx="2" />
-      <circle cx="12" cy="12" r="2" />
-      <path d="M6 12h.01M18 12h.01" />
-    </svg>
-  );
-}

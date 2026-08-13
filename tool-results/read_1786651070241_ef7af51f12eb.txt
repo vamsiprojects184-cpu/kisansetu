@@ -1,0 +1,1495 @@
+   140→    { icon: <Truck className="size-5" />, label: 'Deliver', emoji: '🚚' },
+   141→  ];
+   142→
+   143→  const stats = [
+   144→    { value: '10,000+', label: 'Farmers', icon: <Users className="size-5" /> },
+   145→    { value: '5,000+', label: 'Farms', icon: <MapPinned className="size-5" /> },
+   146→    { value: '50+', label: 'Districts', icon: <Building2 className="size-5" /> },
+   147→  ];
+   148→
+   149→  return (
+   150→    <div className="min-h-screen flex flex-col bg-background">
+   151→      {/* ===== HERO SECTION ===== */}
+   152→      <section className="gradient-green relative overflow-hidden">
+   153→        <div className="absolute inset-0 opacity-10">
+   154→          <div className="absolute top-10 left-10 size-32 rounded-full bg-white/20 animate-float" />
+   155→          <div className="absolute bottom-20 right-20 size-48 rounded-full bg-white/10 animate-float" style={{ animationDelay: '1s' }} />
+   156→          <div className="absolute top-1/2 left-1/2 size-24 rounded-full bg-white/15 animate-float" style={{ animationDelay: '2s' }} />
+   157→        </div>
+   158→
+   159→        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32">
+   160→          <motion.div
+   161→            initial={{ opacity: 0, y: 30 }}
+   162→            animate={{ opacity: 1, y: 0 }}
+   163→            transition={{ duration: 0.7 }}
+   164→            className="text-center"
+   165→          >
+   166→            <Badge className="mb-6 bg-white/20 text-white border-white/30 hover:bg-white/30 text-sm px-4 py-1.5">
+   167→              <Zap className="size-3.5 mr-1.5" />
+   168→              AI-Powered Agriculture Platform
+   169→            </Badge>
+   170→            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
+   171→              Smart Farming.<br className="hidden sm:block" />
+   172→              Better Decisions.<br className="hidden sm:block" />
+   173→              Better Income.
+   174→            </h1>
+   175→            <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl text-white/85 max-w-2xl mx-auto leading-relaxed">
+   176→              AI-powered insights for every stage of your farming journey.
+   177→            </p>
+   178→            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+   179→              <Button
+   180→                size="lg"
+   181→                className="bg-white text-green-700 hover:bg-white/90 font-semibold text-base px-8 h-12 rounded-xl shadow-lg"
+   182→                onClick={() => navigate('login')}
+   183→              >
+   184→                Start Farming
+   185→                <ArrowRight className="size-4 ml-1" />
+   186→              </Button>
+   187→              <Button
+   188→                size="lg"
+   189→                variant="outline"
+   190→                className="border-white/40 text-white hover:bg-white/15 font-semibold text-base px-8 h-12 rounded-xl bg-transparent"
+   191→                onClick={handleExploreMarketplace}
+   192→              >
+   193→                <ShoppingCart className="size-4 mr-1.5" />
+   194→                Explore Marketplace
+   195→              </Button>
+   196→            </div>
+   197→          </motion.div>
+   198→
+   199→          {/* Mini Dashboard Preview */}
+   200→          <motion.div
+   201→            initial={{ opacity: 0, y: 40 }}
+   202→            animate={{ opacity: 1, y: 0 }}
+   203→            transition={{ duration: 0.7, delay: 0.3 }}
+   204→            className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto"
+   205→          >
+   206→            {stats.map((stat, i) => (
+   207→              <Card
+   208→                key={i}
+   209→                className="bg-white/15 border-white/20 backdrop-blur-sm text-white"
+   210→              >
+   211→                <CardContent className="p-4 flex items-center gap-3">
+   212→                  <div className="flex-shrink-0 size-10 rounded-lg bg-white/20 flex items-center justify-center">
+   213→                    {stat.icon}
+   214→                  </div>
+   215→                  <div>
+   216→                    <div className="text-2xl font-bold">{stat.value}</div>
+   217→                    <div className="text-white/70 text-sm">{stat.label}</div>
+   218→                  </div>
+   219→                </CardContent>
+   220→              </Card>
+   221→            ))}
+   222→          </motion.div>
+   223→        </div>
+   224→      </section>
+   225→
+   226→      {/* ===== PROBLEM SECTION ===== */}
+   227→      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-background">
+   228→        <div className="max-w-6xl mx-auto">
+   229→          <motion.div {...fadeInUp} className="text-center mb-10 sm:mb-14">
+   230→            <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
+   231→              <Target className="size-3.5 mr-1" />
+   232→              The Problem
+   233→            </Badge>
+   234→            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+   235→              Challenges Farmers Face Every Day
+   236→            </h2>
+   237→            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+   238→              Indian agriculture contributes 18% to GDP but farmers still struggle with basic challenges that technology can solve.
+   239→            </p>
+   240→          </motion.div>
+   241→
+   242→          <motion.div
+   243→            variants={staggerContainer}
+   244→            initial="initial"
+   245→            whileInView="animate"
+   246→            viewport={{ once: true, margin: '-50px' }}
+   247→            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+   248→          >
+   249→            {problems.map((problem, i) => (
+   250→              <motion.div key={i} variants={fadeInUp}>
+   251→                <Card className="h-full border-dashed hover:border-solid hover:shadow-md transition-all duration-300 group">
+   252→                  <CardContent className="p-5 sm:p-6">
+   253→                    <div className="text-3xl mb-3">{problem.icon}</div>
+   254→                    <h3 className="font-semibold text-base sm:text-lg mb-2 group-hover:text-primary transition-colors">
+   255→                      {problem.title}
+   256→                    </h3>
+   257→                    <p className="text-muted-foreground text-sm leading-relaxed">
+   258→                      {problem.desc}
+   259→                    </p>
+   260→                  </CardContent>
+   261→                </Card>
+   262→              </motion.div>
+   263→            ))}
+   264→          </motion.div>
+   265→        </div>
+   266→      </section>
+   267→
+   268→      {/* ===== AI FEATURES SECTION ===== */}
+   269→      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-muted/40">
+   270→        <div className="max-w-6xl mx-auto">
+   271→          <motion.div {...fadeInUp} className="text-center mb-10 sm:mb-14">
+   272→            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20 hover:bg-primary/15">
+   273→              <Brain className="size-3.5 mr-1" />
+   274→              AI-Powered Features
+   275→            </Badge>
+   276→            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+   277→              Everything Your Farm Needs, Powered by AI
+   278→            </h2>
+   279→            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+   280→              From soil testing to selling — KrishiAI covers your entire farming journey with intelligent tools.
+   281→            </p>
+   282→          </motion.div>
+   283→
+   284→          <motion.div
+   285→            variants={staggerContainer}
+   286→            initial="initial"
+   287→            whileInView="animate"
+   288→            viewport={{ once: true, margin: '-50px' }}
+   289→            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5"
+   290→          >
+   291→            {features.map((feature, i) => (
+   292→              <motion.div key={i} variants={scaleIn}>
+   293→                <Card className="h-full hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
+   294→                  <CardContent className="p-5 sm:p-6">
+   295→                    <div className={`inline-flex size-12 rounded-xl items-center justify-center mb-4 ${feature.color} transition-transform group-hover:scale-110`}>
+   296→                      {feature.icon}
+   297→                    </div>
+   298→                    <h3 className="font-semibold text-base mb-1.5">{feature.title}</h3>
+   299→                    <p className="text-muted-foreground text-sm leading-relaxed">{feature.desc}</p>
+   300→                  </CardContent>
+   301→                </Card>
+   302→              </motion.div>
+   303→            ))}
+   304→          </motion.div>
+   305→        </div>
+   306→      </section>
+   307→
+   308→      {/* ===== FARMING JOURNEY SECTION ===== */}
+   309→      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-background">
+   310→        <div className="max-w-5xl mx-auto">
+   311→          <motion.div {...fadeInUp} className="text-center mb-10 sm:mb-14">
+   312→            <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
+   313→              <CircleDot className="size-3.5 mr-1" />
+   314→              Your Farming Journey
+   315→            </Badge>
+   316→            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+   317→              From Soil to Sale, We Guide You
+   318→            </h2>
+   319→          </motion.div>
+   320→
+   321→          <div className="relative">
+   322→            {/* Desktop timeline line */}
+   323→            <div className="hidden md:block absolute top-8 left-0 right-0 h-0.5 bg-border" />
+   324→
+   325→            <motion.div
+   326→              variants={staggerContainer}
+   327→              initial="initial"
+   328→              whileInView="animate"
+   329→              viewport={{ once: true, margin: '-50px' }}
+   330→              className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-4 md:gap-2"
+   331→            >
+   332→              {journeySteps.map((step, i) => (
+   333→                <motion.div
+   334→                  key={i}
+   335→                  variants={fadeInUp}
+   336→                  className="flex flex-col items-center text-center"
+   337→                >
+   338→                  <div className="relative z-10 size-16 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center mb-3 hover:bg-primary hover:text-primary-foreground transition-colors group">
+   339→                    <span className="text-xl group-hover:scale-110 transition-transform">
+   340→                      {step.emoji}
+   341→                    </span>
+   342→                    {/* Arrow for mobile */}
+   343→                    {i < journeySteps.length - 1 && (
+   344→                      <ChevronRight className="hidden md:block absolute -right-5 top-1/2 -translate-y-1/2 size-4 text-primary/40" />
+   345→                    )}
+   346→                  </div>
+   347→                  <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+   348→                    {step.label}
+   349→                  </span>
+   350→                </motion.div>
+   351→              ))}
+   352→            </motion.div>
+   353→          </div>
+   354→        </div>
+   355→      </section>
+   356→
+   357→      {/* ===== CTA SECTION ===== */}
+   358→      <section className="py-16 sm:py-20 px-4 sm:px-6 gradient-green">
+   359→        <motion.div
+   360→          {...fadeInUp}
+   361→          className="max-w-3xl mx-auto text-center"
+   362→        >
+   363→          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">
+   364→            Ready to Transform Your Farming?
+   365→          </h2>
+   366→          <p className="mt-4 text-white/80 text-base sm:text-lg">
+   367→            Join thousands of farmers already using KrishiAI to make smarter decisions and earn more.
+   368→          </p>
+   369→          <Button
+   370→            size="lg"
+   371→            className="mt-8 bg-white text-green-700 hover:bg-white/90 font-semibold text-base px-8 h-12 rounded-xl shadow-lg"
+   372→            onClick={() => navigate('login')}
+   373→          >
+   374→            Get Started Free
+   375→            <ArrowRight className="size-4 ml-1" />
+   376→          </Button>
+   377→        </motion.div>
+   378→      </section>
+   379→
+   380→      {/* ===== FOOTER ===== */}
+   381→      <footer className="bg-foreground text-background py-8 sm:py-10 px-4 sm:px-6">
+   382→        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+   383→          <div className="flex items-center gap-2.5">
+   384→            <div className="size-8 rounded-lg gradient-green flex items-center justify-center text-white font-bold text-sm">
+   385→              K
+   386→            </div>
+   387→            <span className="font-bold text-lg">KrishiAI</span>
+   388→          </div>
+   389→          <p className="text-sm text-background/60">
+   390→            © 2025 KrishiAI. Empowering Indian Farmers with AI.
+   391→          </p>
+   392→        </div>
+   393→      </footer>
+   394→    </div>
+   395→  );
+   396→}
+   397→
+   398→// ==================== LOGIN PAGE ====================
+   399→
+   400→const roleDashboardMap: Record<string, RoutePath> = {
+   401→  farmer: 'farmer/dashboard',
+   402→  consumer: 'consumer/dashboard',
+   403→  collection_center: 'collection-center/dashboard',
+   404→  expert: 'expert/dashboard',
+   405→  admin: 'admin/dashboard',
+   406→};
+   407→
+   408→const roleIcons: Record<UserRole, React.ReactNode> = {
+   409→  farmer: <Tractor className="size-5" />,
+   410→  consumer: <ShoppingCart className="size-5" />,
+   411→  collection_center: <Building2 className="size-5" />,
+   412→  expert: <Stethoscope className="size-5" />,
+   413→  admin: <ShieldCheck className="size-5" />,
+   414→};
+   415→
+   416→const roleLabels: Record<UserRole, string> = {
+   417→  farmer: 'Farmer',
+   418→  consumer: 'Consumer',
+   419→  collection_center: 'Collection Center',
+   420→  expert: 'Expert',
+   421→  admin: 'Admin',
+   422→};
+   423→
+   424→const roleColors: Record<UserRole, string> = {
+   425→  farmer: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-900/30',
+   426→  consumer: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-900/30',
+   427→  collection_center: 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 dark:bg-sky-900/20 dark:text-sky-400 dark:border-sky-800 dark:hover:bg-sky-900/30',
+   428→  expert: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800 dark:hover:bg-violet-900/30',
+   429→  admin: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/30',
+   430→};
+   431→
+   432→export function LoginPage() {
+   433→  const { navigate } = useAppStore();
+   434→  const { login, loginWithPhone, loginWithEmail, isLoading } = useAuthStore();
+   435→  const [phone, setPhone] = useState('');
+   436→  const [email, setEmail] = useState('');
+   437→  const [password, setPassword] = useState('');
+   438→  const [loginError, setLoginError] = useState('');
+   439→
+   440→  const handleDemoLogin = async (role: UserRole) => {
+   441→    setLoginError('');
+   442→    try {
+   443→      await login(role);
+   444→      navigate(roleDashboardMap[role]);
+   445→    } catch (e) {
+   446→      setLoginError('Backend unavailable. Using offline mode.');
+   447→    }
+   448→  };
+   449→
+   450→  const handlePhoneLogin = async () => {
+   451→    setLoginError('');
+   452→    if (phone.length >= 10 && password.length > 0) {
+   453→      try {
+   454→        await loginWithPhone(`+91 ${phone}`, password);
+   455→        const user = useAuthStore.getState().user;
+   456→        const route = user?.role === 'consumer' ? 'consumer/dashboard' : 'farmer/dashboard';
+   457→        navigate(route);
+   458→      } catch {
+   459→        setLoginError('Invalid phone or password');
+   460→      }
+   461→    }
+   462→  };
+   463→
+   464→  const handleEmailLogin = async () => {
+   465→    setLoginError('');
+   466→    if (email.includes('@') && password.length > 0) {
+   467→      try {
+   468→        await loginWithEmail(email, password);
+   469→        const user = useAuthStore.getState().user;
+   470→        const route = user?.role === 'consumer' ? 'consumer/dashboard' : 'farmer/dashboard';
+   471→        navigate(route);
+   472→      } catch {
+   473→        setLoginError('Invalid email or password');
+   474→      }
+   475→    }
+   476→  };
+   477→
+   478→  const demoRoles: UserRole[] = ['farmer', 'consumer', 'collection_center', 'expert', 'admin'];
+   479→
+   480→  return (
+   481→    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8">
+   482→      <motion.div
+   483→        initial={{ opacity: 0, y: 20 }}
+   484→        animate={{ opacity: 1, y: 0 }}
+   485→        transition={{ duration: 0.5 }}
+   486→        className="w-full max-w-md"
+   487→      >
+   488→        {/* Logo */}
+   489→        <div className="flex flex-col items-center mb-8">
+   490→          <div className="size-14 rounded-2xl gradient-green flex items-center justify-center text-white font-bold text-2xl mb-4 shadow-lg animate-pulse-green">
+   491→            K
+   492→          </div>
+   493→          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Welcome Back</h1>
+   494→          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
+   495→            Sign in to your KrishiAI account
+   496→          </p>
+   497→        </div>
+   498→
+   499→        <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm">
+   500→          <CardContent className="p-6 sm:p-8 space-y-5">
+   501→            {/* Phone Input */}
+   502→            <div className="space-y-2">
+   503→              <Label htmlFor="phone" className="text-sm font-medium">
+   504→                Phone Number
+   505→              </Label>
+   506→              <div className="flex gap-2">
+   507→                <div className="flex items-center gap-1.5 px-3 rounded-md border border-input bg-muted/50 text-sm text-muted-foreground whitespace-nowrap h-9">
+   508→                  🇮🇳 +91
+   509→                </div>
+   510→                <Input
+   511→                  id="phone"
+   512→                  type="tel"
+   513→                  placeholder="Enter phone number"
+   514→                  value={phone}
+   515→                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+   516→                  className="flex-1"
+   517→                  onKeyDown={(e) => e.key === 'Enter' && handlePhoneLogin()}
+   518→                />
+   519→              </div>
+   520→              <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handlePhoneLogin()} className="mt-2" />
+   521→            </div>
+   522→
+   523→            {/* OR Divider */}
+   524→            <div className="relative flex items-center gap-3">
+   525→              <div className="flex-1 h-px bg-border" />
+   526→              <span className="text-xs text-muted-foreground font-medium uppercase">or</span>
+   527→              <div className="flex-1 h-px bg-border" />
+   528→            </div>
+   529→
+   530→            {/* Email Input */}
+   531→            <div className="space-y-2">
+   532→              <Label htmlFor="email" className="text-sm font-medium">
+   533→                Email Address
+   534→              </Label>
+   535→              <Input
+   536→                id="email"
+   537→                type="email"
+   538→                placeholder="Enter your email"
+   539→                value={email}
+   540→                onChange={(e) => setEmail(e.target.value)}
+   541→                onKeyDown={(e) => e.key === 'Enter' && handleEmailLogin()}
+   542→              />
+   543→              <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleEmailLogin()} className="mt-2" />
+   544→            </div>
+   545→
+   546→            {/* Submit */}
+   547→            <Button
+   548→              className="w-full h-11 font-semibold rounded-xl"
+   549→              disabled={isLoading || (phone.length < 10 && !email.includes('@'))}
+   550→              onClick={phone.length >= 10 ? handlePhoneLogin : handleEmailLogin}
+   551→            >
+   552→              {isLoading ? (
+   553→                <span className="flex items-center gap-2">
+   554→                  <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+   555→                  Signing in...
+   556→                </span>
+   557→              ) : (
+   558→                <>
+   559→                  Sign In
+   560→                  <ArrowRight className="size-4" />
+   561→                </>
+   562→              )}
+   563→            </Button>
+   564→            {loginError && <p className="text-sm text-destructive text-center -mt-2">{loginError}</p>}
+   565→
+   566→            {/* Demo Login Section */}
+   567→            <div className="pt-2">
+   568→              <div className="relative flex items-center gap-3 mb-4">
+   569→                <div className="flex-1 h-px bg-border" />
+   570→                <span className="text-xs text-muted-foreground font-medium">
+   571→                  Demo Login
+   572→                </span>
+   573→                <div className="flex-1 h-px bg-border" />
+   574→              </div>
+   575→
+   576→              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+   577→                {demoRoles.map((role) => (
+   578→                  <Button
+   579→                    key={role}
+   580→                    variant="outline"
+   581→                    className={`h-auto py-3 px-3 flex flex-col items-center gap-2 text-xs font-medium rounded-xl transition-all ${roleColors[role]}`}
+   582→                    onClick={() => handleDemoLogin(role)}
+   583→                    disabled={isLoading}
+   584→                  >
+   585→                    {roleIcons[role]}
+   586→                    <span>{roleLabels[role]}</span>
+   587→                  </Button>
+   588→                ))}
+   589→              </div>
+   590→            </div>
+   591→          </CardContent>
+   592→        </Card>
+   593→
+   594→        {/* Register Link */}
+   595→        <p className="text-center mt-6 text-sm text-muted-foreground">
+   596→          Don&apos;t have an account?{' '}
+   597→          <button
+   598→            onClick={() => navigate('register')}
+   599→            className="text-primary font-semibold hover:underline"
+   600→          >
+   601→            Create Account
+   602→          </button>
+   603→        </p>
+   604→      </motion.div>
+   605→    </div>
+   606→  );
+   607→}
+   608→
+   609→// ==================== REGISTER PAGE ====================
+   610→
+   611→const registerRoles: { role: UserRole; icon: React.ReactNode; label: string; desc: string; color: string }[] = [
+   612→  { role: 'farmer', icon: <Tractor className="size-7" />, label: 'Farmer', desc: 'Grow crops, manage your farm, and sell produce', color: 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' },
+   613→  { role: 'consumer', icon: <ShoppingCart className="size-7" />, label: 'Consumer', desc: 'Buy fresh farm produce directly from farmers', color: 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400' },
+   614→  { role: 'collection_center', icon: <Building2 className="size-7" />, label: 'Collection Center', desc: 'Collect, quality-check, and distribute produce', color: 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-900/20 dark:border-sky-800 dark:text-sky-400' },
+   615→  { role: 'expert', icon: <Stethoscope className="size-7" />, label: 'Expert', desc: 'Advise farmers and review disease cases', color: 'bg-violet-50 border-violet-200 text-violet-700 dark:bg-violet-900/20 dark:border-violet-800 dark:text-violet-400' },
+   616→];
+   617→
+   618→const languages = [
+   619→  { code: 'en', label: 'English', native: 'English' },
+   620→  { code: 'te', label: 'Telugu', native: 'తెలుగు' },
+   621→  { code: 'hi', label: 'Hindi', native: 'हिंदी' },
+   622→  { code: 'ta', label: 'Tamil', native: 'தமிழ்' },
+   623→  { code: 'kn', label: 'Kannada', native: 'ಕನ್ನಡ' },
+   624→  { code: 'ml', label: 'Malayalam', native: 'മലയാളം' },
+   625→];
+   626→
+   627→export function RegisterPage() {
+   628→  const { navigate } = useAppStore();
+   629→  const { register, isLoading } = useAuthStore();
+   630→  const [step, setStep] = useState(1);
+   631→  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+   632→  const [name, setName] = useState('');
+   633→  const [phone, setPhone] = useState('');
+   634→  const [email, setEmail] = useState('');
+   635→  const [password, setPassword] = useState('');
+   636→  const [selectedLang, setSelectedLang] = useState('en');
+   637→  const [regError, setRegError] = useState('');
+   638→
+   639→  const totalSteps = 4;
+   640→
+   641→  const handleComplete = async () => {
+   642→    setRegError('');
+   643→    if (selectedRole) {
+   644→      try {
+   645→        await register({ name, email, phone: '+91 ' + phone, password, role: selectedRole });
+   646→        if (selectedRole === 'farmer') {
+   647→          navigate('onboarding');
+   648→        } else {
+   649→          navigate(roleDashboardMap[selectedRole]);
+   650→        }
+   651→      } catch (e: any) {
+   652→        setRegError(e.message || 'Registration failed');
+   653→      }
+   654→    }
+   655→  };
+   656→
+   657→  const canProceedStep2 = name.trim().length > 0 && phone.length >= 10 && email.includes('@') && password.length >= 4;
+   658→
+   659→  return (
+   660→    <div className="min-h-screen flex flex-col bg-background">
+   661→      {/* Header */}
+   662→      <div className="p-4 flex items-center gap-3">
+   663→        <button
+   664→          onClick={() => step > 1 ? setStep(step - 1) : navigate('login')}
+   665→          className="size-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+   666→        >
+   667→          <ChevronLeft className="size-5" />
+   668→        </button>
+   669→        <div className="flex items-center gap-2">
+   670→          <div className="size-8 rounded-lg gradient-green flex items-center justify-center text-white font-bold text-sm">
+   671→            K
+   672→          </div>
+   673→          <span className="font-bold">KrishiAI</span>
+   674→        </div>
+   675→      </div>
+   676→
+   677→      {/* Progress Stepper */}
+   678→      <div className="px-6 pt-2 pb-4">
+   679→        <div className="flex items-center gap-2">
+   680→          {Array.from({ length: totalSteps }).map((_, i) => (
+   681→            <React.Fragment key={i}>
+   682→              <div
+   683→                className={`h-2 flex-1 rounded-full transition-colors duration-300 ${
+   684→                  i < step ? 'bg-primary' : 'bg-border'
+   685→                }`}
+   686→              />
+   687→            </React.Fragment>
+   688→          ))}
+   689→        </div>
+   690→        <p className="text-xs text-muted-foreground mt-2 text-center">
+   691→          Step {step} of {totalSteps}
+   692→        </p>
+   693→      </div>
+   694→
+   695→      {/* Content */}
+   696→      <div className="flex-1 flex items-center justify-center px-4 pb-8">
+   697→        <AnimatePresence mode="wait">
+   698→          {/* Step 1: Select Role */}
+   699→          {step === 1 && (
+   700→            <motion.div
+   701→              key="step1"
+   702→              initial={{ opacity: 0, x: 30 }}
+   703→              animate={{ opacity: 1, x: 0 }}
+   704→              exit={{ opacity: 0, x: -30 }}
+   705→              transition={{ duration: 0.3 }}
+   706→              className="w-full max-w-lg"
+   707→            >
+   708→              <div className="text-center mb-6">
+   709→                <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+   710→                  Who are you?
+   711→                </h2>
+   712→                <p className="text-muted-foreground mt-1 text-sm">
+   713→                  Select your role to get started
+   714→                </p>
+   715→              </div>
+   716→
+   717→              <div className="space-y-3">
+   718→                {registerRoles.map((r) => (
+   719→                  <button
+   720→                    key={r.role}
+   721→                    onClick={() => setSelectedRole(r.role)}
+   722→                    className={`w-full text-left rounded-xl border-2 p-4 sm:p-5 transition-all duration-200 ${
+   723→                      selectedRole === r.role
+   724→                        ? `${r.color} border-current shadow-sm scale-[1.01]`
+   725→                        : 'border-border hover:border-primary/30 hover:bg-muted/50'
+   726→                    }`}
+   727→                  >
+   728→                    <div className="flex items-start gap-4">
+   729→                      <div className={`flex-shrink-0 size-12 rounded-xl flex items-center justify-center ${
+   730→                        selectedRole === r.role ? 'bg-white/60 dark:bg-black/20' : 'bg-muted'
+   731→                      }`}>
+   732→                        {r.icon}
+   733→                      </div>
+   734→                      <div className="flex-1 min-w-0">
+   735→                        <div className="font-semibold text-base">{r.label}</div>
+   736→                        <div className="text-sm text-muted-foreground mt-0.5">
+   737→                          {r.desc}
+   738→                        </div>
+   739→                      </div>
+   740→                      {selectedRole === r.role && (
+   741→                        <CheckCircle2 className="size-5 flex-shrink-0 mt-1" />
+   742→                      )}
+   743→                    </div>
+   744→                  </button>
+   745→                ))}
+   746→              </div>
+   747→
+   748→              <Button
+   749→                className="w-full mt-6 h-11 font-semibold rounded-xl"
+   750→                disabled={!selectedRole}
+   751→                onClick={() => setStep(2)}
+   752→              >
+   753→                Continue
+   754→                <ChevronRight className="size-4" />
+   755→              </Button>
+   756→            </motion.div>
+   757→          )}
+   758→
+   759→          {/* Step 2: Basic Details */}
+   760→          {step === 2 && (
+   761→            <motion.div
+   762→              key="step2"
+   763→              initial={{ opacity: 0, x: 30 }}
+   764→              animate={{ opacity: 1, x: 0 }}
+   765→              exit={{ opacity: 0, x: -30 }}
+   766→              transition={{ duration: 0.3 }}
+   767→              className="w-full max-w-md"
+   768→            >
+   769→              <div className="text-center mb-6">
+   770→                <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+   771→                  Basic Details
+   772→                </h2>
+   773→                <p className="text-muted-foreground mt-1 text-sm">
+   774→                  Tell us a little about yourself
+   775→                </p>
+   776→              </div>
+   777→
+   778→              <Card className="shadow-sm">
+   779→                <CardContent className="p-5 sm:p-6 space-y-4">
+   780→                  <div className="space-y-2">
+   781→                    <Label htmlFor="reg-name" className="text-sm font-medium">
+   782→                      Full Name
+   783→                    </Label>
+   784→                    <Input
+   785→                      id="reg-name"
+   786→                      placeholder="Enter your full name"
+   787→                      value={name}
+   788→                      onChange={(e) => setName(e.target.value)}
+   789→                    />
+   790→                  </div>
+   791→
+   792→                  <div className="space-y-2">
+   793→                    <Label htmlFor="reg-phone" className="text-sm font-medium">
+   794→                      Phone Number
+   795→                    </Label>
+   796→                    <div className="flex gap-2">
+   797→                      <div className="flex items-center gap-1.5 px-3 rounded-md border border-input bg-muted/50 text-sm text-muted-foreground whitespace-nowrap h-9">
+   798→                        🇮🇳 +91
+   799→                      </div>
+   800→                      <Input
+   801→                        id="reg-phone"
+   802→                        type="tel"
+   803→                        placeholder="Phone number"
+   804→                        value={phone}
+   805→                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+   806→                        className="flex-1"
+   807→                      />
+   808→                    </div>
+   809→                  </div>
+   810→
+   811→                  <div className="space-y-2">
+   812→                    <Label htmlFor="reg-email" className="text-sm font-medium">
+   813→                      Email Address
+   814→                      <span className="text-muted-foreground font-normal ml-1">(optional)</span>
+   815→                    </Label>
+   816→                    <Input
+   817→                      id="reg-email"
+   818→                      type="email"
+   819→                      placeholder="your@email.com"
+   820→                      value={email}
+   821→                      onChange={(e) => setEmail(e.target.value)}
+   822→                    />
+   823→                  </div>
+   824→
+   825→                  <div className="space-y-2">
+   826→                    <Label htmlFor="reg-password" className="text-sm font-medium">
+   827→                      Password
+   828→                    </Label>
+   829→                    <Input
+   830→                      id="reg-password"
+   831→                      type="password"
+   832→                      placeholder="Create a password (min 4 chars)"
+   833→                      value={password}
+   834→                      onChange={(e) => setPassword(e.target.value)}
+   835→                    />
+   836→                  </div>
+   837→                </CardContent>
+   838→              </Card>
+   839→
+   840→              {regError && <p className="text-sm text-destructive text-center">{regError}</p>}
+   841→
+   842→              <Button
+   843→                className="w-full mt-6 h-11 font-semibold rounded-xl"
+   844→                disabled={!canProceedStep2}
+   845→                onClick={() => setStep(3)}
+   846→              >
+   847→                Continue
+   848→                <ChevronRight className="size-4" />
+   849→              </Button>
+   850→            </motion.div>
+   851→          )}
+   852→
+   853→          {/* Step 3: Language */}
+   854→          {step === 3 && (
+   855→            <motion.div
+   856→              key="step3"
+   857→              initial={{ opacity: 0, x: 30 }}
+   858→              animate={{ opacity: 1, x: 0 }}
+   859→              exit={{ opacity: 0, x: -30 }}
+   860→              transition={{ duration: 0.3 }}
+   861→              className="w-full max-w-md"
+   862→            >
+   863→              <div className="text-center mb-6">
+   864→                <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+   865→                  Choose Your Language
+   866→                </h2>
+   867→                <p className="text-muted-foreground mt-1 text-sm">
+   868→                  KrishiAI works best in your language
+   869→                </p>
+   870→              </div>
+   871→
+   872→              <div className="grid grid-cols-2 gap-3">
+   873→                {languages.map((lang) => (
+   874→                  <button
+   875→                    key={lang.code}
+   876→                    onClick={() => setSelectedLang(lang.code)}
+   877→                    className={`rounded-xl border-2 p-4 text-center transition-all duration-200 ${
+   878→                      selectedLang === lang.code
+   879→                        ? 'border-primary bg-primary/5 text-primary shadow-sm'
+   880→                        : 'border-border hover:border-primary/30 hover:bg-muted/50'
+   881→                    }`}
+   882→                  >
+   883→                    <div className={`text-2xl mb-1.5 ${selectedLang === lang.code ? 'scale-110' : ''} transition-transform`}>
+   884→                      {lang.native.charAt(0)}
+   885→                    </div>
+   886→                    <div className="font-semibold text-sm">{lang.native}</div>
+   887→                    <div className="text-xs text-muted-foreground">{lang.label}</div>
+   888→                    {selectedLang === lang.code && (
+   889→                      <CheckCircle2 className="size-4 mx-auto mt-1.5 text-primary" />
+   890→                    )}
+   891→                  </button>
+   892→                ))}
+   893→              </div>
+   894→
+   895→              <Button
+   896→                className="w-full mt-6 h-11 font-semibold rounded-xl"
+   897→                onClick={() => setStep(4)}
+   898→              >
+   899→                Continue
+   900→                <ChevronRight className="size-4" />
+   901→              </Button>
+   902→            </motion.div>
+   903→          )}
+   904→
+   905→          {/* Step 4: Success */}
+   906→          {step === 4 && (
+   907→            <motion.div
+   908→              key="step4"
+   909→              initial={{ opacity: 0, scale: 0.9 }}
+   910→              animate={{ opacity: 1, scale: 1 }}
+   911→              transition={{ duration: 0.5 }}
+   912→              className="w-full max-w-sm text-center"
+   913→            >
+   914→              <motion.div
+   915→                initial={{ scale: 0 }}
+   916→                animate={{ scale: 1 }}
+   917→                transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 15 }}
+   918→                className="mx-auto mb-6"
+   919→              >
+   920→                <div className="relative inline-flex">
+   921→                  <div className="size-24 rounded-full bg-primary/10 flex items-center justify-center">
+   922→                    <motion.div
+   923→                      initial={{ scale: 0, rotate: -180 }}
+   924→                      animate={{ scale: 1, rotate: 0 }}
+   925→                      transition={{ delay: 0.4, type: 'spring', stiffness: 200, damping: 12 }}
+   926→                    >
+   927→                      <CheckCircle2 className="size-14 text-primary" />
+   928→                    </motion.div>
+   929→                  </div>
+   930→                  <motion.div
+   931→                    className="absolute inset-0 rounded-full border-2 border-primary/30"
+   932→                    initial={{ scale: 0.8, opacity: 0 }}
+   933→                    animate={{ scale: 1.4, opacity: 0 }}
+   934→                    transition={{ delay: 0.6, duration: 1 }}
+   935→                  />
+   936→                </div>
+   937→              </motion.div>
+   938→
+   939→              <h2 className="text-2xl font-bold tracking-tight">
+   940→                Welcome, {name || 'Farmer'}! 🎉
+   941→              </h2>
+   942→              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+   943→                Your account is ready. Let&apos;s set up your profile and get you started on your farming journey.
+   944→              </p>
+   945→
+   946→              <Button
+   947→                className="w-full mt-8 h-11 font-semibold rounded-xl"
+   948→                onClick={handleComplete}
+   949→                disabled={isLoading}
+   950→              >
+   951→                {isLoading ? (
+   952→                  <span className="flex items-center gap-2">
+   953→                    <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+   954→                    Setting up...
+   955→                  </span>
+   956→                ) : selectedRole === 'farmer' ? (
+   957→                  <>
+   958→                    Continue to Setup
+   959→                    <ChevronRight className="size-4" />
+   960→                  </>
+   961→                ) : (
+   962→                  <>
+   963→                    Go to Dashboard
+   964→                    <ArrowRight className="size-4" />
+   965→                  </>
+   966→                )}
+   967→              </Button>
+   968→            </motion.div>
+   969→          )}
+   970→        </AnimatePresence>
+   971→      </div>
+   972→    </div>
+   973→  );
+   974→}
+   975→
+   976→// ==================== ONBOARDING PAGE ====================
+   977→
+   978→const indianStates = [
+   979→  'Andhra Pradesh', 'Telangana', 'Karnataka', 'Maharashtra', 'Tamil Nadu',
+   980→  'Kerala', 'Gujarat', 'Rajasthan', 'Madhya Pradesh', 'Uttar Pradesh',
+   981→  'Punjab', 'Haryana', 'West Bengal', 'Bihar', 'Odisha',
+   982→  'Chhattisgarh', 'Jharkhand', 'Assam', 'Other',
+   983→];
+   984→
+   985→const cropOptions = [
+   986→  { id: 'tomato', name: 'Tomato', emoji: '🍅' },
+   987→  { id: 'rice', name: 'Rice', emoji: '🌾' },
+   988→  { id: 'cotton', name: 'Cotton', emoji: '🧵' },
+   989→  { id: 'chilli', name: 'Chilli', emoji: '🌶️' },
+   990→  { id: 'maize', name: 'Maize', emoji: '🌽' },
+   991→  { id: 'onion', name: 'Onion', emoji: '🧅' },
+   992→];
+   993→
+   994→export function OnboardingPage() {
+   995→  const { navigate } = useAppStore();
+   996→  const { completeOnboarding, isLoading } = useAuthStore();
+   997→  const [step, setStep] = useState(1);
+   998→  const totalSteps = 6;
+   999→
+  1000→  const [language, setLanguage] = useState('en');
+  1001→  const [state, setState] = useState('');
+  1002→  const [district, setDistrict] = useState('');
+  1003→  const [village, setVillage] = useState('');
+  1004→  const [farmName, setFarmName] = useState('');
+  1005→  const [farmSize, setFarmSize] = useState('');
+  1006→  const [irrigation, setIrrigation] = useState(false);
+  1007→  const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
+  1008→
+  1009→  const toggleCrop = (cropId: string) => {
+  1010→    setSelectedCrops((prev) =>
+  1011→      prev.includes(cropId) ? prev.filter((c) => c !== cropId) : [...prev, cropId]
+  1012→    );
+  1013→  };
+  1014→
+  1015→  const handleComplete = async () => {
+  1016→    completeOnboarding({
+  1017→      language,
+  1018→      state,
+  1019→      district,
+  1020→      village,
+  1021→      location: `${village}, ${district}, ${state}`,
+  1022→    });
+  1023→    navigate('farmer/dashboard');
+  1024→  };
+  1025→
+  1026→  const stepLabels = ['Welcome', 'Language', 'Location', 'Farm', 'Crops', 'Done'];
+  1027→
+  1028→  return (
+  1029→    <div className="min-h-screen flex flex-col bg-background">
+  1030→      {/* Header with progress */}
+  1031→      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b px-4 py-3">
+  1032→        <div className="max-w-lg mx-auto">
+  1033→          <div className="flex items-center justify-between mb-2">
+  1034→            <button
+  1035→              onClick={() => step > 1 ? setStep(step - 1) : navigate('login')}
+  1036→              className="size-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+  1037→            >
+  1038→              <ChevronLeft className="size-5" />
+  1039→            </button>
+  1040→            <span className="text-sm font-medium text-muted-foreground">
+  1041→              {stepLabels[step - 1]}
+  1042→            </span>
+  1043→            <span className="text-xs text-muted-foreground">
+  1044→              {step}/{totalSteps}
+  1045→            </span>
+  1046→          </div>
+  1047→          <div className="flex items-center gap-1.5">
+  1048→            {Array.from({ length: totalSteps }).map((_, i) => (
+  1049→              <div
+  1050→                key={i}
+  1051→                className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+  1052→                  i < step ? 'bg-primary' : 'bg-border'
+  1053→                }`}
+  1054→              />
+  1055→            ))}
+  1056→          </div>
+  1057→        </div>
+  1058→      </div>
+  1059→
+  1060→      {/* Content */}
+  1061→      <div className="flex-1 flex items-center justify-center px-4 py-8">
+  1062→        <AnimatePresence mode="wait">
+  1063→          {/* Step 1: Welcome */}
+  1064→          {step === 1 && (
+  1065→            <motion.div
+  1066→              key="ob-step1"
+  1067→              initial={{ opacity: 0, x: 30 }}
+  1068→              animate={{ opacity: 1, x: 0 }}
+  1069→              exit={{ opacity: 0, x: -30 }}
+  1070→              transition={{ duration: 0.3 }}
+  1071→              className="w-full max-w-md text-center"
+  1072→            >
+  1073→              <motion.div
+  1074→                initial={{ scale: 0.5, opacity: 0 }}
+  1075→                animate={{ scale: 1, opacity: 1 }}
+  1076→                transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 15 }}
+  1077→                className="mx-auto mb-6"
+  1078→              >
+  1079→                <div className="relative inline-block">
+  1080→                  <div className="size-32 sm:size-40 rounded-full bg-gradient-to-br from-primary/20 to-emerald-100 dark:from-primary/10 dark:to-emerald-900/20 flex items-center justify-center">
+  1081→                    <motion.span
+  1082→                      className="text-6xl sm:text-7xl"
+  1083→                      animate={{ y: [0, -8, 0] }}
+  1084→                      transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+  1085→                    >
+  1086→                      🌾
+  1087→                    </motion.span>
+  1088→                  </div>
+  1089→                  <motion.div
+  1090→                    className="absolute -top-2 -right-2 size-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-xl"
+  1091→                    animate={{ y: [0, -5, 0], rotate: [0, 10, -10, 0] }}
+  1092→                    transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+  1093→                  >
+  1094→                    ☀️
+  1095→                  </motion.div>
+  1096→                  <motion.div
+  1097→                    className="absolute -bottom-1 -left-1 size-8 rounded-full bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-lg"
+  1098→                    animate={{ y: [0, -4, 0] }}
+  1099→                    transition={{ repeat: Infinity, duration: 2, delay: 0.5, ease: 'easeInOut' }}
+  1100→                  >
+  1101→                    💧
+  1102→                  </motion.div>
+  1103→                </div>
+  1104→              </motion.div>
+  1105→
+  1106→              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+  1107→                Let&apos;s Understand Your Farm
+  1108→              </h1>
+  1109→              <p className="text-muted-foreground mt-3 text-sm sm:text-base leading-relaxed max-w-sm mx-auto">
+  1110→                We&apos;ll ask a few quick questions to personalize KrishiAI for your farm. This takes less than 2 minutes.
+  1111→              </p>
+  1112→
+  1113→              <Button
+  1114→                className="w-full mt-8 h-11 font-semibold rounded-xl max-w-xs mx-auto"
+  1115→                onClick={() => setStep(2)}
+  1116→              >
+  1117→                Let&apos;s Go
+  1118→                <ArrowRight className="size-4" />
+  1119→              </Button>
+  1120→            </motion.div>
+  1121→          )}
+  1122→
+  1123→          {/* Step 2: Language Selection */}
+  1124→          {step === 2 && (
+  1125→            <motion.div
+  1126→              key="ob-step2"
+  1127→              initial={{ opacity: 0, x: 30 }}
+  1128→              animate={{ opacity: 1, x: 0 }}
+  1129→              exit={{ opacity: 0, x: -30 }}
+  1130→              transition={{ duration: 0.3 }}
+  1131→              className="w-full max-w-md"
+  1132→            >
+  1133→              <div className="text-center mb-6">
+  1134→                <div className="inline-flex size-14 rounded-2xl bg-primary/10 items-center justify-center mb-4">
+  1135→                  <Languages className="size-7 text-primary" />
+  1136→                </div>
+  1137→                <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+  1138→                  Select Your Language
+  1139→                </h2>
+  1140→                <p className="text-muted-foreground mt-1 text-sm">
+  1141→                  Get AI advice in your preferred language
+  1142→                </p>
+  1143→              </div>
+  1144→
+  1145→              <div className="grid grid-cols-2 gap-3">
+  1146→                {languages.map((lang) => (
+  1147→                  <button
+  1148→                    key={lang.code}
+  1149→                    onClick={() => setLanguage(lang.code)}
+  1150→                    className={`rounded-xl border-2 p-5 text-center transition-all duration-200 ${
+  1151→                      language === lang.code
+  1152→                        ? 'border-primary bg-primary/5 text-primary shadow-sm'
+  1153→                        : 'border-border hover:border-primary/30 hover:bg-muted/50'
+  1154→                    }`}
+  1155→                  >
+  1156→                    <div className="text-3xl mb-2 font-bold">
+  1157→                      {lang.native}
+  1158→                    </div>
+  1159→                    <div className="text-xs text-muted-foreground">
+  1160→                      {lang.label}
+  1161→                    </div>
+  1162→                    {language === lang.code && (
+  1163→                      <Check className="size-5 mx-auto mt-2 text-primary" strokeWidth={3} />
+  1164→                    )}
+  1165→                  </button>
+  1166→                ))}
+  1167→              </div>
+  1168→
+  1169→              <Button
+  1170→                className="w-full mt-6 h-11 font-semibold rounded-xl"
+  1171→                onClick={() => setStep(3)}
+  1172→              >
+  1173→                Continue
+  1174→                <ChevronRight className="size-4" />
+  1175→              </Button>
+  1176→            </motion.div>
+  1177→          )}
+  1178→
+  1179→          {/* Step 3: Farm Location */}
+  1180→          {step === 3 && (
+  1181→            <motion.div
+  1182→              key="ob-step3"
+  1183→              initial={{ opacity: 0, x: 30 }}
+  1184→              animate={{ opacity: 1, x: 0 }}
+  1185→              exit={{ opacity: 0, x: -30 }}
+  1186→              transition={{ duration: 0.3 }}
+  1187→              className="w-full max-w-md"
+  1188→            >
+  1189→              <div className="text-center mb-6">
+  1190→                <div className="inline-flex size-14 rounded-2xl bg-primary/10 items-center justify-center mb-4">
+  1191→                  <MapPin className="size-7 text-primary" />
+  1192→                </div>
+  1193→                <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+  1194→                  Where is Your Farm?
+  1195→                </h2>
+  1196→                <p className="text-muted-foreground mt-1 text-sm">
+  1197→                  We use this for weather and market data
+  1198→                </p>
+  1199→              </div>
+  1200→
+  1201→              <Card className="shadow-sm">
+  1202→                <CardContent className="p-5 sm:p-6 space-y-4">
+  1203→                  <div className="space-y-2">
+  1204→                    <Label className="text-sm font-medium">State</Label>
+  1205→                    <Select value={state} onValueChange={setState}>
+  1206→                      <SelectTrigger className="w-full">
+  1207→                        <SelectValue placeholder="Select your state" />
+  1208→                      </SelectTrigger>
+  1209→                      <SelectContent>
+  1210→                        {indianStates.map((s) => (
+  1211→                          <SelectItem key={s} value={s}>
+  1212→                            {s}
+  1213→                          </SelectItem>
+  1214→                        ))}
+  1215→                      </SelectContent>
+  1216→                    </Select>
+  1217→                  </div>
+  1218→
+  1219→                  <div className="space-y-2">
+  1220→                    <Label htmlFor="ob-district" className="text-sm font-medium">
+  1221→                      District
+  1222→                    </Label>
+  1223→                    <Input
+  1224→                      id="ob-district"
+  1225→                      placeholder="e.g., Siddipet"
+  1226→                      value={district}
+  1227→                      onChange={(e) => setDistrict(e.target.value)}
+  1228→                    />
+  1229→                  </div>
+  1230→
+  1231→                  <div className="space-y-2">
+  1232→                    <Label htmlFor="ob-village" className="text-sm font-medium">
+  1233→                      Village
+  1234→                    </Label>
+  1235→                    <Input
+  1236→                      id="ob-village"
+  1237→                      placeholder="e.g., Gajwel"
+  1238→                      value={village}
+  1239→                      onChange={(e) => setVillage(e.target.value)}
+  1240→                    />
+  1241→                  </div>
+  1242→                </CardContent>
+  1243→              </Card>
+  1244→
+  1245→              <Button
+  1246→                className="w-full mt-6 h-11 font-semibold rounded-xl"
+  1247→                disabled={!state || !district}
+  1248→                onClick={() => setStep(4)}
+  1249→              >
+  1250→                Continue
+  1251→                <ChevronRight className="size-4" />
+  1252→              </Button>
+  1253→            </motion.div>
+  1254→          )}
+  1255→
+  1256→          {/* Step 4: Farm Details */}
+  1257→          {step === 4 && (
+  1258→            <motion.div
+  1259→              key="ob-step4"
+  1260→              initial={{ opacity: 0, x: 30 }}
+  1261→              animate={{ opacity: 1, x: 0 }}
+  1262→              exit={{ opacity: 0, x: -30 }}
+  1263→              transition={{ duration: 0.3 }}
+  1264→              className="w-full max-w-md"
+  1265→            >
+  1266→              <div className="text-center mb-6">
+  1267→                <div className="inline-flex size-14 rounded-2xl bg-primary/10 items-center justify-center mb-4">
+  1268→                  <Tractor className="size-7 text-primary" />
+  1269→                </div>
+  1270→                <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+  1271→                  About Your Farm
+  1272→                </h2>
+  1273→                <p className="text-muted-foreground mt-1 text-sm">
+  1274→                  Help us understand your farming setup
+  1275→                </p>
+  1276→              </div>
+  1277→
+  1278→              <Card className="shadow-sm">
+  1279→                <CardContent className="p-5 sm:p-6 space-y-5">
+  1280→                  <div className="space-y-2">
+  1281→                    <Label htmlFor="ob-farm-name" className="text-sm font-medium">
+  1282→                      Farm Name
+  1283→                    </Label>
+  1284→                    <Input
+  1285→                      id="ob-farm-name"
+  1286→                      placeholder="e.g., My Farm, Green Fields"
+  1287→                      value={farmName}
+  1288→                      onChange={(e) => setFarmName(e.target.value)}
+  1289→                    />
+  1290→                  </div>
+  1291→
+  1292→                  <div className="space-y-2">
+  1293→                    <Label htmlFor="ob-farm-size" className="text-sm font-medium">
+  1294→                      Farm Size
+  1295→                    </Label>
+  1296→                    <div className="relative">
+  1297→                      <Input
+  1298→                        id="ob-farm-size"
+  1299→                        type="number"
+  1300→                        min="0.1"
+  1301→                        step="0.1"
+  1302→                        placeholder="e.g., 5"
+  1303→                        value={farmSize}
+  1304→                        onChange={(e) => setFarmSize(e.target.value)}
+  1305→                        className="pr-16"
+  1306→                      />
+  1307→                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+  1308→                        acres
+  1309→                      </span>
+  1310→                    </div>
+  1311→                  </div>
+  1312→
+  1313→                  <div className="flex items-center justify-between rounded-xl border p-4">
+  1314→                    <div className="flex items-center gap-3">
+  1315→                      <Droplets className={`size-5 ${irrigation ? 'text-primary' : 'text-muted-foreground'}`} />
+  1316→                      <div>
+  1317→                        <div className="font-medium text-sm">Irrigation Available</div>
+  1318→                        <div className="text-xs text-muted-foreground">
+  1319→                          Do you have irrigation facilities?
+  1320→                        </div>
+  1321→                      </div>
+  1322→                    </div>
+  1323→                    <Switch
+  1324→                      checked={irrigation}
+  1325→                      onCheckedChange={setIrrigation}
+  1326→                    />
+  1327→                  </div>
+  1328→                </CardContent>
+  1329→              </Card>
+  1330→
+  1331→              <Button
+  1332→                className="w-full mt-6 h-11 font-semibold rounded-xl"
+  1333→                disabled={!farmName || !farmSize}
+  1334→                onClick={() => setStep(5)}
+  1335→              >
+  1336→                Continue
+  1337→                <ChevronRight className="size-4" />
+  1338→              </Button>
+  1339→            </motion.div>
+  1340→          )}
+  1341→
+  1342→          {/* Step 5: Primary Crops */}
+  1343→          {step === 5 && (
+  1344→            <motion.div
+  1345→              key="ob-step5"
+  1346→              initial={{ opacity: 0, x: 30 }}
+  1347→              animate={{ opacity: 1, x: 0 }}
+  1348→              exit={{ opacity: 0, x: -30 }}
+  1349→              transition={{ duration: 0.3 }}
+  1350→              className="w-full max-w-md"
+  1351→            >
+  1352→              <div className="text-center mb-6">
+  1353→                <div className="inline-flex size-14 rounded-2xl bg-primary/10 items-center justify-center mb-4">
+  1354→                  <Wheat className="size-7 text-primary" />
+  1355→                </div>
+  1356→                <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+  1357→                  What Do You Grow?
+  1358→                </h2>
+  1359→                <p className="text-muted-foreground mt-1 text-sm">
+  1360→                  Select your primary crops (can add more later)
+  1361→                </p>
+  1362→              </div>
+  1363→
+  1364→              <div className="grid grid-cols-2 gap-3">
+  1365→                {cropOptions.map((crop) => {
+  1366→                  const isSelected = selectedCrops.includes(crop.id);
+  1367→                  return (
+  1368→                    <motion.button
+  1369→                      key={crop.id}
+  1370→                      whileTap={{ scale: 0.97 }}
+  1371→                      onClick={() => toggleCrop(crop.id)}
+  1372→                      className={`rounded-xl border-2 p-5 text-center transition-all duration-200 ${
+  1373→                        isSelected
+  1374→                          ? 'border-primary bg-primary/5 shadow-sm'
+  1375→                          : 'border-border hover:border-primary/30 hover:bg-muted/50'
+  1376→                      }`}
+  1377→                    >
+  1378→                      <motion.span
+  1379→                        className="text-4xl block mb-2"
+  1380→                        animate={isSelected ? { scale: [1, 1.2, 1] } : {}}
+  1381→                        transition={{ duration: 0.3 }}
+  1382→                      >
+  1383→                        {crop.emoji}
+  1384→                      </motion.span>
+  1385→                      <div className="font-semibold text-sm">{crop.name}</div>
+  1386→                      {isSelected && (
+  1387→                        <motion.div
+  1388→                          initial={{ scale: 0 }}
+  1389→                          animate={{ scale: 1 }}
+  1390→                          className="mt-1.5"
+  1391→                        >
+  1392→                          <Check className="size-5 mx-auto text-primary" strokeWidth={3} />
+  1393→                        </motion.div>
+  1394→                      )}
+  1395→                    </motion.button>
+  1396→                  );
+  1397→                })}
+  1398→              </div>
+  1399→
+  1400→              <Button
+  1401→                className="w-full mt-6 h-11 font-semibold rounded-xl"
+  1402→                onClick={() => setStep(6)}
+  1403→              >
+  1404→                Continue
+  1405→                <ChevronRight className="size-4" />
+  1406→              </Button>
+  1407→            </motion.div>
+  1408→          )}
+  1409→
+  1410→          {/* Step 6: Complete */}
+  1411→          {step === 6 && (
+  1412→            <motion.div
+  1413→              key="ob-step6"
+  1414→              initial={{ opacity: 0, scale: 0.9 }}
+  1415→              animate={{ opacity: 1, scale: 1 }}
+  1416→              transition={{ duration: 0.5 }}
+  1417→              className="w-full max-w-sm text-center"
+  1418→            >
+  1419→              <motion.div
+  1420→                initial={{ scale: 0 }}
+  1421→                animate={{ scale: 1 }}
+  1422→                transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 15 }}
+  1423→                className="mx-auto mb-6"
+  1424→              >
+  1425→                <div className="relative inline-flex">
+  1426→                  <div className="size-28 rounded-full bg-primary/10 flex items-center justify-center">
+  1427→                    <motion.div
+  1428→                      initial={{ scale: 0, rotate: -180 }}
+  1429→                      animate={{ scale: 1, rotate: 0 }}
+  1430→                      transition={{ delay: 0.4, type: 'spring', stiffness: 200, damping: 12 }}
+  1431→                    >
+  1432→                      <Star className="size-14 text-primary fill-primary" />
+  1433→                    </motion.div>
+  1434→                  </div>
+  1435→                  {/* Celebration particles */}
+  1436→                  {[...Array(6)].map((_, i) => (
+  1437→                    <motion.div
+  1438→                      key={i}
+  1439→                      className="absolute size-3 rounded-full bg-primary/60"
+  1440→                      initial={{ scale: 0, x: 0, y: 0 }}
+  1441→                      animate={{
+  1442→                        scale: [0, 1, 0],
+  1443→                        x: Math.cos((i * 60 * Math.PI) / 180) * 50,
+  1444→                        y: Math.sin((i * 60 * Math.PI) / 180) * 50,
+  1445→                      }}
+  1446→                      transition={{ delay: 0.7, duration: 0.8 }}
+  1447→                      style={{
+  1448→                        left: '50%',
+  1449→                        top: '50%',
+  1450→                        marginLeft: '-6px',
+  1451→                        marginTop: '-6px',
+  1452→                      }}
+  1453→                    />
+  1454→                  ))}
+  1455→                </div>
+  1456→              </motion.div>
+  1457→
+  1458→              <motion.h2
+  1459→                initial={{ opacity: 0, y: 10 }}
+  1460→                animate={{ opacity: 1, y: 0 }}
+  1461→                transition={{ delay: 0.6 }}
+  1462→                className="text-2xl sm:text-3xl font-bold tracking-tight"
+  1463→              >
+  1464→                Your Farm is Ready! 🎉
+  1465→              </motion.h2>
+  1466→              <motion.p
+  1467→                initial={{ opacity: 0, y: 10 }}
+  1468→                animate={{ opacity: 1, y: 0 }}
+  1469→                transition={{ delay: 0.8 }}
+  1470→                className="text-muted-foreground mt-3 text-sm leading-relaxed"
+  1471→              >
+  1472→                {farmName
+  1473→                  ? `${farmName} has been set up with all your details. Start exploring AI-powered farming insights!`
+  1474→                  : 'Your farm has been set up. Start exploring AI-powered farming insights!'}
+  1475→              </motion.p>
+  1476→
+  1477→              <motion.div
+  1478→                initial={{ opacity: 0, y: 10 }}
+  1479→                animate={{ opacity: 1, y: 0 }}
+  1480→                transition={{ delay: 1 }}
+  1481→                className="mt-4"
+  1482→              >
+  1483→                {selectedCrops.length > 0 && (
+  1484→                  <div className="flex flex-wrap items-center justify-center gap-2">
+  1485→                    {selectedCrops.map((cropId) => {
+  1486→                      const crop = cropOptions.find((c) => c.id === cropId);
+  1487→                      if (!crop) return null;
+  1488→                      return (
+  1489→                        <Badge
+  1490→                          key={cropId}
+  1491→                          variant="secondary"
+  1492→                          className="text-sm py-1.5 px-3 rounded-full"
+  1493→                        >
+  1494→                          {crop.emoji} {crop.name}
+  1495→                        </Badge>
+  1496→                      );
+  1497→                    })}
+  1498→                  </div>
+  1499→                )}
+  1500→              </motion.div>
+  1501→
+  1502→              <motion.div
+  1503→                initial={{ opacity: 0, y: 10 }}
+  1504→                animate={{ opacity: 1, y: 0 }}
+  1505→                transition={{ delay: 1.2 }}
+  1506→                className="mt-8"
+  1507→              >
+  1508→                <Button
+  1509→                  className="w-full h-12 font-semibold rounded-xl text-base"
+  1510→                  size="lg"
+  1511→                  onClick={handleComplete}
+  1512→                  disabled={isLoading}
+  1513→                >
+  1514→                  {isLoading ? (
+  1515→                    <span className="flex items-center gap-2">
+  1516→                      <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+  1517→                      Setting up your farm...
+  1518→                    </span>
+  1519→                  ) : (
+  1520→                    <>
+  1521→                      Go to My Farm
+  1522→                      <ArrowRight className="size-4" />
+  1523→                    </>
+  1524→                  )}
+  1525→                </Button>
+  1526→              </motion.div>
+  1527→            </motion.div>
+  1528→          )}
+  1529→        </AnimatePresence>
+  1530→      </div>
+  1531→    </div>
+  1532→  );
+  1533→}
+  1534→
+  1535→// ==================== EXTRA ICONS (for timeline) ====================
+  1536→// These are simple placeholder components using Lucide
+  1537→function FlaskConical({ className }: { className?: string }) {
+  1538→  return (
+  1539→    <svg
+  1540→      xmlns="http://www.w3.org/2000/svg"
+  1541→      viewBox="0 0 24 24"
+  1542→      fill="none"
+  1543→      stroke="currentColor"
+  1544→      strokeWidth="2"
+  1545→      strokeLinecap="round"
+  1546→      strokeLinejoin="round"
+  1547→      className={className}
+  1548→    >
+  1549→      <path d="M9 3h6" />
+  1550→      <path d="M10 9V3h4v6l5 8.5a2 2 0 0 1-1.7 3H6.7a2 2 0 0 1-1.7-3L10 9Z" />
+  1551→    </svg>
+  1552→  );
+  1553→}
+  1554→
+  1555→function CloudSun({ className }: { className?: string }) {
+  1556→  return (
+  1557→    <svg
+  1558→      xmlns="http://www.w3.org/2000/svg"
+  1559→      viewBox="0 0 24 24"
+  1560→      fill="none"
+  1561→      stroke="currentColor"
+  1562→      strokeWidth="2"
+  1563→      strokeLinecap="round"
+  1564→      strokeLinejoin="round"
+  1565→      className={className}
+  1566→    >
+  1567→      <path d="M12 2v2" />
+  1568→      <path d="m4.93 4.93 1.41 1.41" />
+  1569→      <path d="M20 12h2" />
+  1570→      <path d="m19.07 4.93-1.41 1.41" />
+  1571→      <path d="M15.947 12.65a4 4 0 0 0-5.925-4.128" />
+  1572→      <path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z" />
+  1573→    </svg>
+  1574→  );
+  1575→}
+  1576→
+  1577→function Eye({ className }: { className?: string }) {
+  1578→  return (
+  1579→    <svg
+  1580→      xmlns="http://www.w3.org/2000/svg"
+  1581→      viewBox="0 0 24 24"
+  1582→      fill="none"
+  1583→      stroke="currentColor"
+  1584→      strokeWidth="2"
+  1585→      strokeLinecap="round"
+  1586→      strokeLinejoin="round"
+  1587→      className={className}
+  1588→    >
+  1589→      <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+  1590→      <circle cx="12" cy="12" r="3" />
+  1591→    </svg>
+  1592→  );
+  1593→}
+  1594→
+  1595→function Scissors({ className }: { className?: string }) {
+  1596→  return (
+  1597→    <svg
+  1598→      xmlns="http://www.w3.org/2000/svg"
+  1599→      viewBox="0 0 24 24"
+  1600→      fill="none"
+  1601→      stroke="currentColor"
+  1602→      strokeWidth="2"
+  1603→      strokeLinecap="round"
+  1604→      strokeLinejoin="round"
+  1605→      className={className}
+  1606→    >
+  1607→      <circle cx="6" cy="6" r="3" />
+  1608→      <path d="M8.12 8.12 12 12" />
+  1609→      <path d="M20 4 8.12 15.88" />
+  1610→      <circle cx="6" cy="18" r="3" />
+  1611→      <path d="M14.8 14.8 20 20" />
+  1612→    </svg>
+  1613→  );
+  1614→}
+  1615→
+  1616→function Banknote({ className }: { className?: string }) {
+  1617→  return (
+  1618→    <svg
+  1619→      xmlns="http://www.w3.org/2000/svg"
+  1620→      viewBox="0 0 24 24"
+  1621→      fill="none"
+  1622→      stroke="currentColor"
+  1623→      strokeWidth="2"
+  1624→      strokeLinecap="round"
+  1625→      strokeLinejoin="round"
+  1626→      className={className}
+  1627→    >
+  1628→      <rect width="20" height="12" x="2" y="6" rx="2" />
+  1629→      <circle cx="12" cy="12" r="2" />
+  1630→      <path d="M6 12h.01M18 12h.01" />
+  1631→    </svg>
+  1632→  );
+  1633→}
+  1634→

@@ -7,7 +7,12 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, LogOut, Bell } from 'lucide-react';
+import { Menu, LogOut, Sun, Moon, Search } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import NotificationDropdown from '@/components/shared/NotificationDropdown';
+import CommandPalette from '@/components/shared/CommandPalette';
+import { useCommandPaletteOpen } from '@/components/shared/CommandPalette';
 import type { RoutePath, UserRole } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -51,9 +56,30 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
+function SearchButton() {
+  const { openPalette } = useCommandPaletteOpen();
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={openPalette}
+          className='p-2 rounded-lg hover:bg-accent transition-colors flex items-center gap-1.5'
+        >
+          <Search size={20} className='text-muted-foreground' />
+          <kbd className='hidden md:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground'>
+            ⌘K
+          </kbd>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>Search pages</TooltipContent>
+    </Tooltip>
+  );
+}
+
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuthStore();
-  const { currentRoute, navigate, sidebarOpen, setSidebarOpen, unreadCount } = useAppStore();
+  const { currentRoute, navigate, sidebarOpen, setSidebarOpen } = useAppStore();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const role = user?.role || 'farmer';
   const items = navConfig[role] || navConfig.consumer;
@@ -152,12 +178,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </button>
           </div>
           <div className='flex items-center gap-2'>
-            <button onClick={() => navigate('farmer/notifications')} className='relative p-2 rounded-lg hover:bg-accent transition-colors'>
-              <Bell size={20} className='text-muted-foreground' />
-              {unreadCount() > 0 && (
-                <span className='absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-medium'>{unreadCount()}</span>
-              )}
-            </button>
+            <NotificationDropdown onViewAll={() => navigate('farmer/notifications')} />
+            <SearchButton />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+                  className='p-2 rounded-lg hover:bg-accent transition-colors'
+                >
+                  {resolvedTheme === 'dark' ? <Sun size={20} className='text-muted-foreground' /> : <Moon size={20} className='text-muted-foreground' />}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode'}</TooltipContent>
+            </Tooltip>
             <Avatar className='h-8 w-8'>
               <AvatarFallback className='bg-primary/10 text-primary text-xs font-semibold'>{user?.name?.charAt(0)}</AvatarFallback>
             </Avatar>
@@ -172,6 +205,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </AnimatePresence>
         </main>
       </div>
+      <CommandPalette />
     </div>
   );
 }

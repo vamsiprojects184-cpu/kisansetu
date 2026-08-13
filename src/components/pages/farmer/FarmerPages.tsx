@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Leaf, Bug, Mic, CloudSun, TrendingUp, ShoppingCart,
   MapPin, Droplets, Sprout, Clock, ChevronRight, Plus,
   Bell, ArrowLeft, Edit3, Check, X, LogOut, CreditCard,
   Package, Tractor, Activity,
-  BarChart3, ThermometerSun, Layers, ArrowUpRight, ArrowDownRight,
+  BarChart3, ThermometerSun, Layers, ArrowUpRight, ArrowDownRight, Lightbulb,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -91,6 +91,61 @@ export function FarmerDashboard() {
     { text: 'Visit collection center for payment collection', due: 'Jan 8, 2025', icon: <CreditCard className='h-4 w-4 text-amber-500' /> },
   ];
 
+  // --- Market Price Ticker data ---
+  const tickerItems = [
+    { emoji: '🍚', name: 'Rice', price: '₹2,150', change: '+3.2%', up: true },
+    { emoji: '🌾', name: 'Wheat', price: '₹2,280', change: '+1.5%', up: true },
+    { emoji: '🌶️', name: 'Chilli', price: '₹12,500', change: '-2.1%', up: false },
+    { emoji: '🧅', name: 'Onion', price: '₹1,850', change: '+5.4%', up: true },
+    { emoji: '🥔', name: 'Potato', price: '₹980', change: '-0.8%', up: false },
+    { emoji: '🍅', name: 'Tomato', price: '₹3,200', change: '+7.1%', up: true },
+    { emoji: '🌱', name: 'Cotton', price: '₹6,400', change: '-1.3%', up: false },
+    { emoji: '🫘', name: 'Tur Dal', price: '₹8,900', change: '+2.6%', up: true },
+  ];
+  const doubledTicker = [...tickerItems, ...tickerItems];
+
+  // --- Profile Completion data ---
+  const profileItems = [
+    { label: 'Phone Verified', done: true },
+    { label: 'Farm Added', done: true },
+    { label: 'Soil Tested', done: false },
+    { label: 'First Sale', done: false },
+    { label: 'Bank Details', done: false },
+  ];
+  const completedCount = profileItems.filter((i) => i.done).length;
+  const completionPercent = Math.round((completedCount / profileItems.length) * 100);
+  const ringRadius = 38;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset = ringCircumference - (completionPercent / 100) * ringCircumference;
+
+  // --- Today's Tasks ---
+  const [todayTasks, setTodayTasks] = useState([
+    { id: 1, text: 'Water tomato beds', time: 'Morning', done: false },
+    { id: 2, text: 'Apply fertilizer to rice paddy', time: 'Afternoon', done: false },
+    { id: 3, text: 'Check chilli plants for pests', time: '', done: true },
+    { id: 4, text: 'Update market prices', time: 'Evening', done: true },
+  ]);
+  const toggleTask = (id: number) => {
+    setTodayTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  };
+  const doneCount = todayTasks.filter((t) => t.done).length;
+
+  // --- Quick Tips ---
+  const tips = [
+    'Water your plants early morning to reduce evaporation by up to 40%.',
+    'Test your soil pH every 3 months for optimal nutrient absorption.',
+    'Rotate crops each season to prevent soil depletion and reduce pest buildup.',
+    'Apply mulch around plants to retain moisture and suppress weeds naturally.',
+    'Monitor weather forecasts regularly — plan irrigation 2–3 days ahead of dry spells.',
+  ];
+  const [tipIndex, setTipIndex] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTipIndex((prev) => (prev + 1) % tips.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className='space-y-6'>
       {/* Greeting */}
@@ -99,8 +154,32 @@ export function FarmerDashboard() {
         <p className='text-muted-foreground mt-1'>Your farm is looking healthy today.</p>
       </motion.div>
 
-      {/* Summary Cards Row */}
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+      {/* Market Price Ticker */}
+      <motion.div {...fadeIn} transition={{ duration: 0.3 }}>
+        <div className='relative overflow-hidden rounded-lg bg-muted/60 border border-border/40 py-2.5 px-4'>
+          <div className='flex items-center gap-6 whitespace-nowrap' style={{ animation: 'ticker-scroll 35s linear infinite' }}>
+            {doubledTicker.map((item, idx) => (
+              <span key={idx} className='inline-flex items-center gap-2 text-sm'>
+                <span className='text-base'>{item.emoji}</span>
+                <span className='font-medium'>{item.name}</span>
+                <span className='text-muted-foreground'>{item.price}</span>
+                <span className={cn('text-xs font-semibold', item.up ? 'text-emerald-600' : 'text-red-500')}>
+                  {item.up ? '↑' : '↓'} {item.change}
+                </span>
+              </span>
+            ))}
+          </div>
+          <style>{`
+            @keyframes ticker-scroll {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+          `}</style>
+        </div>
+      </motion.div>
+
+      {/* Summary Cards Row - Weather & Soil */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         <WeatherCard
           temperature={mockWeather.temperature}
           condition={mockWeather.condition}
@@ -123,6 +202,73 @@ export function FarmerDashboard() {
                 >
                   View details →
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Profile Completion + Weather Warning */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <motion.div {...fadeInUp} transition={{ duration: 0.4, delay: 0.15 }}>
+          <Card className='glass-card h-full'>
+            <CardContent className='p-5'>
+              <div className='flex items-start gap-5'>
+                {/* Circular progress ring */}
+                <div className='relative flex-shrink-0'>
+                  <svg width={96} height={96} className='-rotate-90'>
+                    <defs>
+                      <linearGradient id='profileGrad' x1='0%' y1='0%' x2='100%' y2='0%'>
+                        <stop offset='0%' stopColor='#22c55e' />
+                        <stop offset='100%' stopColor='#16a34a' />
+                      </linearGradient>
+                    </defs>
+                    <circle
+                      cx={48} cy={48} r={ringRadius}
+                      fill='none'
+                      stroke='currentColor'
+                      strokeWidth={7}
+                      className='text-muted/30'
+                    />
+                    <circle
+                      cx={48} cy={48} r={ringRadius}
+                      fill='none'
+                      stroke='url(#profileGrad)'
+                      strokeWidth={7}
+                      strokeLinecap='round'
+                      strokeDasharray={ringCircumference}
+                      strokeDashoffset={ringOffset}
+                    />
+                  </svg>
+                  <div className='absolute inset-0 flex flex-col items-center justify-center'>
+                    <span className='text-lg font-bold'>{completionPercent}%</span>
+                    <span className='text-[10px] text-muted-foreground -mt-0.5'>Complete</span>
+                  </div>
+                </div>
+
+                {/* Checklist */}
+                <div className='flex-1 space-y-2.5'>
+                  <p className='font-semibold text-sm mb-3'>Profile Completion</p>
+                  {profileItems.map((item) => (
+                    <div key={item.label} className='flex items-center gap-2'>
+                      {item.done ? (
+                        <Check className='h-4 w-4 text-emerald-500 flex-shrink-0' />
+                      ) : (
+                        <div className='h-4 w-4 rounded-full border-2 border-muted-foreground/30 flex-shrink-0' />
+                      )}
+                      <span className={cn('text-sm', item.done ? 'text-foreground' : 'text-muted-foreground')}>
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
+                  <Button
+                    size='sm'
+                    className='mt-3 w-full'
+                    onClick={() => navigate('farmer/profile')}
+                  >
+                    Complete Profile
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -161,6 +307,84 @@ export function FarmerDashboard() {
           ))}
         </div>
       </SectionWrapper>
+
+      {/* Today's Tasks */}
+      <SectionWrapper
+        title="Today's Tasks"
+        subtitle={`${doneCount}/${todayTasks.length} completed`}
+      >
+        <motion.div {...fadeInUp} transition={{ duration: 0.4, delay: 0.1 }}>
+          <Card>
+            <CardContent className='p-4 space-y-1'>
+              {todayTasks.map((task) => (
+                <label
+                  key={task.id}
+                  className='flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer'
+                >
+                  <div
+                    className={cn(
+                      'h-5 w-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors',
+                      task.done
+                        ? 'bg-emerald-500 border-emerald-500'
+                        : 'border-muted-foreground/40',
+                    )}
+                  >
+                    {task.done && <Check className='h-3.5 w-3.5 text-white' />}
+                  </div>
+                  <input
+                    type='checkbox'
+                    checked={task.done}
+                    onChange={() => toggleTask(task.id)}
+                    className='sr-only'
+                  />
+                  <span className={cn('flex-1 text-sm', task.done && 'line-through text-muted-foreground')}>
+                    {task.text}
+                  </span>
+                  {task.time && (
+                    <span className='text-xs text-muted-foreground flex items-center gap-1'>
+                      <Clock className='h-3 w-3' />
+                      {task.time}
+                    </span>
+                  )}
+                </label>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
+      </SectionWrapper>
+
+      {/* Quick Tips */}
+      <motion.div {...fadeInUp} transition={{ duration: 0.4 }}>
+        <Card className='bg-amber-50/60 dark:bg-amber-950/20 border-amber-200/50 dark:border-amber-800/30'>
+          <CardContent className='p-4 flex items-start gap-3'>
+            <Lightbulb className='h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5' />
+            <div className='min-w-0'>
+              <p className='text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1'>Daily Tip</p>
+              <motion.p
+                key={tipIndex}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className='text-sm text-amber-800/80 dark:text-amber-200/80 italic leading-relaxed'
+              >
+                {tips[tipIndex]}
+              </motion.p>
+              <div className='flex gap-1.5 mt-2'>
+                {tips.map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'h-1.5 w-1.5 rounded-full transition-colors',
+                      i === tipIndex ? 'bg-amber-500' : 'bg-amber-300/50 dark:bg-amber-700/40',
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Quick Actions */}
       <SectionWrapper title='Quick Actions' subtitle='Common farming tasks at your fingertips'>

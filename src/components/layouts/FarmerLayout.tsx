@@ -11,8 +11,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   LayoutDashboard, Sprout, Leaf, TestTube, Search, Bug, Droplets, CloudSun, TrendingUp,
-  ShoppingCart, MapPin, Package, CreditCard, Bell, User, Menu, Mic, X, ChevronRight, LogOut,
+  ShoppingCart, MapPin, Package, CreditCard, User, Menu, Mic, X, ChevronRight, LogOut,
+  Sun, Moon,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import NotificationDropdown from '@/components/shared/NotificationDropdown';
+import CommandPalette from '@/components/shared/CommandPalette';
+import { useCommandPaletteOpen } from '@/components/shared/CommandPalette';
 import type { RoutePath } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -52,9 +58,30 @@ interface FarmerLayoutProps {
   children: React.ReactNode;
 }
 
+function SearchButton() {
+  const { openPalette } = useCommandPaletteOpen();
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={openPalette}
+          className='p-2 rounded-lg hover:bg-accent transition-colors flex items-center gap-1.5'
+        >
+          <Search size={20} className='text-muted-foreground' />
+          <kbd className='hidden md:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground'>
+            ⌘K
+          </kbd>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>Search pages</TooltipContent>
+    </Tooltip>
+  );
+}
+
 export default function FarmerLayout({ children }: FarmerLayoutProps) {
   const { user, logout } = useAuthStore();
-  const { currentRoute, navigate, notifications, sidebarOpen, setSidebarOpen, toggleChat, unreadCount } = useAppStore();
+  const { currentRoute, navigate, sidebarOpen, setSidebarOpen, toggleChat } = useAppStore();
+  const { setTheme, resolvedTheme } = useTheme();
   const itemCount = useCartStore(s => s.getItemCount());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -164,14 +191,19 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
             </button>
           </div>
           <div className='flex items-center gap-2'>
-            <button onClick={() => navigate('farmer/notifications')} className='relative p-2 rounded-lg hover:bg-accent transition-colors'>
-              <Bell size={20} className='text-muted-foreground' />
-              {unreadCount() > 0 && (
-                <span className='absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-medium'>
-                  {unreadCount()}
-                </span>
-              )}
-            </button>
+            <NotificationDropdown onViewAll={() => navigate('farmer/notifications')} />
+            <SearchButton />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+                  className='p-2 rounded-lg hover:bg-accent transition-colors'
+                >
+                  {resolvedTheme === 'dark' ? <Sun size={20} className='text-muted-foreground' /> : <Moon size={20} className='text-muted-foreground' />}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode'}</TooltipContent>
+            </Tooltip>
             {itemCount > 0 && (
               <button onClick={() => navigate('marketplace/cart')} className='relative p-2 rounded-lg hover:bg-accent transition-colors'>
                 <ShoppingCart size={20} className='text-muted-foreground' />
@@ -233,6 +265,7 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
           })}
         </div>
       </nav>
+      <CommandPalette />
     </div>
   );
 }

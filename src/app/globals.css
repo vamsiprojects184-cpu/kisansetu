@@ -123,6 +123,14 @@
   --sidebar-ring: oklch(0.65 0.2 150);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: oklch(0.52 0.17 150 / 0.3);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -135,6 +143,7 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
+    scrollbar-color: oklch(0.8 0.01 150) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
@@ -144,10 +153,30 @@
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: oklch(0.8 0.01 150);
-    border-radius: 3px;
+    border-radius: 9999px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.7 0.01 150);
+    background: linear-gradient(180deg, oklch(0.65 0.15 150), oklch(0.7 0.16 140));
+    border-radius: 9999px;
+  }
+
+  .glass-card {
+    @apply backdrop-blur-xl bg-card/60 border border-border/50 shadow-lg;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, oklch(0.52 0.17 150), oklch(0.55 0.19 140));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-md;
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }
 
@@ -167,6 +196,26 @@
 
 .animate-pulse-green {
   animation: pulse-green 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, oklch(0.92 0.005 150 / 0.5) 25%, oklch(0.92 0.005 150 / 1) 50%, oklch(0.92 0.005 150 / 0.5) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes slide-in-right {
+  0% { transform: translateX(20px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.4s ease-out;
 }
 
 .safe-area-bottom {

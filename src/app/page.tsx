@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useSyncExternalStore } from 'react';
 import { useAuthStore } from '@/store/use-auth-store';
 import { useAppStore } from '@/store/use-app-store';
 import FarmerLayout from '@/components/layouts/FarmerLayout';
@@ -36,6 +36,12 @@ import type { RoutePath } from '@/types';
 
 // ============== ROUTE MAP ==============
 const publicRoutes: RoutePath[] = ['landing', 'login', 'register'];
+
+// Hydration-safe hook: returns false on server, true on client
+const emptySubscribe = () => () => {};
+function useHydrated(): boolean {
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
+}
 
 function getRouteComponent(route: RoutePath): React.ReactNode {
   switch (route) {
@@ -113,11 +119,7 @@ function getLayout(route: RoutePath, children: React.ReactNode): React.ReactNode
 export default function AppRouter() {
   const { user, isAuthenticated } = useAuthStore();
   const { currentRoute, navigate } = useAppStore();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   if (!mounted) {
     return <LoadingState />;
