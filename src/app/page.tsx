@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/use-auth-store';
 import { useAppStore } from '@/store/use-app-store';
 import FarmerLayout from '@/components/layouts/FarmerLayout';
@@ -115,13 +115,11 @@ export default function AppRouter() {
   const { currentRoute, navigate } = useAppStore();
   const [mounted, setMounted] = useState(false);
 
-  // Defer first render to avoid setState-during-render issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   if (!mounted) {
-    if (typeof window !== 'undefined') {
-      requestAnimationFrame(() => setMounted(true));
-    } else {
-      setTimeout(() => setMounted(true), 0);
-    }
     return <LoadingState />;
   }
 
