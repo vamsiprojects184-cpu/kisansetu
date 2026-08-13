@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAuthStore } from '@/store/use-auth-store';
 import { useAppStore } from '@/store/use-app-store';
 import FarmerLayout from '@/components/layouts/FarmerLayout';
@@ -112,36 +112,29 @@ function getLayout(route: RoutePath, children: React.ReactNode): React.ReactNode
 
 export default function AppRouter() {
   const { user, isAuthenticated } = useAuthStore();
-  const { currentRoute } = useAppStore();
+  const { currentRoute, navigate } = useAppStore();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Defer first render to avoid setState-during-render issues
+  if (!mounted) {
+    if (typeof window !== 'undefined') {
+      requestAnimationFrame(() => setMounted(true));
+    } else {
+      setTimeout(() => setMounted(true), 0);
+    }
+    return <LoadingState />;
+  }
 
-  if (!mounted) return <LoadingState />;
-
-  // Redirect unauthenticated users to login for protected routes
+  // Show landing for unauthenticated users on protected routes
   const isPublicRoute = publicRoutes.includes(currentRoute);
   const isOnboarding = currentRoute === 'onboarding';
 
   if (!isAuthenticated && !isPublicRoute && !isOnboarding) {
-    // Don't redirect, just show landing
     return <LandingPage />;
   }
 
-  // If authenticated but on public route (except landing), go to dashboard
-  if (isAuthenticated && (currentRoute === 'login' || currentRoute === 'register')) {
-    const defaultRoute: RoutePath = user?.role === 'farmer' ? 'farmer/dashboard'
-      : user?.role === 'consumer' ? 'consumer/dashboard'
-      : user?.role === 'collection_center' ? 'collection-center/dashboard'
-      : user?.role === 'expert' ? 'expert/dashboard'
-      : 'admin/dashboard';
-    useAppStore.getState().navigate(defaultRoute);
-  }
-
   const pageContent = getRouteComponent(currentRoute);
- const layout = getLayout(currentRoute, pageContent);
+  const layout = getLayout(currentRoute, pageContent);
   const showAIChat = isAuthenticated && (user?.role === 'farmer');
 
   return (
