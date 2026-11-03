@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { useAuthStore } from '@/store/use-auth-store';
@@ -12,12 +12,13 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   LayoutDashboard, Sprout, Leaf, TestTube, Search, Bug, Droplets, CloudSun, TrendingUp,
   ShoppingCart, MapPin, Package, CreditCard, User, Menu, Mic, X, ChevronRight, LogOut,
-  Sun, Moon, Settings,
+  Sun, Moon, Settings, Sparkles,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import NotificationDropdown from '@/components/shared/NotificationDropdown';
 import CommandPalette from '@/components/shared/CommandPalette';
+import AIChatPanel from '@/components/shared/AIChatPanel';
 import { useCommandPaletteOpen } from '@/components/shared/CommandPalette';
 import type { RoutePath } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -81,7 +82,7 @@ function SearchButton() {
 
 export default function FarmerLayout({ children }: FarmerLayoutProps) {
   const { user, logout } = useAuthStore();
-  const { currentRoute, navigate, sidebarOpen, setSidebarOpen, toggleChat } = useAppStore();
+  const { currentRoute, navigate, sidebarOpen, setSidebarOpen, toggleChat, isChatOpen } = useAppStore();
   const { setTheme, resolvedTheme } = useTheme();
   const itemCount = useCartStore(s => s.getItemCount());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -114,7 +115,7 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
           <div className='w-8 h-8 rounded-lg gradient-green flex items-center justify-center text-white font-bold text-sm shrink-0'>
             K
           </div>
-          {sidebarOpen && <span className='font-bold text-lg'>KrishiAI</span>}
+          {sidebarOpen && <span className='font-bold text-lg'>KisanSetu</span>}
         </div>
         <nav className='flex-1 overflow-y-auto scrollbar-thin py-2 px-2'>
           {farmerNavItems.map(item => {
@@ -165,7 +166,7 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
               <SheetContent side='left' className='w-72 p-0'>
                 <div className='flex items-center gap-2 p-4 border-b'>
                   <div className='w-8 h-8 rounded-lg gradient-green flex items-center justify-center text-white font-bold text-sm'>K</div>
-                  <span className='font-bold text-lg'>KrishiAI</span>
+                  <span className='font-bold text-lg'>KisanSetu</span>
                 </div>
                 <nav className='overflow-y-auto py-2 px-2'>
                   {farmerNavItems.map(item => {
@@ -266,6 +267,20 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
           })}
         </div>
       </nav>
+      {/* Floating AI Button — desktop only (mobile uses bottom nav) */}
+      <button
+        onClick={toggleChat}
+        className={cn(
+          'hidden lg:flex fixed bottom-6 right-6 z-50 items-center gap-2 px-4 py-3 rounded-2xl shadow-lg transition-all duration-200',
+          'gradient-green text-white hover:opacity-90 hover:scale-105 active:scale-95',
+          isChatOpen && 'opacity-0 pointer-events-none scale-90'
+        )}
+        title='Open AI Assistant'
+      >
+        <Sparkles size={18} />
+        <span className='text-sm font-medium'>Ask AI</span>
+      </button>
+      <AIChatPanel />
       <CommandPalette />
     </div>
   );

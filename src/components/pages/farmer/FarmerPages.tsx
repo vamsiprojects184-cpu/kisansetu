@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -573,7 +573,7 @@ export function FarmDetailsPage() {
     { date: 'Nov 1, 2024', text: 'Planted Tomato (Hybrid GT-4)', icon: <Leaf className='h-4 w-4 text-emerald-600' /> },
     { date: 'Oct 15, 2024', text: 'Planted Rice (BPT-5204)', icon: <Leaf className='h-4 w-4 text-emerald-600' /> },
     { date: 'Oct 1, 2024', text: 'Land preparation completed', icon: <Tractor className='h-4 w-4 text-amber-600' /> },
-    { date: 'Jun 15, 2024', text: 'Farm registered on KrishiAI', icon: <Check className='h-4 w-4 text-primary' /> },
+    { date: 'Jun 15, 2024', text: 'Farm registered on KisanSetu', icon: <Check className='h-4 w-4 text-primary' /> },
   ];
 
   return (
@@ -1879,7 +1879,7 @@ export function SellPage() {
 
   return (
     <div className='space-y-6'>
-      <PageHeader title='Sell Products' subtitle='List your produce for sale on KrishiAI marketplace' />
+      <PageHeader title='Sell Products' subtitle='List your produce for sale on KisanSetu marketplace' />
 
       <AIInsightCard title='Market Insight' message='Tomato prices are up 8% today. Great time to list your tomatoes for sale!' type='success' action='View prices' onAction={() => navigate('farmer/market-prices')} />
 

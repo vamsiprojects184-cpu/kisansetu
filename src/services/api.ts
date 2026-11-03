@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 const API_BASE = '/api/backend';
 
@@ -36,15 +36,15 @@ let currentUser: ApiUser | null = null;
 export function setToken(token: string | null) {
   authToken = token;
   if (typeof window !== 'undefined') {
-    if (token) localStorage.setItem('krishiai_token', token);
-    else localStorage.removeItem('krishiai_token');
+    if (token) localStorage.setItem('kisansetu_token', token);
+    else localStorage.removeItem('kisansetu_token');
   }
 }
 
 export function getToken(): string | null {
   if (authToken) return authToken;
   if (typeof window !== 'undefined') {
-    authToken = localStorage.getItem('krishiai_token');
+    authToken = localStorage.getItem('kisansetu_token');
   }
   return authToken;
 }
@@ -52,15 +52,15 @@ export function getToken(): string | null {
 export function setUser(user: ApiUser | null) {
   currentUser = user;
   if (typeof window !== 'undefined') {
-    if (user) localStorage.setItem('krishiai_user', JSON.stringify(user));
-    else localStorage.removeItem('krishiai_user');
+    if (user) localStorage.setItem('kisansetu_user', JSON.stringify(user));
+    else localStorage.removeItem('kisansetu_user');
   }
 }
 
 export function getUser(): ApiUser | null {
   if (currentUser) return currentUser;
   if (typeof window !== 'undefined') {
-    const s = localStorage.getItem('krishiai_user');
+    const s = localStorage.getItem('kisansetu_user');
     if (s) { try { currentUser = JSON.parse(s); } catch { /* */ } }
   }
   return currentUser;

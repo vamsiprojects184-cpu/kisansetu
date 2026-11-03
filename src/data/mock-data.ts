@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   User, Farm, Crop, CropRecommendation, SoilHealth, WeatherData, DailyForecast,
   MarketPrice, MarketPrediction, Product, CollectionCenter, DiseaseDetection,
   FertilizerRecommendation, IrrigationStatus, QualityCheck, Order, Notification,
@@ -29,7 +29,7 @@ export const demoUsers: Record<string, User> = {
     state: 'Telangana', district: 'Hyderabad', isOnboarded: true, joinedDate: '2024-01-20',
   },
   admin: {
-    id: 'a1', name: 'Admin User', email: 'admin@krishiai.com', phone: '+91 9000000001',
+    id: 'a1', name: 'Admin User', email: 'admin@kisansetu.com', phone: '+91 9000000001',
     role: 'admin', language: 'en', location: 'Hyderabad, Telangana',
     state: 'Telangana', district: 'Hyderabad', isOnboarded: true, joinedDate: '2023-01-01',
   },

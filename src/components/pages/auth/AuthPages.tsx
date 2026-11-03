@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -122,7 +122,7 @@ export function LandingPage() {
     { icon: <Droplets className="size-6" />, title: 'Smart Irrigation', desc: 'AI-powered irrigation schedules to save water and boost yields.', color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' },
     { icon: <CloudSun className="size-6" />, title: 'Weather Intelligence', desc: 'Hyperlocal weather forecasts with farming-specific alerts.', color: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' },
     { icon: <TrendingUp className="size-6" />, title: 'Market Price Prediction', desc: 'AI predicts market prices to help you sell at the best time.', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-    { icon: <Mic className="size-6" />, title: 'Voice Assistant', desc: 'Ask questions in your language. KrishiAI understands local dialects.', color: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400' },
+    { icon: <Mic className="size-6" />, title: 'Voice Assistant', desc: 'Ask questions in your language. KisanSetu understands local dialects.', color: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400' },
     { icon: <ShoppingCart className="size-6" />, title: 'Farm-to-Home Marketplace', desc: 'Sell directly to consumers. No middlemen, better prices for all.', color: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' },
   ];
 
@@ -155,7 +155,7 @@ export function LandingPage() {
       name: 'Rajesh Kumar',
       location: 'Warangal, Telangana',
       role: 'Paddy Farmer',
-      quote: 'KrishiAI ne meri fasal ki bimari ka pata lagaya aur meri padaai bachai. Ab main har mahine ₹15,000 zyada kama raha hoon.',
+      quote: 'KisanSetu ne meri fasal ki bimari ka pata lagaya aur meri padaai bachai. Ab main har mahine ₹15,000 zyada kama raha hoon.',
       rating: 5,
       initials: 'RK',
     },
@@ -179,23 +179,23 @@ export function LandingPage() {
 
   const faqs = [
     {
-      question: 'What is KrishiAI?',
-      answer: 'KrishiAI is an AI-powered agriculture platform designed specifically for Indian farmers. It provides soil health analysis, crop disease detection, market price predictions, and a direct farm-to-consumer marketplace — all accessible through your smartphone.',
+      question: 'What is KisanSetu?',
+      answer: 'KisanSetu is an AI-powered agriculture platform designed specifically for Indian farmers. It provides soil health analysis, crop disease detection, market price predictions, and a direct farm-to-consumer marketplace — all accessible through your smartphone.',
     },
     {
       question: 'How does crop disease detection work?',
       answer: 'Simply take a photo of the affected leaf or crop using your phone camera. Our AI model analyzes the image in seconds and identifies the disease along with recommended treatments and preventive measures.',
     },
     {
-      question: 'Is KrishiAI free to use?',
-      answer: 'Yes! KrishiAI offers a free tier with essential features like basic soil analysis, disease detection, and weather alerts. Premium features such as advanced market analytics and expert consultations are available on affordable subscription plans.',
+      question: 'Is KisanSetu free to use?',
+      answer: 'Yes! KisanSetu offers a free tier with essential features like basic soil analysis, disease detection, and weather alerts. Premium features such as advanced market analytics and expert consultations are available on affordable subscription plans.',
     },
     {
-      question: 'Which languages does KrishiAI support?',
-      answer: 'KrishiAI currently supports Hindi, Telugu, Tamil, and English. We are actively adding more regional languages including Marathi, Kannada, and Bengali to serve farmers across India.',
+      question: 'Which languages does KisanSetu support?',
+      answer: 'KisanSetu currently supports Hindi, Telugu, Tamil, and English. We are actively adding more regional languages including Marathi, Kannada, and Bengali to serve farmers across India.',
     },
     {
-      question: 'How can I sell my produce on KrishiAI?',
+      question: 'How can I sell my produce on KisanSetu?',
       answer: 'After registering as a farmer, you can list your produce on the marketplace with photos and details. Consumers and collection centers can browse and place orders directly. We handle quality checks and logistics support.',
     },
     {
@@ -335,7 +335,7 @@ export function LandingPage() {
               Everything Your Farm Needs, Powered by AI
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-              From soil testing to selling — KrishiAI covers your entire farming journey with intelligent tools.
+              From soil testing to selling — KisanSetu covers your entire farming journey with intelligent tools.
             </p>
           </motion.div>
 
@@ -455,7 +455,7 @@ export function LandingPage() {
               Trusted by 10,000+ Farmers Across India
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-              Hear from real farmers who have transformed their livelihoods with KrishiAI.
+              Hear from real farmers who have transformed their livelihoods with KisanSetu.
             </p>
           </motion.div>
 
@@ -520,7 +520,7 @@ export function LandingPage() {
               Frequently Asked Questions
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Find answers to the most common questions about KrishiAI.
+              Find answers to the most common questions about KisanSetu.
             </p>
           </motion.div>
 
@@ -555,7 +555,7 @@ export function LandingPage() {
             Ready to Transform Your Farming?
           </h2>
           <p className="mt-4 text-white/80 text-base sm:text-lg">
-            Join thousands of farmers already using KrishiAI to make smarter decisions and earn more.
+            Join thousands of farmers already using KisanSetu to make smarter decisions and earn more.
           </p>
           <Button
             size="lg"
@@ -578,7 +578,7 @@ export function LandingPage() {
                 <div className="size-9 rounded-lg gradient-green flex items-center justify-center text-white font-bold text-sm">
                   K
                 </div>
-                <span className="font-bold text-lg">KrishiAI</span>
+                <span className="font-bold text-lg">KisanSetu</span>
               </div>
               <p className="text-sm text-background/60 leading-relaxed">
                 AI-powered agriculture platform empowering Indian farmers with smart tools for better yields and fair prices.
@@ -634,7 +634,7 @@ export function LandingPage() {
               <ul className="space-y-2.5">
                 <li className="flex items-center gap-2 text-sm text-background/60">
                   <Mail className="size-3.5" />
-                  hello@krishiai.com
+                  hello@kisansetu.com
                 </li>
                 <li className="flex items-center gap-2 text-sm text-background/60">
                   <Phone className="size-3.5" />
@@ -653,7 +653,7 @@ export function LandingPage() {
         <div className="border-t border-background/10">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-background/50">
-              © 2025 KrishiAI. Made with ❤️ for Indian Farmers.
+              © 2025 KisanSetu. Made with ❤️ for Indian Farmers.
             </p>
             <div className="flex items-center gap-4">
               <button className="text-xs text-background/50 hover:text-background/80 transition-colors">
@@ -807,7 +807,7 @@ export function LoginPage() {
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/15">
                 <Sprout className="size-5 text-green-300" />
-                <span className="text-green-100 text-sm font-medium">KrishiAI Platform</span>
+                <span className="text-green-100 text-sm font-medium">KisanSetu Platform</span>
               </div>
               <h2 className="text-4xl xl:text-5xl font-bold text-white leading-tight tracking-tight">
                 Empowering India&apos;s{' '}
@@ -868,7 +868,7 @@ export function LoginPage() {
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Welcome Back</h1>
             <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
-              Sign in to your KrishiAI account
+              Sign in to your KisanSetu account
             </p>
           </motion.div>
 
@@ -990,7 +990,7 @@ export function LoginPage() {
           >
             <div className="flex items-center justify-center gap-2">
               <div className="h-px flex-1 bg-border" />
-              <span className="text-xs text-muted-foreground">New to KrishiAI?</span>
+              <span className="text-xs text-muted-foreground">New to KisanSetu?</span>
               <div className="h-px flex-1 bg-border" />
             </div>
             <button
@@ -1071,7 +1071,7 @@ export function RegisterPage() {
           <div className="size-8 rounded-lg gradient-green flex items-center justify-center text-white font-bold text-sm">
             K
           </div>
-          <span className="font-bold">KrishiAI</span>
+          <span className="font-bold">KisanSetu</span>
         </div>
       </div>
 
@@ -1266,7 +1266,7 @@ export function RegisterPage() {
                   Choose Your Language
                 </h2>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  KrishiAI works best in your language
+                  KisanSetu works best in your language
                 </p>
               </div>
 

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -74,7 +74,7 @@ export default function AIChatAssistant() {
               <Bot className='size-5 text-white' />
             </div>
             <div>
-              <h3 className='text-white font-semibold text-sm'>KrishiAI Assistant</h3>
+              <h3 className='text-white font-semibold text-sm'>KisanSetu Assistant</h3>
               <p className='text-white/70 text-xs'>Online · Ask about farming</p>
             </div>
           </div>

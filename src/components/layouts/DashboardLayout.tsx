@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { useAuthStore } from '@/store/use-auth-store';
@@ -7,11 +7,12 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, LogOut, Sun, Moon, Search, Settings, ShoppingCart } from 'lucide-react';
+import { Menu, LogOut, Sun, Moon, Search, Settings, ShoppingCart, Sparkles } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import NotificationDropdown from '@/components/shared/NotificationDropdown';
 import CommandPalette from '@/components/shared/CommandPalette';
+import AIChatPanel from '@/components/shared/AIChatPanel';
 import { useCommandPaletteOpen } from '@/components/shared/CommandPalette';
 import { useCartStore } from '@/store/use-cart-store';
 import type { RoutePath, UserRole } from '@/types';
@@ -122,7 +123,7 @@ function SearchButton() {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuthStore();
-  const { currentRoute, navigate, sidebarOpen, setSidebarOpen } = useAppStore();
+  const { currentRoute, navigate, sidebarOpen, setSidebarOpen, toggleChat, isChatOpen } = useAppStore();
   const { setTheme, resolvedTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const role = user?.role || 'farmer';
@@ -155,7 +156,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className={cn('w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shrink-0', roleColors[role])}>
             K
           </div>
-          {sidebarOpen && <span className='font-bold text-lg'>KrishiAI</span>}
+          {sidebarOpen && <span className='font-bold text-lg'>KisanSetu</span>}
         </div>
         <nav className='flex-1 overflow-y-auto scrollbar-thin py-2 px-2'>
           {items.map(item => {
@@ -203,7 +204,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <SheetContent side='left' className='w-72 p-0'>
                 <div className='flex items-center gap-2 p-4 border-b'>
                   <div className={cn('w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm', roleColors[role])}>K</div>
-                  <span className='font-bold text-lg'>KrishiAI</span>
+                  <span className='font-bold text-lg'>KisanSetu</span>
                 </div>
                 <nav className='overflow-y-auto py-2 px-2'>
                   {items.map(item => {
@@ -252,6 +253,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </AnimatePresence>
         </main>
       </div>
+      {/* Floating AI Button — desktop only */}
+      <button
+        onClick={toggleChat}
+        className={cn(
+          'hidden lg:flex fixed bottom-6 right-6 z-50 items-center gap-2 px-4 py-3 rounded-2xl shadow-lg transition-all duration-200',
+          'bg-primary text-primary-foreground hover:opacity-90 hover:scale-105 active:scale-95',
+          isChatOpen && 'opacity-0 pointer-events-none scale-90'
+        )}
+        title='Open AI Assistant'
+      >
+        <Sparkles size={18} />
+        <span className='text-sm font-medium'>Ask AI</span>
+      </button>
+      <AIChatPanel />
       <CommandPalette />
     </div>
   );

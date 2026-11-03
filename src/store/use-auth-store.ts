@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import type { User, UserRole } from '@/types';
 import { demoUsers } from '@/data/mock-data';
 import * as api from '@/services/api';
@@ -33,7 +33,7 @@ const demoCredentials: Record<UserRole, { email: string; password: string }> = {
   consumer: { email: 'priya@gmail.com', password: 'demo123' },
   collection_center: { email: 'rajesh@greenagri.in', password: 'demo123' },
   expert: { email: 'anitha@agri-expert.in', password: 'demo123' },
-  admin: { email: 'admin@krishiai.com', password: 'demo123' },
+  admin: { email: 'admin@kisansetu.com', password: 'demo123' },
 };
 
 export const useAuthStore = create<AuthState>((set, get) => ({
